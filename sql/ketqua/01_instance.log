@@ -1,0 +1,173 @@
+=== 1. Trang thai ban dau (SYSDBA, CDB$ROOT)
+
+INSTANCE_NAME    STATUS       DATABASE_STATUS   LOGINS
+---------------- ------------ ----------------- ----------
+free             OPEN         ACTIVE            ALLOWED
+
+1 row selected.
+
+
+    CON_ID NAME                                                                                                                             OPEN_MODE  RES
+---------- -------------------------------------------------------------------------------------------------------------------------------- ---------- ---
+         2 PDB$SEED                                                                                                                         READ ONLY  NO
+         3 FREEPDB1                                                                                                                         READ WRITE NO
+
+2 rows selected.
+
+=== 2. SHUTDOWN IMMEDIATE
+Database closed.
+Database dismounted.
+ORACLE instance shut down.
+=== 3. STARTUP NOMOUNT: chi khoi dong instance (SGA + tien trinh nen)
+ORACLE instance started.
+
+Total System Global Area 1603594920 bytes
+Fixed Size                  5229224 bytes
+Variable Size            1006632960 bytes
+Database Buffers          587202560 bytes
+Redo Buffers                4530176 bytes
+
+INSTANCE_NAME    STATUS
+---------------- ------------
+free             STARTED
+
+1 row selected.
+
+=== 4. MOUNT: doc control file
+
+Database altered.
+
+
+STATUS
+------------
+MOUNTED
+
+1 row selected.
+
+
+NAME      OPEN_MODE            LOG_MODE
+--------- -------------------- ------------
+FREE      MOUNTED              ARCHIVELOG
+
+1 row selected.
+
+=== 5. OPEN READ ONLY (ca CDB)
+
+Database altered.
+
+
+NAME      OPEN_MODE
+--------- --------------------
+FREE      READ ONLY
+
+1 row selected.
+
+
+NAME                                                                                                                             OPEN_MODE
+-------------------------------------------------------------------------------------------------------------------------------- ----------
+PDB$SEED                                                                                                                         READ ONLY
+FREEPDB1                                                                                                                         MOUNTED
+
+2 rows selected.
+
+=== 6. SHUTDOWN IMMEDIATE roi STARTUP binh thuong (MOUNT -> OPEN READ WRITE)
+Database closed.
+Database dismounted.
+ORACLE instance shut down.
+ORACLE instance started.
+
+Total System Global Area 1603594920 bytes
+Fixed Size                  5229224 bytes
+Variable Size            1006632960 bytes
+Database Buffers          587202560 bytes
+Redo Buffers                4530176 bytes
+Database mounted.
+Database opened.
+
+Pluggable database altered.
+
+
+NAME      OPEN_MODE            LOG_MODE
+--------- -------------------- ------------
+FREE      READ WRITE           ARCHIVELOG
+
+1 row selected.
+
+
+NAME                                                                                                                             OPEN_MODE  RES
+-------------------------------------------------------------------------------------------------------------------------------- ---------- ---
+PDB$SEED                                                                                                                         READ ONLY  NO
+FREEPDB1                                                                                                                         READ WRITE NO
+
+2 rows selected.
+
+=== 7. PDB: CLOSE -> OPEN READ ONLY -> thu ghi du lieu (phai loi ORA-16000)
+
+Pluggable database altered.
+
+
+NAME                                                                                                                             OPEN_MODE
+-------------------------------------------------------------------------------------------------------------------------------- ----------
+PDB$SEED                                                                                                                         READ ONLY
+FREEPDB1                                                                                                                         MOUNTED
+
+2 rows selected.
+
+
+Pluggable database altered.
+
+
+NAME                                                                                                                             OPEN_MODE
+-------------------------------------------------------------------------------------------------------------------------------- ----------
+PDB$SEED                                                                                                                         READ ONLY
+FREEPDB1                                                                                                                         READ ONLY
+
+2 rows selected.
+
+
+Session altered.
+
+UPDATE SUCO_APP.SU_CO SET MO_TA = MO_TA WHERE MA_SC = 1
+                *
+ERROR at line 1:
+ORA-16000: Attempting to modify database or pluggable database that is open for read-only access.
+Help: https://docs.oracle.com/error-help/db/ora-16000/
+
+
+
+SO_SU_CO_DOC_DUOC
+-----------------
+               15
+
+1 row selected.
+
+
+Session altered.
+
+=== 8. PDB: CLOSE -> OPEN READ WRITE (tro lai binh thuong)
+
+Pluggable database altered.
+
+
+Pluggable database altered.
+
+
+NAME                                                                                                                             OPEN_MODE
+-------------------------------------------------------------------------------------------------------------------------------- ----------
+PDB$SEED                                                                                                                         READ ONLY
+FREEPDB1                                                                                                                         READ WRITE
+
+2 rows selected.
+
+
+Session altered.
+
+
+1 row updated.
+
+
+Rollback complete.
+
+
+Session altered.
+

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Sửa người dùng')}"></head>
+<body>
+<nav th:replace="~{layout :: navbar}"></nav>
+<div th:replace="~{layout :: thongbao}"></div>
+
+<div class="container" style="max-width: 640px;">
+  <a th:href="@{/admin/nguoi-dung}" class="btn btn-link px-0">&laquo; Quay lại danh sách</a>
+  <div class="card">
+    <div class="card-header">Sửa người dùng #<span th:text="${nd.maNd}"></span></div>
+    <div class="card-body">
+      <form th:action="@{/admin/nguoi-dung/{id}(id=${nd.maNd})}" method="post">
+        <div class="mb-3">
+          <label class="form-label" for="hoTen">Họ tên</label>
+          <input class="form-control" id="hoTen" name="hoTen" maxlength="100" required th:value="${nd.hoTen}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="email">Email</label>
+          <input class="form-control" type="email" id="email" name="email" maxlength="100" required th:value="${nd.email}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="matKhau">Mật khẩu mới</label>
+          <input class="form-control" id="matKhau" name="matKhau" maxlength="50" placeholder="Để trống nếu không đổi">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="donVi">Đơn vị</label>
+          <input class="form-control" id="donVi" name="donVi" maxlength="100" th:value="${nd.donVi}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="vaiTro">Vai trò</label>
+          <select class="form-select" id="vaiTro" name="vaiTro">
+            <option th:each="e : ${dsVaiTro}" th:value="${e.key}" th:text="${e.value}" th:selected="${e.key == nd.vaiTro}"></option>
+          </select>
+        </div>
+        <button class="btn btn-primary" type="submit">Lưu</button>
+      </form>
+    </div>
+  </div>
+</div>
+</body>
+</html>

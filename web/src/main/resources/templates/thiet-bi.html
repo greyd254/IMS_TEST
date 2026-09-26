@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Quản lý thiết bị')}"></head>
+<body>
+<nav th:replace="~{layout :: navbar}"></nav>
+<div th:replace="~{layout :: thongbao}"></div>
+
+<div class="container">
+  <!-- Form thêm thiết bị mới -->
+  <div class="card mb-4">
+    <div class="card-header">Thêm thiết bị</div>
+    <div class="card-body">
+      <form th:action="@{/admin/thiet-bi}" method="post" class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label" for="tenTb">Tên thiết bị</label>
+          <input class="form-control" id="tenTb" name="tenTb" maxlength="150" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="loaiTb">Loại</label>
+          <select class="form-select" id="loaiTb" name="loaiTb">
+            <option th:each="e : ${dsLoai}" th:value="${e.key}" th:text="${e.value}"></option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="maPhong">Phòng</label>
+          <select class="form-select" id="maPhong" name="maPhong" required>
+            <option th:each="p : ${dsPhong}" th:value="${p.maPhong}" th:text="${p.tenPhong}"></option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="tinhTrang">Tình trạng</label>
+          <select class="form-select" id="tinhTrang" name="tinhTrang">
+            <option th:each="e : ${dsTinhTrang}" th:value="${e.key}" th:text="${e.value}"></option>
+          </select>
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+          <button class="btn btn-primary w-100" type="submit">Thêm</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <h5>Danh sách thiết bị</h5>
+  <table class="table table-striped align-middle">
+    <thead><tr><th>Mã</th><th>Tên thiết bị</th><th>Loại</th><th>Phòng</th><th>Tình trạng</th><th></th></tr></thead>
+    <tbody>
+      <tr th:each="tb : ${dsThietBi}">
+        <td th:text="${tb.maTb}"></td>
+        <td th:text="${tb.tenTb}"></td>
+        <td th:text="${dsLoai[tb.loaiTb]}"></td>
+        <td th:text="${tb.tenPhong}"></td>
+        <td>
+          <span class="badge" th:text="${dsTinhTrang[tb.tinhTrang]}"
+                th:classappend="${tb.tinhTrang == 'HOAT_DONG'} ? 'text-bg-success' : (${tb.tinhTrang == 'HONG'} ? 'text-bg-danger' : 'text-bg-warning')"></span>
+        </td>
+        <td class="text-nowrap">
+          <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/thiet-bi/{id}/sua(id=${tb.maTb})}">Sửa</a>
+          <form class="d-inline" th:action="@{/admin/thiet-bi/{id}/xoa(id=${tb.maTb})}" method="post"
+                onsubmit="return confirm('Xóa thiết bị này?');">
+            <button class="btn btn-sm btn-outline-danger" type="submit">Xóa</button>
+          </form>
+        </td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(dsThietBi)}"><td colspan="6" class="text-center text-muted">Chưa có thiết bị</td></tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

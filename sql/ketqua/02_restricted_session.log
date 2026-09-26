@@ -1,0 +1,45 @@
+SQL> PROMPT === 1. Bat RESTRICTED SESSION trong PDB FREEPDB1 (SYSDBA)
+=== 1. Bat RESTRICTED SESSION trong PDB FREEPDB1 (SYSDBA)
+SQL> ALTER SESSION SET CONTAINER=FREEPDB1;
+
+Session altered.
+
+SQL> SELECT logins FROM v$instance;
+
+LOGINS
+----------
+ALLOWED
+
+1 row selected.
+
+SQL> ALTER SYSTEM ENABLE RESTRICTED SESSION;
+
+System altered.
+
+SQL> SELECT logins FROM v$instance;
+
+LOGINS
+----------
+RESTRICTED
+
+1 row selected.
+
+SQL> PROMPT === 2. Thu dang nhap bang SUCO_APP (khong co quyen RESTRICTED SESSION) - xem ket qua o buoc tiep theo
+=== 2. Thu dang nhap bang SUCO_APP (khong co quyen RESTRICTED SESSION) - xem ket qua o buoc tiep theo
+SQL> HOST java -cp C:\Users\GreyD\.m2\repository\com\oracle\database\jdbc\ojdbc17\23.26.3.0.0\ojdbc17-23.26.3.0.0.jar C:\Users\GreyD\AppData\Local\Temp\claude\C--Users-GreyD-IdeaProjects-IMS\09079b2d-702f-485b-ad17-bcc7c0ec36b6\scratchpad\RunSql.java SUCO_APP SuCo_App_123 C:\Users\GreyD\AppData\Local\Temp\claude\C--Users-GreyD-IdeaProjects-IMS\09079b2d-702f-485b-ad17-bcc7c0ec36b6\scratchpad\c2.sql > C:\Users\GreyD\IdeaProjects\IMS\sql\ketqua\02b_dang_nhap_thu.log 2>&1
+
+SQL> PROMPT === 3. Nguoi co quyen RESTRICTED SESSION (SYSDBA) van dang nhap duoc; tat che do nay
+=== 3. Nguoi co quyen RESTRICTED SESSION (SYSDBA) van dang nhap duoc; tat che do nay
+SQL> ALTER SYSTEM DISABLE RESTRICTED SESSION;
+
+System altered.
+
+SQL> SELECT logins FROM v$instance;
+
+LOGINS
+----------
+ALLOWED
+
+1 row selected.
+
+SQL> SPOOL OFF

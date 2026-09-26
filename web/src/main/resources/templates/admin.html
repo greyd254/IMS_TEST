@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Quản lý sự cố')}"></head>
+<body>
+<nav th:replace="~{layout :: navbar}"></nav>
+<div th:replace="~{layout :: thongbao}"></div>
+
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Tất cả sự cố</h5>
+    <!-- Lọc theo trạng thái: gửi GET ?trangThai=... -->
+    <form th:action="@{/admin}" method="get" class="d-flex gap-2">
+      <select class="form-select" name="trangThai" onchange="this.form.submit()">
+        <option value="">-- Tất cả trạng thái --</option>
+        <option value="MOI" th:selected="${trangThaiLoc == 'MOI'}">Mới</option>
+        <option value="DANG_XU_LY" th:selected="${trangThaiLoc == 'DANG_XU_LY'}">Đang xử lý</option>
+        <option value="HOAN_THANH" th:selected="${trangThaiLoc == 'HOAN_THANH'}">Hoàn thành</option>
+      </select>
+    </form>
+  </div>
+
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr><th>Mã</th><th>Tiêu đề</th><th>Người báo</th><th>Thiết bị / Phòng</th><th>Danh mục</th><th>Ưu tiên</th><th>Trạng thái</th><th>Ngày báo</th><th></th></tr>
+    </thead>
+    <tbody>
+      <tr th:each="sc : ${dsSuCo}">
+        <td th:text="${sc.maSc}"></td>
+        <td th:text="${sc.tieuDe}"></td>
+        <td th:text="${sc.tenNguoiBao}"></td>
+        <td><span th:text="${sc.tenTb}">-</span><br><small class="text-muted" th:text="${sc.tenPhong}"></small></td>
+        <td th:text="${sc.tenDm}"></td>
+        <td><span th:replace="~{layout :: uuTien(${sc.mucUuTien})}"></span></td>
+        <td><span th:replace="~{layout :: trangThai(${sc.trangThai})}"></span></td>
+        <td th:text="${#temporals.format(sc.ngayTao, 'dd/MM/yyyy HH:mm')}"></td>
+        <td><a class="btn btn-sm btn-outline-primary" th:href="@{/admin/{id}(id=${sc.maSc})}">Xử lý</a></td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(dsSuCo)}"><td colspan="9" class="text-center text-muted">Không có sự cố nào</td></tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

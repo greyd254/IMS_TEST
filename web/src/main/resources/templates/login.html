@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Đăng nhập')}"></head>
+<body class="bg-light">
+<div class="container" style="max-width: 420px;">
+  <div class="card shadow-sm mt-5">
+    <div class="card-body">
+      <h4 class="card-title text-center mb-1">Quản lý sự cố CNTT</h4>
+      <p class="text-center text-muted">Trường Đại học Giao thông Vận tải</p>
+      <div class="alert alert-danger" th:if="${loi}" th:text="${loi}"></div>
+      <form th:action="@{/login}" method="post">
+        <div class="mb-3">
+          <label class="form-label" for="email">Email</label>
+          <input class="form-control" type="email" id="email" name="email" required autofocus>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="matKhau">Mật khẩu</label>
+          <input class="form-control" type="password" id="matKhau" name="matKhau" required>
+        </div>
+        <button class="btn btn-primary w-100" type="submit">Đăng nhập</button>
+      </form>
+    </div>
+  </div>
+</div>
+</body>
+</html>

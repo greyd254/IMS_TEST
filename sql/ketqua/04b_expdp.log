@@ -1,0 +1,42 @@
+﻿expdp.exe : 
+At line:17 char:1
++ & expdp 'SUCO_APP/SuCo_App_123@localhost:1521/FREEPDB1' schemas=SUCO_ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Export: Release 23.26.3.0.0 - Production on Sat Sep 26 00:30:02 2026
+Version 23.26.3.0.0
+
+Copyright (c) 1982, 2026, Oracle and/or its affiliates.  All rights reserved.
+
+Connected to: Oracle AI Database 26ai Free Release 23.26.3.0.0 - Develop, Learn, and Run for Free
+Starting "SUCO_APP"."SYS_EXPORT_SCHEMA_01":  SUCO_APP/********@localhost:1521/FREEPDB1 schemas=SUCO_APP 
+directory=DP_DIR dumpfile=suco_app.dmp logfile=exp_suco_app.log reuse_dumpfiles=yes 
+Processing object type SCHEMA_EXPORT/TABLE/TABLE_DATA
+Processing object type SCHEMA_EXPORT/TABLE/INDEX/STATISTICS/INDEX_STATISTICS
+Processing object type SCHEMA_EXPORT/TABLE/STATISTICS/TABLE_STATISTICS
+Processing object type SCHEMA_EXPORT/PRE_SCHEMA/PROCACT_SCHEMA/LOGREP
+Processing object type SCHEMA_EXPORT/TABLE/TABLE
+Processing object type SCHEMA_EXPORT/TABLE/GRANT/OWNER_GRANT/OBJECT_GRANT
+Processing object type SCHEMA_EXPORT/TABLE/COMMENT
+Processing object type SCHEMA_EXPORT/TABLE/IDENTITY_COLUMN
+Processing object type SCHEMA_EXPORT/VIEW/VIEW
+Processing object type SCHEMA_EXPORT/VIEW/GRANT/OWNER_GRANT/OBJECT_GRANT
+Processing object type SCHEMA_EXPORT/TABLE/INDEX/INDEX
+Processing object type SCHEMA_EXPORT/TABLE/CONSTRAINT/CONSTRAINT
+Processing object type SCHEMA_EXPORT/TABLE/CONSTRAINT/REF_CONSTRAINT
+Processing object type SCHEMA_EXPORT/TABLE/TRIGGER
+. . exported "SUCO_APP"."BAI_KINH_NGHIEM"                 11.3 KB       9 rows
+. . exported "SUCO_APP"."DANH_MUC_SU_CO"                   6.6 KB       8 rows
+. . exported "SUCO_APP"."LICH_SU_XU_LY"                    8.8 KB      13 rows
+. . exported "SUCO_APP"."NGUOI_DUNG"                       8.7 KB      10 rows
+. . exported "SUCO_APP"."PHONG"                            7.4 KB      10 rows
+. . exported "SUCO_APP"."SU_CO"                           14.1 KB      15 rows
+. . exported "SUCO_APP"."THIET_BI"                         7.6 KB      12 rows
+Master table "SUCO_APP"."SYS_EXPORT_SCHEMA_01" successfully loaded/unloaded
+******************************************************************************
+Dump file set for SUCO_APP.SYS_EXPORT_SCHEMA_01 is:
+  C:\ORADATA\DPDUMP\SUCO_APP.DMP
+Job "SUCO_APP"."SYS_EXPORT_SCHEMA_01" successfully completed at Sat Sep 26 00:31:36 2026 elapsed 0 00:01:28
+

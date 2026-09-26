@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Báo sự cố')}"></head>
+<body>
+<nav th:replace="~{layout :: navbar}"></nav>
+<div th:replace="~{layout :: thongbao}"></div>
+
+<div class="container">
+  <!-- Form báo sự cố: thiết bị, danh mục lấy từ CSDL; mức ưu tiên là danh sách cố định theo CHECK của bảng -->
+  <div class="card mb-4">
+    <div class="card-header">Báo sự cố mới</div>
+    <div class="card-body">
+      <form th:action="@{/user/bao-cao}" method="post">
+        <div class="mb-3">
+          <label class="form-label" for="tieuDe">Tiêu đề</label>
+          <input class="form-control" id="tieuDe" name="tieuDe" maxlength="200" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="moTa">Mô tả</label>
+          <textarea class="form-control" id="moTa" name="moTa" rows="3" maxlength="1000"></textarea>
+        </div>
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label" for="maTb">Thiết bị</label>
+            <select class="form-select" id="maTb" name="maTb">
+              <option value="">-- Không liên quan thiết bị --</option>
+              <option th:each="tb : ${dsThietBi}" th:value="${tb.maTb}"
+                      th:text="${tb.tenTb} + ' - ' + ${tb.tenPhong}"></option>
+            </select>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label" for="maDm">Danh mục</label>
+            <select class="form-select" id="maDm" name="maDm" required>
+              <option th:each="dm : ${dsDanhMuc}" th:value="${dm.maDm}" th:text="${dm.tenDm}"></option>
+            </select>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label" for="mucUuTien">Mức ưu tiên</label>
+            <select class="form-select" id="mucUuTien" name="mucUuTien" required>
+              <option value="THAP">Thấp</option>
+              <option value="TRUNG_BINH" selected>Trung bình</option>
+              <option value="CAO">Cao</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" type="submit">Gửi báo cáo</button>
+      </form>
+    </div>
+  </div>
+
+  <h5>Sự cố tôi đã báo</h5>
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr><th>Mã</th><th>Tiêu đề</th><th>Thiết bị / Phòng</th><th>Danh mục</th><th>Ưu tiên</th><th>Trạng thái</th><th>Ngày báo</th></tr>
+    </thead>
+    <tbody>
+      <tr th:each="sc : ${dsSuCo}">
+        <td th:text="${sc.maSc}"></td>
+        <td th:text="${sc.tieuDe}"></td>
+        <td><span th:text="${sc.tenTb}">-</span><br><small class="text-muted" th:text="${sc.tenPhong}"></small></td>
+        <td th:text="${sc.tenDm}"></td>
+        <td><span th:replace="~{layout :: uuTien(${sc.mucUuTien})}"></span></td>
+        <td><span th:replace="~{layout :: trangThai(${sc.trangThai})}"></span></td>
+        <td th:text="${#temporals.format(sc.ngayTao, 'dd/MM/yyyy HH:mm')}"></td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(dsSuCo)}"><td colspan="7" class="text-center text-muted">Bạn chưa báo sự cố nào</td></tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

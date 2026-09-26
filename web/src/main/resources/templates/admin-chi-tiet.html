@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Chi tiết sự cố')}"></head>
+<body>
+<nav th:replace="~{layout :: navbar}"></nav>
+<div th:replace="~{layout :: thongbao}"></div>
+
+<div class="container">
+  <a th:href="@{/admin}" class="btn btn-link px-0">&laquo; Quay lại danh sách</a>
+
+  <!-- Thông tin sự cố (chỉ đọc) -->
+  <div class="card mb-4">
+    <div class="card-header">
+      Sự cố #<span th:text="${suCo.maSc}"></span>:
+      <strong th:text="${suCo.tieuDe}"></strong>
+    </div>
+    <div class="card-body">
+      <p class="xuong-dong" th:text="${suCo.moTa}"></p>
+      <dl class="row mb-0">
+        <dt class="col-sm-3">Người báo</dt><dd class="col-sm-9" th:text="${suCo.tenNguoiBao}"></dd>
+        <dt class="col-sm-3">Thiết bị / Phòng</dt>
+        <dd class="col-sm-9"><span th:text="${suCo.tenTb} ?: '-'"></span> <small class="text-muted" th:text="${suCo.tenPhong}"></small></dd>
+        <dt class="col-sm-3">Danh mục</dt><dd class="col-sm-9" th:text="${suCo.tenDm}"></dd>
+        <dt class="col-sm-3">Mức ưu tiên</dt><dd class="col-sm-9"><span th:replace="~{layout :: uuTien(${suCo.mucUuTien})}"></span></dd>
+        <dt class="col-sm-3">Trạng thái</dt><dd class="col-sm-9"><span th:replace="~{layout :: trangThai(${suCo.trangThai})}"></span></dd>
+        <dt class="col-sm-3">Admin xử lý</dt><dd class="col-sm-9" th:text="${suCo.tenAdmin} ?: '-'"></dd>
+        <dt class="col-sm-3">Ngày báo</dt><dd class="col-sm-9" th:text="${#temporals.format(suCo.ngayTao, 'dd/MM/yyyy HH:mm')}"></dd>
+        <dt class="col-sm-3">Ngày hoàn thành</dt><dd class="col-sm-9" th:text="${#temporals.format(suCo.ngayHoanThanh, 'dd/MM/yyyy HH:mm')} ?: '-'"></dd>
+      </dl>
+    </div>
+  </div>
+
+  <!-- Form cập nhật: khi lưu, MA_ADMIN_XU_LY được gán = admin đang đăng nhập (xem AdminController) -->
+  <div class="card mb-4">
+    <div class="card-header">Cập nhật xử lý</div>
+    <div class="card-body">
+      <form th:action="@{/admin/{id}(id=${suCo.maSc})}" method="post">
+        <div class="mb-3">
+          <label class="form-label" for="trangThai">Trạng thái</label>
+          <select class="form-select" id="trangThai" name="trangThai">
+            <option value="MOI" th:selected="${suCo.trangThai == 'MOI'}">Mới</option>
+            <option value="DANG_XU_LY" th:selected="${suCo.trangThai == 'DANG_XU_LY'}">Đang xử lý</option>
+            <option value="HOAN_THANH" th:selected="${suCo.trangThai == 'HOAN_THANH'}">Hoàn thành</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="nguyenNhan">Nguyên nhân</label>
+          <textarea class="form-control" id="nguyenNhan" name="nguyenNhan" rows="2" maxlength="1000" th:text="${suCo.nguyenNhan}"></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="cachKhacPhuc">Cách khắc phục</label>
+          <textarea class="form-control" id="cachKhacPhuc" name="cachKhacPhuc" rows="2" maxlength="1000" th:text="${suCo.cachKhacPhuc}"></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="maBaiKn">Bài kinh nghiệm liên quan</label>
+          <select class="form-select" id="maBaiKn" name="maBaiKn">
+            <option value="">-- Không chọn --</option>
+            <option th:each="b : ${dsBaiKn}" th:value="${b.maBai}"
+                    th:text="'[' + ${b.tenDm} + '] ' + ${b.tieuDe}"
+                    th:selected="${b.maBai == suCo.maBaiKn}"></option>
+          </select>
+        </div>
+        <button class="btn btn-primary" type="submit">Lưu cập nhật</button>
+      </form>
+      <!-- Xóa sự cố (kèm lịch sử xử lý) -->
+      <form class="mt-3" th:action="@{/admin/{id}/xoa(id=${suCo.maSc})}" method="post"
+            onsubmit="return confirm('Xóa sự cố này cùng lịch sử xử lý?');">
+        <button class="btn btn-outline-danger btn-sm" type="submit">Xóa sự cố</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Lịch sử xử lý từ bảng LICH_SU_XU_LY (do trigger ghi) -->
+  <h5>Lịch sử xử lý</h5>
+  <table class="table table-sm table-striped">
+    <thead><tr><th>Thời gian</th><th>Người cập nhật</th><th>Từ</th><th>Sang</th><th>Ghi chú</th></tr></thead>
+    <tbody>
+      <tr th:each="ls : ${dsLichSu}">
+        <td th:text="${#temporals.format(ls.thoiGian, 'dd/MM/yyyy HH:mm')}"></td>
+        <td th:text="${ls.tenNguoiCapNhat} ?: '-'"></td>
+        <td><th:block th:if="${ls.trangThaiCu != null}"><span th:replace="~{layout :: trangThai(${ls.trangThaiCu})}"></span></th:block></td>
+        <td><span th:replace="~{layout :: trangThai(${ls.trangThaiMoi})}"></span></td>
+        <td th:text="${ls.ghiChu}"></td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(dsLichSu)}"><td colspan="5" class="text-center text-muted">Chưa có lịch sử</td></tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

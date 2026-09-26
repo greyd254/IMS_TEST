@@ -1,0 +1,479 @@
+SQL> COLUMN username FORMAT A14
+SQL> COLUMN profile FORMAT A18
+SQL> COLUMN account_status FORMAT A18
+SQL> COLUMN resource_name FORMAT A26
+SQL> COLUMN limit FORMAT A12
+SQL> COLUMN grantee FORMAT A18
+SQL> COLUMN granted_role FORMAT A18
+SQL> COLUMN privilege FORMAT A22
+SQL> COLUMN table_name FORMAT A16
+SQL> COLUMN role FORMAT A18
+SQL> COLUMN tablespace_name FORMAT A14
+SQL> SHOW CON_NAME
+
+CON_NAME                                                                                                                                                                                                                    
+------------------------------                                                                                                                                                                                              
+FREEPDB1                                                                                                                                                                                                                    
+SQL> 
+SQL> -- ---------------------------------------------------------------------
+SQL> -- 1. PROFILE: gói giới hạn về mật khẩu và tài nguyên gán cho user.
+SQL> --    Giới hạn phiên (SESSIONS_PER_USER, IDLE_TIME, CONNECT_TIME) chỉ có hiệu lực khi
+SQL> --    tham số RESOURCE_LIMIT = TRUE (mặc định TRUE từ 12c).
+SQL> -- ---------------------------------------------------------------------
+SQL> SHOW PARAMETER resource_limit
+
+NAME                                 TYPE        VALUE                                                                                                                                                                      
+------------------------------------ ----------- ------------------------------                                                                                                                                             
+resource_limit                       boolean     TRUE                                                                                                                                                                       
+SQL> 
+SQL> -- Profile cho người dùng thường: chặt hơn
+SQL> CREATE PROFILE PROFILE_NHANVIEN LIMIT
+  2    FAILED_LOGIN_ATTEMPTS 3	      -- nhập sai 3 lần thì khóa tài khoản
+  3    PASSWORD_LOCK_TIME    1/24     -- tự mở khóa sau 1 giờ (đơn vị: ngày)
+  4    PASSWORD_LIFE_TIME    90       -- mật khẩu hết hạn sau 90 ngày
+  5    PASSWORD_GRACE_TIME   7	      -- được 7 ngày cảnh báo trước khi hết hạn hẳn
+  6    PASSWORD_REUSE_MAX    5	      -- không dùng lại 5 mật khẩu gần nhất
+  7    SESSIONS_PER_USER     2	      -- tối đa 2 phiên đồng thời
+  8    IDLE_TIME	     30       -- ngắt phiên không hoạt động sau 30 phút (CONNECT_TIME: tối đa 480 phút/phiên)
+  9    CONNECT_TIME	     480;
+
+Profile created.
+
+SQL> 
+SQL> -- Profile cho quản trị: nới hơn
+SQL> CREATE PROFILE PROFILE_QUANTRI LIMIT
+  2    FAILED_LOGIN_ATTEMPTS 5
+  3    PASSWORD_LOCK_TIME    1/24
+  4    PASSWORD_LIFE_TIME    60       -- quản trị phải đổi mật khẩu thường xuyên hơn
+  5    SESSIONS_PER_USER     5
+  6    IDLE_TIME	     60;
+
+Profile created.
+
+SQL> 
+SQL> -- Xem nội dung 2 profile vừa tạo
+SQL> SELECT profile, resource_name, limit FROM dba_profiles
+  2   WHERE profile IN ('PROFILE_NHANVIEN', 'PROFILE_QUANTRI')
+  3  	AND resource_name IN ('FAILED_LOGIN_ATTEMPTS','PASSWORD_LOCK_TIME','PASSWORD_LIFE_TIME',
+  4  			      'PASSWORD_GRACE_TIME','PASSWORD_REUSE_MAX','SESSIONS_PER_USER','IDLE_TIME','CONNECT_TIME')
+  5   ORDER BY profile, resource_name;
+
+PROFILE            RESOURCE_NAME              LIMIT                                                                                                                                                                         
+------------------ -------------------------- ------------                                                                                                                                                                  
+PROFILE_NHANVIEN   CONNECT_TIME               480                                                                                                                                                                           
+PROFILE_NHANVIEN   FAILED_LOGIN_ATTEMPTS      3                                                                                                                                                                             
+PROFILE_NHANVIEN   IDLE_TIME                  30                                                                                                                                                                            
+PROFILE_NHANVIEN   PASSWORD_GRACE_TIME        7                                                                                                                                                                             
+PROFILE_NHANVIEN   PASSWORD_LIFE_TIME         90                                                                                                                                                                            
+PROFILE_NHANVIEN   PASSWORD_LOCK_TIME         .0416                                                                                                                                                                         
+PROFILE_NHANVIEN   PASSWORD_REUSE_MAX         5                                                                                                                                                                             
+PROFILE_NHANVIEN   SESSIONS_PER_USER          2                                                                                                                                                                             
+PROFILE_QUANTRI    CONNECT_TIME               DEFAULT                                                                                                                                                                       
+PROFILE_QUANTRI    FAILED_LOGIN_ATTEMPTS      5                                                                                                                                                                             
+PROFILE_QUANTRI    IDLE_TIME                  60                                                                                                                                                                            
+PROFILE_QUANTRI    PASSWORD_GRACE_TIME        DEFAULT                                                                                                                                                                       
+PROFILE_QUANTRI    PASSWORD_LIFE_TIME         60                                                                                                                                                                            
+PROFILE_QUANTRI    PASSWORD_LOCK_TIME         .0416                                                                                                                                                                         
+PROFILE_QUANTRI    PASSWORD_REUSE_MAX         DEFAULT                                                                                                                                                                       
+PROFILE_QUANTRI    SESSIONS_PER_USER          5                                                                                                                                                                             
+
+16 rows selected.
+
+SQL> 
+SQL> -- Gán profile cho 2 user demo của file 06
+SQL> ALTER USER U_NHANVIEN PROFILE PROFILE_NHANVIEN;
+
+User altered.
+
+SQL> ALTER USER U_QUANTRI  PROFILE PROFILE_QUANTRI;
+
+User altered.
+
+SQL> 
+SQL> -- ---------------------------------------------------------------------
+SQL> -- 2. TẠO USER: mật khẩu, tablespace mặc định/tạm, quota, profile
+SQL> -- ---------------------------------------------------------------------
+SQL> CREATE USER U_DEMO IDENTIFIED BY "Demo_123"
+  2    DEFAULT TABLESPACE USERS
+  3    TEMPORARY TABLESPACE TEMP
+  4    QUOTA 5M ON USERS
+  5    PROFILE PROFILE_NHANVIEN;
+
+User created.
+
+SQL> 
+SQL> GRANT CREATE SESSION TO U_DEMO;
+
+Grant succeeded.
+
+SQL> 
+SQL> SELECT username, account_status, profile, default_tablespace, temporary_tablespace
+  2    FROM dba_users WHERE username = 'U_DEMO';
+
+USERNAME       ACCOUNT_STATUS     PROFILE            DEFAULT_TABLESPACE             TEMPORARY_TABLESPACE                                                                                                                    
+-------------- ------------------ ------------------ ------------------------------ ------------------------------                                                                                                          
+U_DEMO         OPEN               PROFILE_NHANVIEN   USERS                          TEMP                                                                                                                                    
+
+1 row selected.
+
+SQL> 
+SQL> -- ---------------------------------------------------------------------
+SQL> -- 3. SỬA USER
+SQL> -- ---------------------------------------------------------------------
+SQL> -- 3.1 Đổi mật khẩu
+SQL> ALTER USER U_DEMO IDENTIFIED BY "Demo_456";
+
+User altered.
+
+SQL> 
+SQL> -- 3.2 Đổi quota (xem thay đổi ở dba_ts_quotas; MAX_BYTES = -1 nghĩa là UNLIMITED)
+SQL> ALTER USER U_DEMO QUOTA 20M ON USERS;
+
+User altered.
+
+SQL> SELECT username, tablespace_name, max_bytes/1024/1024 AS QUOTA_MB FROM dba_ts_quotas WHERE username = 'U_DEMO';
+
+USERNAME       TABLESPACE_NAM   QUOTA_MB                                                                                                                                                                                    
+-------------- -------------- ----------                                                                                                                                                                                    
+U_DEMO         USERS                  20                                                                                                                                                                                    
+
+1 row selected.
+
+SQL> 
+SQL> -- 3.3 Đổi profile sang PROFILE_QUANTRI rồi trả lại
+SQL> ALTER USER U_DEMO PROFILE PROFILE_QUANTRI;
+
+User altered.
+
+SQL> SELECT username, profile FROM dba_users WHERE username = 'U_DEMO';
+
+USERNAME       PROFILE                                                                                                                                                                                                      
+-------------- ------------------                                                                                                                                                                                           
+U_DEMO         PROFILE_QUANTRI                                                                                                                                                                                              
+
+1 row selected.
+
+SQL> ALTER USER U_DEMO PROFILE PROFILE_NHANVIEN;
+
+User altered.
+
+SQL> 
+SQL> -- 3.4 Buộc đổi mật khẩu ở lần đăng nhập sau (trạng thái EXPIRED), rồi đặt lại mật khẩu để mở
+SQL> ALTER USER U_DEMO PASSWORD EXPIRE;
+
+User altered.
+
+SQL> SELECT username, account_status, expiry_date FROM dba_users WHERE username = 'U_DEMO';
+
+USERNAME       ACCOUNT_STATUS     EXPIRY_DATE                                                                                                                                                                               
+-------------- ------------------ ------------------                                                                                                                                                                        
+U_DEMO         EXPIRED            26-SEP-26                                                                                                                                                                                 
+
+1 row selected.
+
+SQL> ALTER USER U_DEMO IDENTIFIED BY "Demo_789";
+
+User altered.
+
+SQL> SELECT username, account_status FROM dba_users WHERE username = 'U_DEMO';
+
+USERNAME       ACCOUNT_STATUS                                                                                                                                                                                               
+-------------- ------------------                                                                                                                                                                                           
+U_DEMO         OPEN                                                                                                                                                                                                         
+
+1 row selected.
+
+SQL> 
+SQL> -- 3.5 Khóa / mở khóa tài khoản thủ công
+SQL> ALTER USER U_DEMO ACCOUNT LOCK;
+
+User altered.
+
+SQL> SELECT username, account_status, lock_date FROM dba_users WHERE username = 'U_DEMO';
+
+USERNAME       ACCOUNT_STATUS     LOCK_DATE                                                                                                                                                                                 
+-------------- ------------------ ------------------                                                                                                                                                                        
+U_DEMO         LOCKED             26-SEP-26                                                                                                                                                                                 
+
+1 row selected.
+
+SQL> ALTER USER U_DEMO ACCOUNT UNLOCK;
+
+User altered.
+
+SQL> SELECT username, account_status FROM dba_users WHERE username = 'U_DEMO';
+
+USERNAME       ACCOUNT_STATUS                                                                                                                                                                                               
+-------------- ------------------                                                                                                                                                                                           
+U_DEMO         OPEN                                                                                                                                                                                                         
+
+1 row selected.
+
+SQL> 
+SQL> -- ---------------------------------------------------------------------
+SQL> -- 4. THỬ CƠ CHẾ KHÓA TỰ ĐỘNG (FAILED_LOGIN_ATTEMPTS = 3)
+SQL> --    Đăng nhập sai mật khẩu 3 lần liên tiếp -> tài khoản bị khóa tự động.
+SQL> -- ---------------------------------------------------------------------
+SQL> CONNECT U_DEMO/sai_mat_khau_1@localhost:1521/FREEPDB1
+ERROR:
+ORA-01017: invalid credential or not authorized; logon denied
+Help: https://docs.oracle.com/error-help/db/ora-01017/ 
+
+
+Warning: You are no longer connected to ORACLE.
+SQL> CONNECT U_DEMO/sai_mat_khau_2@localhost:1521/FREEPDB1
+ERROR:
+ORA-01017: invalid credential or not authorized; logon denied
+Help: https://docs.oracle.com/error-help/db/ora-01017/ 
+
+
+SQL> CONNECT U_DEMO/sai_mat_khau_3@localhost:1521/FREEPDB1
+ERROR:
+ORA-01017: invalid credential or not authorized; logon denied
+Help: https://docs.oracle.com/error-help/db/ora-01017/ 
+
+
+SQL> -- Lần thứ 4: dù nhập ĐÚNG mật khẩu vẫn bị từ chối vì đã bị khóa (ORA-28000)
+SQL> CONNECT U_DEMO/Demo_789@localhost:1521/FREEPDB1
+ERROR:
+ORA-28000: The account is locked; login denied.
+Help: https://docs.oracle.com/error-help/db/ora-28000/ 
+
+
+SQL> 
+SQL> CONNECT system/&&sys_pw@localhost:1521/FREEPDB1
+Connected.
+SQL> SELECT username, account_status, lock_date FROM dba_users WHERE username = 'U_DEMO';
+
+USERNAME       ACCOUNT_STATUS     LOCK_DATE                                                                                                                                                                                 
+-------------- ------------------ ------------------                                                                                                                                                                        
+U_DEMO         LOCKED(TIMED)      26-SEP-26                                                                                                                                                                                 
+
+1 row selected.
+
+SQL> -- Admin mở khóa thủ công (không cần đợi PASSWORD_LOCK_TIME)
+SQL> ALTER USER U_DEMO ACCOUNT UNLOCK;
+
+User altered.
+
+SQL> SELECT username, account_status FROM dba_users WHERE username = 'U_DEMO';
+
+USERNAME       ACCOUNT_STATUS                                                                                                                                                                                               
+-------------- ------------------                                                                                                                                                                                           
+U_DEMO         OPEN                                                                                                                                                                                                         
+
+1 row selected.
+
+SQL> -- Đăng nhập lại đúng mật khẩu: thành công
+SQL> CONNECT U_DEMO/Demo_789@localhost:1521/FREEPDB1
+Connected.
+SQL> SELECT USER AS DANG_NHAP_BANG, SYS_CONTEXT('USERENV', 'CON_NAME') AS CSDL FROM dual;
+
+DANG_NHAP_BANG                                                                                                                                                                                                              
+--------------------------------------------------------------------------------------------------------------------------------                                                                                            
+CSDL                                                                                                                                                                                                                        
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+U_DEMO                                                                                                                                                                                                                      
+FREEPDB1                                                                                                                                                                                                                    
+                                                                                                                                                                                                                            
+
+1 row selected.
+
+SQL> CONNECT system/&&sys_pw@localhost:1521/FREEPDB1
+Connected.
+SQL> 
+SQL> -- ---------------------------------------------------------------------
+SQL> -- 5. QUYỀN HỆ THỐNG, QUYỀN ĐỐI TƯỢNG VÀ ROLE (CHỨC DANH) NHIỀU CẤP
+SQL> -- ---------------------------------------------------------------------
+SQL> -- 5.1 Quyền hệ thống trực tiếp cho user
+SQL> GRANT CREATE TABLE TO U_DEMO;
+
+Grant succeeded.
+
+SQL> 
+SQL> -- 5.2 Quyền đối tượng: đọc bảng PHONG của SUCO_APP, kèm quyền cấp tiếp cho người khác
+SQL> GRANT SELECT ON SUCO_APP.PHONG TO U_DEMO WITH GRANT OPTION;
+
+Grant succeeded.
+
+SQL> 
+SQL> -- 5.3 Role nhiều cấp: ROLE_TRUONG_NHOM = quyền của ROLE_APP_USER (file 06) + CREATE VIEW
+SQL> CREATE ROLE ROLE_TRUONG_NHOM;
+
+Role created.
+
+SQL> GRANT ROLE_APP_USER TO ROLE_TRUONG_NHOM;
+
+Grant succeeded.
+
+SQL> GRANT CREATE VIEW	 TO ROLE_TRUONG_NHOM;
+
+Grant succeeded.
+
+SQL> GRANT ROLE_TRUONG_NHOM TO U_DEMO;
+
+Grant succeeded.
+
+SQL> 
+SQL> -- 5.4 Truy vấn quyền qua từ điển dữ liệu
+SQL> SELECT grantee, granted_role FROM dba_role_privs WHERE grantee IN ('U_DEMO', 'ROLE_TRUONG_NHOM') ORDER BY 1, 2;
+
+GRANTEE            GRANTED_ROLE                                                                                                                                                                                             
+------------------ ------------------                                                                                                                                                                                       
+ROLE_TRUONG_NHOM   ROLE_APP_USER                                                                                                                                                                                            
+U_DEMO             ROLE_TRUONG_NHOM                                                                                                                                                                                         
+
+2 rows selected.
+
+SQL> SELECT grantee, privilege FROM dba_sys_privs WHERE grantee IN ('U_DEMO', 'ROLE_TRUONG_NHOM') ORDER BY 1, 2;
+
+GRANTEE            PRIVILEGE                                                                                                                                                                                                
+------------------ ----------------------                                                                                                                                                                                   
+ROLE_TRUONG_NHOM   CREATE VIEW                                                                                                                                                                                              
+U_DEMO             CREATE SESSION                                                                                                                                                                                           
+U_DEMO             CREATE TABLE                                                                                                                                                                                             
+
+3 rows selected.
+
+SQL> SELECT grantee, table_name, privilege, grantable FROM dba_tab_privs WHERE grantee = 'U_DEMO';
+
+GRANTEE            TABLE_NAME       PRIVILEGE              GRA                                                                                                                                                              
+------------------ ---------------- ---------------------- ---                                                                                                                                                              
+U_DEMO             PHONG            SELECT                 YES                                                                                                                                                              
+
+1 row selected.
+
+SQL> 
+SQL> -- 5.5 Kiểm chứng quyền hiệu lực khi U_DEMO đăng nhập (SESSION_PRIVS gồm cả quyền lấy từ role)
+SQL> CONNECT U_DEMO/Demo_789@localhost:1521/FREEPDB1
+Connected.
+SQL> SELECT * FROM session_roles;
+
+ROLE                                                                                                                                                                                                                        
+------------------                                                                                                                                                                                                          
+ROLE_TRUONG_NHOM                                                                                                                                                                                                            
+ROLE_APP_USER                                                                                                                                                                                                               
+
+2 rows selected.
+
+SQL> SELECT privilege FROM session_privs ORDER BY 1;
+
+PRIVILEGE                                                                                                                                                                                                                   
+----------------------                                                                                                                                                                                                      
+CREATE SESSION                                                                                                                                                                                                              
+CREATE TABLE                                                                                                                                                                                                                
+CREATE VIEW                                                                                                                                                                                                                 
+
+3 rows selected.
+
+SQL> SELECT COUNT(*) AS SO_PHONG_DOC_DUOC FROM SUCO_APP.PHONG;
+
+SO_PHONG_DOC_DUOC                                                                                                                                                                                                           
+-----------------                                                                                                                                                                                                           
+               10                                                                                                                                                                                                           
+
+1 row selected.
+
+SQL> SELECT COUNT(*) AS SO_SU_CO_DOC_DUOC FROM SUCO_APP.SU_CO;
+
+SO_SU_CO_DOC_DUOC                                                                                                                                                                                                           
+-----------------                                                                                                                                                                                                           
+               15                                                                                                                                                                                                           
+
+1 row selected.
+
+SQL> -- Không có quyền UPDATE bảng SU_CO -> phải lỗi (Oracle 23ai báo ORA-41900, bản cũ báo ORA-01031)
+SQL> UPDATE SUCO_APP.SU_CO SET MO_TA = MO_TA WHERE 1 = 0;
+UPDATE SUCO_APP.SU_CO SET MO_TA = MO_TA WHERE 1 = 0
+                *
+ERROR at line 1:
+ORA-41900: missing UPDATE privilege on "SUCO_APP"."SU_CO"
+Help: https://docs.oracle.com/error-help/db/ora-41900/ 
+
+
+SQL> -- Có quyền CREATE TABLE và quota trên USERS -> tạo được bảng của chính mình
+SQL> CREATE TABLE BANG_THU (ID NUMBER);
+
+Table created.
+
+SQL> DROP TABLE BANG_THU PURGE;
+
+Table dropped.
+
+SQL> CONNECT system/&&sys_pw@localhost:1521/FREEPDB1
+Connected.
+SQL> 
+SQL> -- 5.6 Thu hồi quyền / role
+SQL> REVOKE SELECT ON SUCO_APP.PHONG FROM U_DEMO;
+
+Revoke succeeded.
+
+SQL> REVOKE CREATE TABLE FROM U_DEMO;
+
+Revoke succeeded.
+
+SQL> REVOKE ROLE_TRUONG_NHOM FROM U_DEMO;
+
+Revoke succeeded.
+
+SQL> SELECT grantee, granted_role FROM dba_role_privs WHERE grantee = 'U_DEMO';
+
+no rows selected
+
+SQL> SELECT grantee, privilege FROM dba_sys_privs WHERE grantee = 'U_DEMO';
+
+GRANTEE            PRIVILEGE                                                                                                                                                                                                
+------------------ ----------------------                                                                                                                                                                                   
+U_DEMO             CREATE SESSION                                                                                                                                                                                           
+
+1 row selected.
+
+SQL> 
+SQL> -- ---------------------------------------------------------------------
+SQL> -- 6. THEO DÕI PHIÊN ĐANG KẾT NỐI
+SQL> -- ---------------------------------------------------------------------
+SQL> SELECT username, COUNT(*) AS SO_PHIEN FROM v$session
+  2   WHERE username IS NOT NULL GROUP BY username ORDER BY username;
+
+USERNAME         SO_PHIEN                                                                                                                                                                                                   
+-------------- ----------                                                                                                                                                                                                   
+SUCO_APP               10                                                                                                                                                                                                   
+SYS                     1                                                                                                                                                                                                   
+SYSTEM                  1                                                                                                                                                                                                   
+
+3 rows selected.
+
+SQL> -- Kết thúc 1 phiên cụ thể (thay SID, SERIAL# lấy từ V$SESSION):
+SQL> -- ALTER SYSTEM KILL SESSION 'sid,serial#' IMMEDIATE;
+SQL> 
+SQL> -- ---------------------------------------------------------------------
+SQL> -- 7. XÓA USER VÀ ROLE THỬ
+SQL> --    CASCADE xóa luôn mọi đối tượng thuộc user. Chỉ xóa được khi user không còn phiên đăng nhập.
+SQL> --    2 profile PROFILE_NHANVIEN / PROFILE_QUANTRI và việc gán cho U_NHANVIEN / U_QUANTRI được GIỮ LẠI.
+SQL> -- ---------------------------------------------------------------------
+SQL> DROP USER U_DEMO CASCADE;
+
+User dropped.
+
+SQL> DROP ROLE ROLE_TRUONG_NHOM;
+
+Role dropped.
+
+SQL> SELECT COUNT(*) AS U_DEMO_CON_LAI FROM dba_users WHERE username = 'U_DEMO';
+
+U_DEMO_CON_LAI                                                                                                                                                                                                              
+--------------                                                                                                                                                                                                              
+             0                                                                                                                                                                                                              
+
+1 row selected.
+
+SQL> SELECT username, profile FROM dba_users WHERE username IN ('U_NHANVIEN', 'U_QUANTRI') ORDER BY 1;
+
+USERNAME       PROFILE                                                                                                                                                                                                      
+-------------- ------------------                                                                                                                                                                                           
+U_NHANVIEN     PROFILE_NHANVIEN                                                                                                                                                                                             
+U_QUANTRI      PROFILE_QUANTRI                                                                                                                                                                                              
+
+2 rows selected.
+
+SQL> SPOOL OFF

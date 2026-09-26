@@ -1,0 +1,85 @@
+SQL> ALTER SESSION SET CONTAINER=FREEPDB1;
+
+Session altered.
+
+SQL> SELECT (SELECT COUNT(*) FROM SUCO_APP.SU_CO) AS GOC_SU_CO, (SELECT COUNT(*) FROM SUCO_APP2.SU_CO) AS MOI_SU_CO, (SELECT COUNT(*) FROM SUCO_APP.LICH_SU_XU_LY) AS GOC_LS, (SELECT COUNT(*) FROM SUCO_APP2.LICH_SU_XU_LY) AS MOI_LS FROM dual;
+
+ GOC_SU_CO  MOI_SU_CO     GOC_LS     MOI_LS
+---------- ---------- ---------- ----------
+        15         15         13         13
+
+1 row selected.
+
+SQL> SELECT owner, object_type, COUNT(*) AS SO_LUONG FROM dba_objects WHERE owner IN ('SUCO_APP','SUCO_APP2') AND object_type IN ('TABLE','VIEW','TRIGGER','INDEX') GROUP BY owner, object_type ORDER BY object_type, owner;
+
+OWNER        OBJECT_TYPE               SO_LUONG
+------------ ----------------------- ----------
+SUCO_APP     INDEX                           12
+SUCO_APP2    INDEX                           12
+SUCO_APP     TABLE                            7
+SUCO_APP2    TABLE                            7
+SUCO_APP     TRIGGER                          2
+SUCO_APP2    TRIGGER                          2
+SUCO_APP     VIEW                             1
+SUCO_APP2    VIEW                             1
+
+8 rows selected.
+
+SQL> SELECT owner, table_name, tablespace_name FROM dba_tables WHERE table_name='SU_CO' AND owner LIKE 'SUCO_APP%' ORDER BY 1;
+
+OWNER        TABLE_NAME                                                                                                                       TABLESPACE_NAM
+------------ -------------------------------------------------------------------------------------------------------------------------------- --------------
+SUCO_APP     SU_CO                                                                                                                            TS_SUCO
+SUCO_APP2    SU_CO                                                                                                                            USERS
+
+2 rows selected.
+
+SQL> SELECT owner, trigger_name, status FROM dba_triggers WHERE owner LIKE 'SUCO_APP%' ORDER BY 1,2;
+
+OWNER        TRIGGER_NAME                                                                                                                     STATUS
+------------ -------------------------------------------------------------------------------------------------------------------------------- --------
+SUCO_APP     TRG_SU_CO_HOAN_THANH                                                                                                             ENABLED
+SUCO_APP     TRG_SU_CO_LICH_SU                                                                                                                ENABLED
+SUCO_APP2    TRG_SU_CO_HOAN_THANH                                                                                                             ENABLED
+SUCO_APP2    TRG_SU_CO_LICH_SU                                                                                                                ENABLED
+
+4 rows selected.
+
+SQL> SELECT owner, constraint_type, COUNT(*) AS SO_LUONG FROM dba_constraints WHERE owner LIKE 'SUCO_APP%' AND constraint_type IN ('P','R','C','U') AND constraint_name NOT LIKE 'SYS_%' GROUP BY owner, constraint_type ORDER BY 2,1;
+
+OWNER        C   SO_LUONG
+------------ - ----------
+SUCO_APP     C          9
+SUCO_APP2    C          9
+SUCO_APP     P          7
+SUCO_APP2    P          7
+SUCO_APP     R         10
+SUCO_APP2    R         10
+SUCO_APP     U          2
+SUCO_APP2    U          2
+
+8 rows selected.
+
+SQL> PROMPT === Don dep schema thu SUCO_APP2
+=== Don dep schema thu SUCO_APP2
+SQL> DROP USER SUCO_APP2 CASCADE;
+
+User dropped.
+
+SQL> SELECT COUNT(*) AS SUCO_APP2_CON_LAI FROM dba_users WHERE username='SUCO_APP2';
+
+SUCO_APP2_CON_LAI
+-----------------
+                0
+
+1 row selected.
+
+SQL> SELECT COUNT(*) AS SU_CO_GOC_VAN_DU FROM SUCO_APP.SU_CO;
+
+SU_CO_GOC_VAN_DU
+----------------
+              15
+
+1 row selected.
+
+SQL> SPOOL OFF

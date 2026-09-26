@@ -1,0 +1,114 @@
+{
+"bang": [
+  {"ten": "NGUOI_DUNG", "soDong": 10, "cot": [
+    {"ten": "MA_ND", "kieu": "NUMBER", "notNull": true, "khoa": "PK", "identity": true},
+    {"ten": "HO_TEN", "kieu": "VARCHAR2(100)", "notNull": true, "khoa": "", "identity": false},
+    {"ten": "EMAIL", "kieu": "VARCHAR2(100)", "notNull": true, "khoa": "UK", "identity": false},
+    {"ten": "MAT_KHAU", "kieu": "VARCHAR2(50)", "notNull": true, "khoa": "", "identity": false},
+    {"ten": "DON_VI", "kieu": "VARCHAR2(100)", "notNull": false, "khoa": "", "identity": false},
+    {"ten": "VAI_TRO", "kieu": "VARCHAR2(10)", "notNull": true, "khoa": "", "identity": false},
+    {"ten": "NGAY_TAO", "kieu": "DATE", "notNull": true, "khoa": "", "identity": false}
+  ]},
+  {"ten": "PHONG", "soDong": 10, "cot": [
+    {"ten": "MA_PHONG", "kieu": "NUMBER", "notNull": true, "khoa": "PK", "identity": true},
+    {"ten": "TEN_PHONG", "kieu": "VARCHAR2(100)", "notNull": true, "khoa": "", "identity": false},
+    {"ten": "TOA_NHA", "kieu": "VARCHAR2(20)", "notNull": true, "khoa": "", "identity": false},
+    {"ten": "TANG", "kieu": "NUMBER(2)", "notNull": true, "khoa": "", "identity": false},
+    {"ten": "LOAI_PHONG", "kieu": "VARCHAR2(20)", "notNull": true, "khoa": "", "identity": false}
+  ]},
+  {"ten": "THIET_BI", "soDong": 12, "cot": [
+    {"ten": "MA_TB", "kieu": "NUMBER", "notNull": true, "khoa": "PK", "identity": true},
+    {"ten": "TEN_TB", "kieu": "VARCHAR2(150)", "notNull": true, "khoa": "", "identity": false},
+    {"ten": "LOAI_TB", "kieu": "VARCHAR2(20)", "notNull": true, "khoa": "", "identity": false},
+    {"ten": "MA_PHONG", "kieu": "NUMBER", "notNull": true, "khoa": "FK", "identity": false},
+    {"ten": "TINH_TRANG", "kieu": "VARCHAR2(20)", "notNull": true, "khoa": "", "identity": false}
+  ]},
+  {"ten": "DANH_MUC_SU_CO", "soDong": 8, "cot": [
+    {"ten": "MA_DM", "kieu": "NUMBER", "notNull": true, "khoa": "PK", "identity": true},
+    {"ten": "TEN_DM", "kieu": "VARCHAR2(100)", "notNull": true, "khoa": "UK", "identity": false},
+    {"ten": "MO_TA", "kieu": "VARCHAR2(500)", "notNull": false, "khoa": "", "identity": false}
+  ]},
+  {"ten": "BAI_KINH_NGHIEM", "soDong": 9, "cot": [
+    {"ten": "MA_BAI", "kieu": "NUMBER", "notNull": true, "khoa": "PK", "identity": true},
+    {"ten": "TIEU_DE", "kieu": "VARCHAR2(200)", "notNull": true, "khoa": "", "identity": false},
+    {"ten": "MA_DM", "kieu": "NUMBER", "notNull": true, "khoa": "FK", "identity": false},
+    {"ten": "TRIEU_CHUNG", "kieu": "VARCHAR2(1000)", "notNull": false, "khoa": "", "identity": false},
+    {"ten": "NGUYEN_NHAN", "kieu": "VARCHAR2(1000)", "notNull": false, "khoa": "", "identity": false},
+    {"ten": "GIAI_PHAP", "kieu": "VARCHAR2(1000)", "notNull": true, "khoa": "", "identity": false},
+    {"ten": "MA_NGUOI_VIET", "kieu": "NUMBER", "notNull": true, "khoa": "FK", "identity": false},
+    {"ten": "NGAY_TAO", "kieu": "DATE", "notNull": true, "khoa": "", "identity": false}
+  ]},
+  {"ten": "SU_CO", "soDong": 15, "cot": [
+    {"ten": "MA_SC", "kieu": "NUMBER", "notNull": true, "khoa": "PK", "identity": true},
+    {"ten": "TIEU_DE", "kieu": "VARCHAR2(200)", "notNull": true, "khoa": "", "identity": false},
+    {"ten": "MO_TA", "kieu": "VARCHAR2(1000)", "notNull": false, "khoa": "", "identity": false},
+    {"ten": "MA_NGUOI_BAO", "kieu": "NUMBER", "notNull": true, "khoa": "FK", "identity": false},
+    {"ten": "MA_ADMIN_XU_LY", "kieu": "NUMBER", "notNull": false, "khoa": "FK", "identity": false},
+    {"ten": "MA_TB", "kieu": "NUMBER", "notNull": false, "khoa": "FK", "identity": false},
+    {"ten": "MA_DM", "kieu": "NUMBER", "notNull": true, "khoa": "FK", "identity": false},
+    {"ten": "MUC_UU_TIEN", "kieu": "VARCHAR2(20)", "notNull": true, "khoa": "", "identity": false},
+    {"ten": "TRANG_THAI", "kieu": "VARCHAR2(20)", "notNull": true, "khoa": "", "identity": false},
+    {"ten": "NGUYEN_NHAN", "kieu": "VARCHAR2(1000)", "notNull": false, "khoa": "", "identity": false},
+    {"ten": "CACH_KHAC_PHUC", "kieu": "VARCHAR2(1000)", "notNull": false, "khoa": "", "identity": false},
+    {"ten": "MA_BAI_KN", "kieu": "NUMBER", "notNull": false, "khoa": "FK", "identity": false},
+    {"ten": "NGAY_TAO", "kieu": "DATE", "notNull": true, "khoa": "", "identity": false},
+    {"ten": "NGAY_HOAN_THANH", "kieu": "DATE", "notNull": false, "khoa": "", "identity": false}
+  ]},
+  {"ten": "LICH_SU_XU_LY", "soDong": 13, "cot": [
+    {"ten": "MA_LS", "kieu": "NUMBER", "notNull": true, "khoa": "PK", "identity": true},
+    {"ten": "MA_SC", "kieu": "NUMBER", "notNull": true, "khoa": "FK", "identity": false},
+    {"ten": "MA_NGUOI_CAP_NHAT", "kieu": "NUMBER", "notNull": false, "khoa": "FK", "identity": false},
+    {"ten": "TRANG_THAI_CU", "kieu": "VARCHAR2(20)", "notNull": false, "khoa": "", "identity": false},
+    {"ten": "TRANG_THAI_MOI", "kieu": "VARCHAR2(20)", "notNull": true, "khoa": "", "identity": false},
+    {"ten": "GHI_CHU", "kieu": "VARCHAR2(500)", "notNull": false, "khoa": "", "identity": false},
+    {"ten": "THOI_GIAN", "kieu": "TIMESTAMP(6)", "notNull": true, "khoa": "", "identity": false}
+  ]}
+],
+"rangBuoc": [
+  {"ten": "PK_BAI_KINH_NGHIEM", "loai": "P", "bang": "BAI_KINH_NGHIEM", "dieuKien": null, "cot": "MA_BAI", "cha": null},
+  {"ten": "FK_BAI_KN_DANH_MUC", "loai": "R", "bang": "BAI_KINH_NGHIEM", "dieuKien": null, "cot": "MA_DM", "cha": "DANH_MUC_SU_CO"},
+  {"ten": "FK_BAI_KN_NGUOI_VIET", "loai": "R", "bang": "BAI_KINH_NGHIEM", "dieuKien": null, "cot": "MA_NGUOI_VIET", "cha": "NGUOI_DUNG"},
+  {"ten": "PK_DANH_MUC_SU_CO", "loai": "P", "bang": "DANH_MUC_SU_CO", "dieuKien": null, "cot": "MA_DM", "cha": null},
+  {"ten": "UQ_DANH_MUC_TEN", "loai": "U", "bang": "DANH_MUC_SU_CO", "dieuKien": null, "cot": "TEN_DM", "cha": null},
+  {"ten": "PK_LICH_SU_XU_LY", "loai": "P", "bang": "LICH_SU_XU_LY", "dieuKien": null, "cot": "MA_LS", "cha": null},
+  {"ten": "FK_LICH_SU_NGUOI", "loai": "R", "bang": "LICH_SU_XU_LY", "dieuKien": null, "cot": "MA_NGUOI_CAP_NHAT", "cha": "NGUOI_DUNG"},
+  {"ten": "FK_LICH_SU_SU_CO", "loai": "R", "bang": "LICH_SU_XU_LY", "dieuKien": null, "cot": "MA_SC", "cha": "SU_CO"},
+  {"ten": "CK_LICH_SU_TT_CU", "loai": "C", "bang": "LICH_SU_XU_LY", "dieuKien": "TRANG_THAI_CU IN ('MOI', 'DANG_XU_LY', 'HOAN_THANH')", "cot": "TRANG_THAI_CU", "cha": null},
+  {"ten": "CK_LICH_SU_TT_MOI", "loai": "C", "bang": "LICH_SU_XU_LY", "dieuKien": "TRANG_THAI_MOI IN ('MOI', 'DANG_XU_LY', 'HOAN_THANH')", "cot": "TRANG_THAI_MOI", "cha": null},
+  {"ten": "PK_NGUOI_DUNG", "loai": "P", "bang": "NGUOI_DUNG", "dieuKien": null, "cot": "MA_ND", "cha": null},
+  {"ten": "UQ_NGUOI_DUNG_EMAIL", "loai": "U", "bang": "NGUOI_DUNG", "dieuKien": null, "cot": "EMAIL", "cha": null},
+  {"ten": "CK_NGUOI_DUNG_VAI_TRO", "loai": "C", "bang": "NGUOI_DUNG", "dieuKien": "VAI_TRO IN ('USER', 'ADMIN')", "cot": "VAI_TRO", "cha": null},
+  {"ten": "PK_PHONG", "loai": "P", "bang": "PHONG", "dieuKien": null, "cot": "MA_PHONG", "cha": null},
+  {"ten": "CK_PHONG_LOAI", "loai": "C", "bang": "PHONG", "dieuKien": "LOAI_PHONG IN ('PHONG_MAY', 'PHONG_HOC', 'VAN_PHONG')", "cot": "LOAI_PHONG", "cha": null},
+  {"ten": "PK_SU_CO", "loai": "P", "bang": "SU_CO", "dieuKien": null, "cot": "MA_SC", "cha": null},
+  {"ten": "FK_SU_CO_ADMIN", "loai": "R", "bang": "SU_CO", "dieuKien": null, "cot": "MA_ADMIN_XU_LY", "cha": "NGUOI_DUNG"},
+  {"ten": "FK_SU_CO_BAI_KN", "loai": "R", "bang": "SU_CO", "dieuKien": null, "cot": "MA_BAI_KN", "cha": "BAI_KINH_NGHIEM"},
+  {"ten": "FK_SU_CO_DANH_MUC", "loai": "R", "bang": "SU_CO", "dieuKien": null, "cot": "MA_DM", "cha": "DANH_MUC_SU_CO"},
+  {"ten": "FK_SU_CO_NGUOI_BAO", "loai": "R", "bang": "SU_CO", "dieuKien": null, "cot": "MA_NGUOI_BAO", "cha": "NGUOI_DUNG"},
+  {"ten": "FK_SU_CO_THIET_BI", "loai": "R", "bang": "SU_CO", "dieuKien": null, "cot": "MA_TB", "cha": "THIET_BI"},
+  {"ten": "CK_SU_CO_NGAY_HT", "loai": "C", "bang": "SU_CO", "dieuKien": "NGAY_HOAN_THANH >= NGAY_TAO", "cot": "NGAY_HOAN_THANH, NGAY_TAO", "cha": null},
+  {"ten": "CK_SU_CO_TRANG_THAI", "loai": "C", "bang": "SU_CO", "dieuKien": "TRANG_THAI IN ('MOI', 'DANG_XU_LY', 'HOAN_THANH')", "cot": "TRANG_THAI", "cha": null},
+  {"ten": "CK_SU_CO_UU_TIEN", "loai": "C", "bang": "SU_CO", "dieuKien": "MUC_UU_TIEN IN ('THAP', 'TRUNG_BINH', 'CAO')", "cot": "MUC_UU_TIEN", "cha": null},
+  {"ten": "PK_THIET_BI", "loai": "P", "bang": "THIET_BI", "dieuKien": null, "cot": "MA_TB", "cha": null},
+  {"ten": "FK_THIET_BI_PHONG", "loai": "R", "bang": "THIET_BI", "dieuKien": null, "cot": "MA_PHONG", "cha": "PHONG"},
+  {"ten": "CK_THIET_BI_LOAI", "loai": "C", "bang": "THIET_BI", "dieuKien": "LOAI_TB IN ('MAY_TINH', 'MAY_CHIEU', 'MAY_IN', 'THIET_BI_MANG', 'KHAC')", "cot": "LOAI_TB", "cha": null},
+  {"ten": "CK_THIET_BI_TINH_TRANG", "loai": "C", "bang": "THIET_BI", "dieuKien": "TINH_TRANG IN ('HOAT_DONG', 'HONG', 'DANG_SUA')", "cot": "TINH_TRANG", "cha": null}
+],
+"truyVan": [
+  {"moTa": "Q1. Truy vấn cơ bản có điều kiện: sự cố mức CAO chưa hoàn thành, mới nhất trước", "sql": "SELECT MA_SC, TIEU_DE, TRANG_THAI, NGAY_TAO\n  FROM SU_CO\n WHERE MUC_UU_TIEN = 'CAO' AND TRANG_THAI <> 'HOAN_THANH'\n ORDER BY NGAY_TAO DESC;", "cot": ["MA_SC", "TIEU_DE", "TRANG_THAI", "NGAY_TAO"], "dong": [["14", "Máy tính phòng Kế hoạch - Tài chính không vào được mạng nội bộ", "MOI", "2026-09-24 09:05"], ["12", "Máy chiếu A6-301 không lên hình", "MOI", "2026-09-22 07:30"], ["9", "Máy tính PC-A2101-05 không khởi động", "DANG_XU_LY", "2026-09-10 08:15"]]},
+  {"moTa": "Q2. Tìm kiếm theo mẫu: sự cố có tiêu đề chứa từ \"máy chiếu\" (LIKE, không phân biệt hoa/thường)", "sql": "SELECT MA_SC, TIEU_DE, TRANG_THAI\n  FROM SU_CO\n WHERE LOWER(TIEU_DE) LIKE '%máy chiếu%';", "cot": ["MA_SC", "TIEU_DE", "TRANG_THAI"], "dong": [["2", "Máy chiếu H1-305 không nhận HDMI", "HOAN_THANH"], ["11", "Máy chiếu H1-201 hình mờ, ám vàng", "DANG_XU_LY"], ["12", "Máy chiếu A6-301 không lên hình", "MOI"], ["15", "Máy chiếu A6-402 bị rung hình", "MOI"]]},
+  {"moTa": "Q3. JOIN 3 bảng: thiết bị đang hỏng hoặc đang sửa kèm phòng và tòa nhà", "sql": "SELECT tb.MA_TB, tb.TEN_TB, tb.TINH_TRANG, p.TEN_PHONG, p.TOA_NHA\n  FROM THIET_BI tb\n  JOIN PHONG p ON p.MA_PHONG = tb.MA_PHONG\n WHERE tb.TINH_TRANG IN ('HONG', 'DANG_SUA')\n ORDER BY p.TOA_NHA, p.TEN_PHONG;", "cot": ["MA_TB", "TEN_TB", "TINH_TRANG", "TEN_PHONG", "TOA_NHA"], "dong": [["9", "Máy in HP LaserJet Phòng Đào tạo", "HONG", "Phòng Đào tạo (A1-105)", "A1"], ["1", "Máy tính PC-A2101-05", "HONG", "Phòng máy 1 (A2-101)", "A2"], ["3", "Máy tính PC-A2102-03", "DANG_SUA", "Phòng máy 2 (A2-102)", "A2"], ["5", "Máy chiếu Epson A6-301", "HONG", "Phòng học A6-301", "A6"], ["7", "Máy chiếu Sony H1-201", "DANG_SUA", "Giảng đường H1-201", "H1"]]},
+  {"moTa": "Q4. JOIN 5 bảng (qua view): chi tiết sự cố đã hoàn thành cùng người báo, admin, phòng", "sql": "SELECT MA_SC, TIEU_DE, TEN_NGUOI_BAO, TEN_ADMIN, TEN_PHONG, TEN_DM, NGAY_TAO, NGAY_HOAN_THANH\n  FROM V_SU_CO_CHI_TIET\n WHERE TRANG_THAI = 'HOAN_THANH'\n ORDER BY NGAY_TAO;", "cot": ["MA_SC", "TIEU_DE", "TEN_NGUOI_BAO", "TEN_ADMIN", "TEN_PHONG", "TEN_DM", "NGAY_TAO", "NGAY_HOAN_THANH"], "dong": [["1", "WiFi tầng 3 nhà H1 chập chờn", "Ngô Quỳnh Trang", "Nguyễn Văn Hùng", "Giảng đường H1-305", "Mạng Internet / WiFi", "2026-04-12 13:30", "2026-04-13 10:00"], ["2", "Máy chiếu H1-305 không nhận HDMI", "Hoàng Văn Nam", "Trần Thị Thu Hà", "Giảng đường H1-305", "Máy chiếu", "2026-05-08 08:30", "2026-05-08 11:00"], ["3", "Máy tính PC-A2101-12 chạy rất chậm", "Phạm Đức Anh", "Nguyễn Văn Hùng", "Phòng máy 1 (A2-101)", "Máy tính", "2026-05-20 09:00", "2026-05-22 15:00"], ["4", "Không đăng nhập được email trường", "Lê Thị Lan", "Trần Thị Thu Hà", "NULL", "Tài khoản và Email", "2026-06-03 08:10", "2026-06-03 09:45"], ["5", "Switch tầng 2 nhà A2 mất kết nối phòng máy 5", "Vũ Minh Tuấn", "Nguyễn Văn Hùng", "Phòng máy 5 (A2-205)", "Mạng Internet / WiFi", "2026-06-18 07:45", "2026-06-19 08:30"], ["6", "Máy in Phòng Đào tạo in bị mờ", "Đỗ Thanh Hằng", "Trần Thị Thu Hà", "Phòng Đào tạo (A1-105)", "Máy in", "2026-07-07 10:00", "2026-07-10 14:20"], ["7", "Không cài được AutoCAD do lỗi license", "Bùi Xuân Trường", "Nguyễn Văn Hùng", "Văn phòng Khoa CNTT (A3-101)", "Phần mềm", "2026-08-04 09:30", "2026-08-06 16:00"], ["8", "Tài khoản cổng thông tin sinh viên bị khóa", "Lê Thị Lan", "Nguyễn Văn Hùng", "NULL", "Tài khoản và Email", "2026-08-25 08:00", "2026-08-25 10:30"]]},
+  {"moTa": "Q5. Truy vấn lồng với IN: người dùng đã từng báo ít nhất một sự cố mức CAO", "sql": "SELECT MA_ND, HO_TEN, DON_VI\n  FROM NGUOI_DUNG\n WHERE MA_ND IN (SELECT MA_NGUOI_BAO FROM SU_CO WHERE MUC_UU_TIEN = 'CAO');", "cot": ["MA_ND", "HO_TEN", "DON_VI"], "dong": [["8", "Ngô Quỳnh Trang", "Sinh viên Khoa Kinh tế vận tải"], ["7", "Hoàng Văn Nam", "Khoa Công trình"], ["5", "Vũ Minh Tuấn", "Khoa Cơ khí"], ["3", "Phạm Đức Anh", "Sinh viên Khoa Công nghệ thông tin"], ["10", "Đặng Thị Ngọc", "Phòng Kế hoạch - Tài chính"]]},
+  {"moTa": "Q6. Truy vấn lồng với EXISTS: admin đã xử lý ít nhất một sự cố", "sql": "SELECT nd.MA_ND, nd.HO_TEN\n  FROM NGUOI_DUNG nd\n WHERE nd.VAI_TRO = 'ADMIN'\n   AND EXISTS (SELECT 1 FROM SU_CO sc WHERE sc.MA_ADMIN_XU_LY = nd.MA_ND);", "cot": ["MA_ND", "HO_TEN"], "dong": [["1", "Nguyễn Văn Hùng"], ["2", "Trần Thị Thu Hà"]]},
+  {"moTa": "Q7. NOT EXISTS: danh mục CHƯA có bài kinh nghiệm nào (cần bổ sung nội dung)", "sql": "SELECT dm.MA_DM, dm.TEN_DM\n  FROM DANH_MUC_SU_CO dm\n WHERE NOT EXISTS (SELECT 1 FROM BAI_KINH_NGHIEM b WHERE b.MA_DM = dm.MA_DM);", "cot": ["MA_DM", "TEN_DM"], "dong": [["7", "Thiết bị ngoại vi"], ["8", "Hệ thống quản lý đào tạo"]]},
+  {"moTa": "Q8. Subquery trong WHERE: sự cố đã xong có thời gian xử lý LỚN HƠN mức trung bình (ngày)", "sql": "SELECT MA_SC, TIEU_DE, ROUND(NGAY_HOAN_THANH - NGAY_TAO, 2) AS SO_NGAY_XU_LY\n  FROM SU_CO\n WHERE TRANG_THAI = 'HOAN_THANH'\n   AND (NGAY_HOAN_THANH - NGAY_TAO) >\n       (SELECT AVG(NGAY_HOAN_THANH - NGAY_TAO) FROM SU_CO WHERE TRANG_THAI = 'HOAN_THANH')\n ORDER BY SO_NGAY_XU_LY DESC;", "cot": ["MA_SC", "TIEU_DE", "SO_NGAY_XU_LY"], "dong": [["6", "Máy in Phòng Đào tạo in bị mờ", "3.18"], ["7", "Không cài được AutoCAD do lỗi license", "2.27"], ["3", "Máy tính PC-A2101-12 chạy rất chậm", "2.25"]]},
+  {"moTa": "Q9. Subquery trong FROM (inline view): top 3 thiết bị có nhiều sự cố nhất", "sql": "SELECT t.TEN_TB, t.SO_SU_CO\n  FROM (SELECT tb.TEN_TB, COUNT(*) AS SO_SU_CO\n          FROM SU_CO sc\n          JOIN THIET_BI tb ON tb.MA_TB = sc.MA_TB\n         GROUP BY tb.TEN_TB) t\n ORDER BY t.SO_SU_CO DESC\n FETCH FIRST 3 ROWS ONLY;", "cot": ["TEN_TB", "SO_SU_CO"], "dong": [["Máy in HP LaserJet Phòng Đào tạo", "2"], ["Access Point WiFi tầng 3 nhà H1", "1"], ["Máy tính PC-A2101-12", "1"]]},
+  {"moTa": "Q10. GROUP BY + HAVING: phòng có từ 2 sự cố trở lên (top phòng nhiều sự cố nhất)", "sql": "SELECT p.TEN_PHONG, p.TOA_NHA, COUNT(*) AS SO_SU_CO\n  FROM SU_CO sc\n  JOIN THIET_BI tb ON tb.MA_TB = sc.MA_TB\n  JOIN PHONG p ON p.MA_PHONG = tb.MA_PHONG\n GROUP BY p.TEN_PHONG, p.TOA_NHA\nHAVING COUNT(*) >= 2\n ORDER BY SO_SU_CO DESC;", "cot": ["TEN_PHONG", "TOA_NHA", "SO_SU_CO"], "dong": [["Giảng đường H1-305", "H1", "2"], ["Phòng Đào tạo (A1-105)", "A1", "2"], ["Phòng máy 1 (A2-101)", "A2", "2"]]},
+  {"moTa": "Q11. Số sự cố theo tháng", "sql": "SELECT TO_CHAR(NGAY_TAO, 'YYYY-MM') AS THANG, COUNT(*) AS SO_SU_CO\n  FROM SU_CO\n GROUP BY TO_CHAR(NGAY_TAO, 'YYYY-MM')\n ORDER BY THANG;", "cot": ["THANG", "SO_SU_CO"], "dong": [["2026-04", "1"], ["2026-05", "2"], ["2026-06", "2"], ["2026-07", "1"], ["2026-08", "2"], ["2026-09", "7"]]},
+  {"moTa": "Q12. Các hàm gộp COUNT/AVG/MAX/MIN/SUM: thời gian xử lý (ngày) theo danh mục, chỉ tính sự cố đã xong", "sql": "SELECT dm.TEN_DM,\n       COUNT(*)                                          AS SO_SU_CO,\n       ROUND(AVG(sc.NGAY_HOAN_THANH - sc.NGAY_TAO), 2)   AS TB_NGAY,\n       ROUND(MAX(sc.NGAY_HOAN_THANH - sc.NGAY_TAO), 2)   AS LAU_NHAT,\n       ROUND(MIN(sc.NGAY_HOAN_THANH - sc.NGAY_TAO), 2)   AS NHANH_NHAT,\n       ROUND(SUM(sc.NGAY_HOAN_THANH - sc.NGAY_TAO), 2)   AS TONG_NGAY\n  FROM SU_CO sc\n  JOIN DANH_MUC_SU_CO dm ON dm.MA_DM = sc.MA_DM\n WHERE sc.TRANG_THAI = 'HOAN_THANH'\n GROUP BY dm.TEN_DM\n ORDER BY TB_NGAY DESC;", "cot": ["TEN_DM", "SO_SU_CO", "TB_NGAY", "LAU_NHAT", "NHANH_NHAT", "TONG_NGAY"], "dong": [["Máy in", "1", "3.18", "3.18", "3.18", "3.18"], ["Phần mềm", "1", "2.27", "2.27", "2.27", "2.27"], ["Máy tính", "1", "2.25", "2.25", "2.25", "2.25"], ["Mạng Internet / WiFi", "2", "0.94", "1.03", "0.85", "1.89"], ["Máy chiếu", "1", "0.1", "0.1", "0.1", "0.1"], ["Tài khoản và Email", "2", "0.09", "0.1", "0.07", "0.17"]]},
+  {"moTa": "Q13. Admin xử lý nhiều sự cố nhất (COUNT theo admin, lấy người đứng đầu)", "sql": "SELECT nd.HO_TEN, COUNT(*) AS SO_SU_CO_XU_LY\n  FROM SU_CO sc\n  JOIN NGUOI_DUNG nd ON nd.MA_ND = sc.MA_ADMIN_XU_LY\n GROUP BY nd.HO_TEN\n ORDER BY SO_SU_CO_XU_LY DESC\n FETCH FIRST 1 ROWS WITH TIES;", "cot": ["HO_TEN", "SO_SU_CO_XU_LY"], "dong": [["Nguyễn Văn Hùng", "6"]]},
+  {"moTa": "Q14. LEFT JOIN: số sự cố của MỌI người dùng (kể cả người chưa báo sự cố nào = 0)", "sql": "SELECT nd.HO_TEN, nd.DON_VI, COUNT(sc.MA_SC) AS SO_SU_CO_DA_BAO\n  FROM NGUOI_DUNG nd\n  LEFT JOIN SU_CO sc ON sc.MA_NGUOI_BAO = nd.MA_ND\n WHERE nd.VAI_TRO = 'USER'\n GROUP BY nd.HO_TEN, nd.DON_VI\n ORDER BY SO_SU_CO_DA_BAO DESC, nd.HO_TEN;", "cot": ["HO_TEN", "DON_VI", "SO_SU_CO_DA_BAO"], "dong": [["Phạm Đức Anh", "Sinh viên Khoa Công nghệ thông tin", "3"], ["Hoàng Văn Nam", "Khoa Công trình", "2"], ["Lê Thị Lan", "Khoa Kinh tế vận tải", "2"], ["Ngô Quỳnh Trang", "Sinh viên Khoa Kinh tế vận tải", "2"], ["Vũ Minh Tuấn", "Khoa Cơ khí", "2"], ["Đỗ Thanh Hằng", "Phòng Đào tạo", "2"], ["Bùi Xuân Trường", "Sinh viên Khoa Công trình", "1"], ["Đặng Thị Ngọc", "Phòng Kế hoạch - Tài chính", "1"]]},
+  {"moTa": "Q15. Thống kê theo trạng thái và mức ưu tiên (GROUP BY nhiều cột)", "sql": "SELECT TRANG_THAI, MUC_UU_TIEN, COUNT(*) AS SO_SU_CO\n  FROM SU_CO\n GROUP BY TRANG_THAI, MUC_UU_TIEN\n ORDER BY TRANG_THAI, MUC_UU_TIEN;", "cot": ["TRANG_THAI", "MUC_UU_TIEN", "SO_SU_CO"], "dong": [["DANG_XU_LY", "CAO", "1"], ["DANG_XU_LY", "TRUNG_BINH", "2"], ["HOAN_THANH", "CAO", "3"], ["HOAN_THANH", "THAP", "2"], ["HOAN_THANH", "TRUNG_BINH", "3"], ["MOI", "CAO", "2"], ["MOI", "THAP", "1"], ["MOI", "TRUNG_BINH", "1"]]}
+]
+}

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Quản lý người dùng')}"></head>
+<body>
+<nav th:replace="~{layout :: navbar}"></nav>
+<div th:replace="~{layout :: thongbao}"></div>
+
+<div class="container">
+  <!-- Form thêm người dùng mới -->
+  <div class="card mb-4">
+    <div class="card-header">Thêm người dùng</div>
+    <div class="card-body">
+      <form th:action="@{/admin/nguoi-dung}" method="post" class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label" for="hoTen">Họ tên</label>
+          <input class="form-control" id="hoTen" name="hoTen" maxlength="100" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="email">Email</label>
+          <input class="form-control" type="email" id="email" name="email" maxlength="100" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="matKhau">Mật khẩu</label>
+          <input class="form-control" id="matKhau" name="matKhau" maxlength="50" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="donVi">Đơn vị</label>
+          <input class="form-control" id="donVi" name="donVi" maxlength="100">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="vaiTro">Vai trò</label>
+          <select class="form-select" id="vaiTro" name="vaiTro">
+            <option th:each="e : ${dsVaiTro}" th:value="${e.key}" th:text="${e.value}"></option>
+          </select>
+        </div>
+        <div class="col-12">
+          <button class="btn btn-primary" type="submit">Thêm</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <h5>Danh sách người dùng</h5>
+  <table class="table table-striped align-middle">
+    <thead><tr><th>Mã</th><th>Họ tên</th><th>Email</th><th>Đơn vị</th><th>Vai trò</th><th></th></tr></thead>
+    <tbody>
+      <tr th:each="nd : ${dsNguoiDung}">
+        <td th:text="${nd.maNd}"></td>
+        <td th:text="${nd.hoTen}"></td>
+        <td th:text="${nd.email}"></td>
+        <td th:text="${nd.donVi}"></td>
+        <td>
+          <span class="badge" th:text="${dsVaiTro[nd.vaiTro]}"
+                th:classappend="${nd.vaiTro == 'ADMIN'} ? 'text-bg-danger' : 'text-bg-secondary'"></span>
+        </td>
+        <td class="text-nowrap">
+          <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/nguoi-dung/{id}/sua(id=${nd.maNd})}">Sửa</a>
+          <form class="d-inline" th:action="@{/admin/nguoi-dung/{id}/xoa(id=${nd.maNd})}" method="post"
+                onsubmit="return confirm('Xóa người dùng này?');">
+            <button class="btn btn-sm btn-outline-danger" type="submit">Xóa</button>
+          </form>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

@@ -1,0 +1,8 @@
+Khi FREEPDB1 dang o che do RESTRICTED SESSION (xem 02_restricted_session.log),
+dang nhap bang user thuong SUCO_APP (khong co quyen RESTRICTED SESSION) qua JDBC:
+
+Exception in thread "main" java.sql.SQLException: ORA-01035: Login denied. Database is in RESTRICTED mode.
+https://docs.oracle.com/error-help/db/ora-01035/
+
+=> Chi user co quyen RESTRICTED SESSION (vd SYSDBA/DBA) moi dang nhap duoc. Sau khi DISABLE RESTRICTED SESSION,
+   SUCO_APP dang nhap binh thuong tro lai.

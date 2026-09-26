@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Chi tiết kinh nghiệm')}"></head>
+<body>
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<div class="container">
+  <a th:href="@{/kinh-nghiem}" class="btn btn-link px-0">&laquo; Quay lại kho kinh nghiệm</a>
+  <div class="card">
+    <div class="card-header">
+      <span class="badge text-bg-secondary" th:text="${bai.tenDm}"></span>
+      <strong th:text="${bai.tieuDe}"></strong>
+    </div>
+    <div class="card-body">
+      <h6>Triệu chứng</h6>
+      <p class="xuong-dong" th:text="${bai.trieuChung}"></p>
+      <h6>Nguyên nhân</h6>
+      <p class="xuong-dong" th:text="${bai.nguyenNhan}"></p>
+      <h6>Giải pháp</h6>
+      <p class="xuong-dong" th:text="${bai.giaiPhap}"></p>
+    </div>
+    <div class="card-footer text-muted">
+      Người viết: <span th:text="${bai.tenNguoiViet}"></span> -
+      <span th:text="${#temporals.format(bai.ngayTao, 'dd/MM/yyyy')}"></span>
+    </div>
+  </div>
+</div>
+</body>
+</html>
