@@ -15,42 +15,74 @@ Sơ đồ bảng và quan hệ: xem [SO_DO_QUAN_HE.md](SO_DO_QUAN_HE.md) (ảnh 
 
 ## 1. Chạy script SQL
 
-Mở terminal trong thư mục `sql/`. File có tiếng Việt có dấu (UTF-8): nên dùng **SQLcl** hoặc SQL Developer. Nếu dùng SQL*Plus trên Windows, chạy `chcp 65001` và `set NLS_LANG=.AL32UTF8` trước.
+Mở terminal trong thư mục `sql/`. File có tiếng Việt có dấu (UTF-8): nên dùng **SQLcl** hoặc SQL Developer. Nếu dùng SQL*Plus trên Windows, chạy `chcp 65001` và `set NLS_LANG=.AL32UTF8` trước. Trên macOS/Linux chạy `export NLS_LANG=.AL32UTF8` (Terminal phải để UTF-8); nếu không, tiếng Việt trong `04_data.sql` bị lưu thành ký tự lỗi `?`.
 
-**macOS/Linux:** trước khi mở SQL*Plus chạy `export NLS_LANG=.AL32UTF8` (Terminal phải để UTF-8). Nếu không, tiếng Việt trong `04_data.sql` bị lưu thành ký tự lỗi `?`. Cách chắc nhất là dùng SQLcl (Java, mặc định UTF-8). Đường dẫn `C:\ORADATA\` trong `07_admin_demo.sql` chỉ là ví dụ Windows, phải đổi `DEFINE dir` thành thư mục của máy bạn (Oracle chạy trong Docker thì dùng `/opt/oracle/oradata/`).
+### 1A. Chưa cài gì: dựng CSDL từ đầu (làm theo cách này)
 
-**Cách nhanh:** `@00_run_all.sql` (hỏi mật khẩu SYSTEM một lần, chạy 01 -> 06 đúng user). Xóa sạch làm lại: `@99_drop_all.sql`.
+Kết nối bằng SQLcl/SQL*Plus vào `localhost:1521/FREEPDB1`, đứng trong `sql/`, rồi chạy **một lệnh**:
 
-**Cách chạy từng file:**
+```
+@00_run_all.sql
+```
 
-| Thứ tự | File | Chạy bằng | Kết nối vào |
-|---|---|---|---|
-| 1 | `01_tablespace_user.sql` | SYSTEM | `localhost:1521/FREEPDB1` |
-| 2 | `02_tables.sql` | SUCO_APP | `localhost:1521/FREEPDB1` |
-| 3 | `03_triggers.sql` | SUCO_APP | `localhost:1521/FREEPDB1` |
-| 4 | `04_data.sql` | SUCO_APP | `localhost:1521/FREEPDB1` |
-| 5 | `05_queries.sql` (tạo view `V_SU_CO_CHI_TIET` + truy vấn mẫu) | SUCO_APP | `localhost:1521/FREEPDB1` |
-| 6 | `06_users_roles.sql` (phân quyền, user demo) | SYSTEM | `localhost:1521/FREEPDB1` |
-| 7 | `08_quan_tri_user.sql` (PROFILE, tạo/khóa/mở khóa/đổi mật khẩu/quota/xóa user, role nhiều cấp) | SYSTEM | `localhost:1521/FREEPDB1` (hỏi mật khẩu SYSTEM) |
-| - | `07_admin_demo.sql` (kịch bản quản trị: instance, tablespace, RMAN, expdp/impdp) | SYSDBA | **chạy thủ công từng khối**, có ghi rõ CDB hay PDB |
+Lệnh hỏi mật khẩu SYSTEM một lần rồi tự chạy lần lượt 01 -> 06 và 08 (tạo tablespace, user, bảng, trigger, dữ liệu mẫu, view, phân quyền, quản trị user). Xong là chạy được web (mục 2), không cần bước nào khác. Dữ liệu mẫu đã có sẵn mật khẩu băm.
 
-Báo cáo Word (43 trang, có mục lục và số trang): `docs/BaoCao_Oracle_QuanLySuCo.docx`.
+Làm lại từ đầu: `@99_drop_all.sql` (xóa sạch, tắt web trước) rồi `@00_run_all.sql`.
 
-Kết quả các lần chạy thật của 07 và 08 (log SQL*Plus, expdp, impdp) nằm trong thư mục `sql/ketqua/`, dùng làm bằng chứng cho báo cáo.
+### 1B. Đã cài rồi: chỉ chạy phần cần thêm
 
-Ví dụ: `sql system@localhost:1521/FREEPDB1` rồi `@01_tablespace_user.sql`.
+Không chạy lại `00_run_all.sql` (sẽ lỗi vì đối tượng đã tồn tại). Chọn đúng file theo việc cần làm:
 
-> Web bắt buộc phải có view `V_SU_CO_CHI_TIET` (tạo ở file 05). `00_run_all.sql` đã gồm cả 05.
-> `07_admin_demo.sql` có lệnh SHUTDOWN, DROP TABLESPACE, RMAN: đọc comment và sửa biến `dir`, `dir2` (đường dẫn datafile) trước khi chạy.
+| Cần làm | File | Chạy bằng |
+|---|---|---|
+| CSDL dựng từ **bản cũ** (mật khẩu còn plain text), đăng nhập web bị lỗi | `09_bam_mat_khau.sql` (băm PBKDF2 mật khẩu 10 user mẫu) | SUCO_APP |
+| Xem lại 15 truy vấn mẫu, hoặc tạo lại view `V_SU_CO_CHI_TIET` (web bắt buộc phải có view này) | `05_queries.sql` | SUCO_APP |
+| Tạo lại phân quyền, user demo `U_NHANVIEN`, `U_QUANTRI` | `06_users_roles.sql` | SYSTEM |
+| Demo profile, khóa/mở khóa user, quota, role nhiều cấp | `08_quan_tri_user.sql` | SYSTEM |
+| Demo quản trị: instance, tablespace, RMAN, expdp/impdp | `07_admin_demo.sql` | SYSDBA, **chạy thủ công từng khối** |
+
+Riêng `07_admin_demo.sql` có lệnh SHUTDOWN, DROP TABLESPACE, RMAN: đọc comment và sửa biến `dir`, `dir2` (đường dẫn datafile) trước khi chạy. `C:\ORADATA\` chỉ là ví dụ Windows (Oracle chạy trong Docker thì dùng `/opt/oracle/oradata/`).
+
+Ví dụ: `sql system@localhost:1521/FREEPDB1` rồi `@08_quan_tri_user.sql`.
+
+### Bảng tổng hợp các file
+
+| File | Nội dung | Chạy bằng |
+|---|---|---|
+| `00_run_all.sql` | gọi 01 -> 06, 08 | SYSTEM (tự đổi user) |
+| `01_tablespace_user.sql` | tablespace `TS_SUCO`, user `SUCO_APP` | SYSTEM |
+| `02_tables.sql`, `03_triggers.sql`, `04_data.sql` | bảng, trigger, dữ liệu mẫu | SUCO_APP |
+| `05_queries.sql` | view + truy vấn mẫu | SUCO_APP |
+| `06_users_roles.sql` | phân quyền, user demo | SYSTEM |
+| `07_admin_demo.sql` | kịch bản quản trị | SYSDBA |
+| `08_quan_tri_user.sql` | profile, quản trị user | SYSTEM |
+| `09_bam_mat_khau.sql` | nâng cấp CSDL bản cũ | SUCO_APP |
+| `99_drop_all.sql` | xóa sạch | SYSTEM |
+
+Báo cáo Word: `docs/BaoCao_Oracle_QuanLySuCo.docx`. Log các lần chạy thật của 07 và 08 (SQL*Plus, expdp, impdp) nằm trong `sql/ketqua/`, dùng làm bằng chứng cho báo cáo.
 
 ## 2. Build và chạy web
+
+Điều kiện: Oracle đang chạy (service `FREEPDB1`, cổng 1521) và đã dựng CSDL ở mục 1.
+
+**Cách 1: Maven** (cần cài Maven 3.9.x và `JAVA_HOME` trỏ tới JDK; sau khi cài phải mở terminal mới). `pom.xml` nằm trong `web/`, không phải thư mục gốc:
 
 ```
 cd web
 mvn spring-boot:run
 ```
 
-Mở http://localhost:8080. Cấu hình kết nối trong `web/src/main/resources/application.properties` (user `SUCO_APP`, mật khẩu `SuCo_App_123`). Đóng gói: `mvn package` rồi `java -jar target/suco-web-1.0.0.jar`.
+**Cách 2: chạy file jar đã build** (không cần Maven). Đứng trong `web/`:
+
+```
+java -jar target\suco-web-1.0.0.jar
+```
+
+Nếu đứng ở thư mục gốc thì dùng `java -jar web\target\suco-web-1.0.0.jar`. Nếu cổng 8080 đã bị chiếm thì tắt tiến trình cũ (`Get-NetTCPConnection -LocalPort 8080`) trước.
+
+**Chia sẻ tạm qua internet (tùy chọn):** cài `cloudflared`, rồi `cloudflared tunnel --url http://localhost:8080`. Link `https://….trycloudflare.com` nằm trong log, đổi mỗi lần chạy. Web có tài khoản demo mật khẩu yếu nên chỉ chia sẻ cho người tin cậy và tắt tunnel (Ctrl+C) khi xong.
+
+Mở http://localhost:8080. Cấu hình kết nối trong `web/src/main/resources/application.properties` (user `SUCO_APP`, mật khẩu `SuCo_App_123`). Đóng gói: `mvn package` (ra `web/target/suco-web-1.0.0.jar`).
 
 ## 3. Tài khoản demo
 
@@ -95,6 +127,10 @@ Ví dụ luồng "admin đổi trạng thái": `POST /admin/{id}` -> `AdminContr
 ## 6. Cấu trúc thư mục
 
 ```
-sql/   00_run_all.sql, 01..07, 99_drop_all.sql
-web/   pom.xml, src/main/java/vn/utc/suco/{model,repository,controller,config}, src/main/resources/{application.properties,templates}
+sql/     00_run_all.sql, 01..09, 99_drop_all.sql; ketqua/ (log chạy thật của phần quản trị, kịch bản thử trong ketqua/kichban/)
+web/     pom.xml, src/main/java/vn/utc/suco/{model,repository,controller,config,util}, src/main/resources/{application.properties,templates}
+docs/    BaoCao_Oracle_QuanLySuCo.docx (báo cáo Word), so_do_ER_SUCO_APP.png (sơ đồ ER)
+tools/   BamMatKhau.java (in hash mật khẩu), VeSoDoER.java (vẽ ER), RunSql.java, baocao/ (dựng báo cáo Word)
 ```
+
+Tiến độ và các việc còn lại: xem [TIEN_DO.md](TIEN_DO.md).
