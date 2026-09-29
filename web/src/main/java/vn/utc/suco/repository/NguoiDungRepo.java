@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import vn.utc.suco.model.NguoiDung;
+import vn.utc.suco.util.MatKhau;
 
 @Repository
 public class NguoiDungRepo {
@@ -22,10 +23,15 @@ public class NguoiDungRepo {
         this.jdbc = jdbc;
     }
 
-    /** Đăng nhập: khớp email + mật khẩu (plain text, chỉ dùng cho demo). Dùng ? để tránh SQL injection. */
+    /**
+     * Đăng nhập: tìm theo email (không phân biệt hoa thường), rồi băm mật khẩu nhập vào và so với chuỗi băm đã lưu.
+     * Dùng ? để tránh SQL injection.
+     */
     public Optional<NguoiDung> dangNhap(String email, String matKhau) {
-        return jdbc.query(SELECT + "WHERE EMAIL = ? AND MAT_KHAU = ?", MAPPER, email, matKhau)
-                .stream().findFirst();
+        return jdbc.query("SELECT MA_ND, HO_TEN, EMAIL, DON_VI, VAI_TRO, MAT_KHAU FROM NGUOI_DUNG WHERE LOWER(EMAIL) = ?",
+                        (rs, i) -> MatKhau.khop(matKhau, rs.getString("MAT_KHAU")) ? MAPPER.mapRow(rs, i) : null,
+                        email.toLowerCase())
+                .stream().filter(java.util.Objects::nonNull).findFirst();
     }
 
     public List<NguoiDung> timTatCa() {
@@ -36,10 +42,10 @@ public class NguoiDungRepo {
         return jdbc.query(SELECT + "WHERE MA_ND = ?", MAPPER, maNd).stream().findFirst();
     }
 
-    /** Thêm người dùng. Email trùng bị Oracle từ chối (ràng buộc UQ_NGUOI_DUNG_EMAIL). */
+    /** Thêm người dùng (mật khẩu được băm trước khi lưu). Email trùng bị Oracle từ chối (ràng buộc UQ_NGUOI_DUNG_EMAIL). */
     public void taoMoi(String hoTen, String email, String matKhau, String donVi, String vaiTro) {
         jdbc.update("INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES (?, ?, ?, ?, ?)",
-                hoTen, email, matKhau, donVi, vaiTro);
+                hoTen, email, MatKhau.bam(matKhau), donVi, vaiTro);
     }
 
     /** Sửa thông tin; matKhau rỗng nghĩa là giữ nguyên mật khẩu cũ. */
@@ -49,7 +55,7 @@ public class NguoiDungRepo {
                     hoTen, email, donVi, vaiTro, maNd);
         } else {
             jdbc.update("UPDATE NGUOI_DUNG SET HO_TEN = ?, EMAIL = ?, DON_VI = ?, VAI_TRO = ?, MAT_KHAU = ? WHERE MA_ND = ?",
-                    hoTen, email, donVi, vaiTro, matKhau, maNd);
+                    hoTen, email, donVi, vaiTro, MatKhau.bam(matKhau), maNd);
         }
     }
 

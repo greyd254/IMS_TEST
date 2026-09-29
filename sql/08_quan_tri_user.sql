@@ -1,5 +1,5 @@
 -- =====================================================================
--- 08_quan_tri_user.sql — QUẢN TRỊ NGƯỜI DÙNG, PROFILE, PHÂN QUYỀN, ROLE
+-- 08_quan_tri_user.sql - QUẢN TRỊ NGƯỜI DÙNG, PROFILE, PHÂN QUYỀN, ROLE
 -- CHẠY BẰNG: SYSTEM, kết nối vào FREEPDB1 (sau khi đã chạy 01 -> 06).
 --            sqlplus system@localhost:1521/FREEPDB1  rồi  @08_quan_tri_user.sql
 -- Script hỏi mật khẩu SYSTEM một lần (biến sys_pw; hoặc đặt trước: DEFINE sys_pw=...). Cần vì bước thử

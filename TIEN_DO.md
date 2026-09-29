@@ -26,6 +26,7 @@ Cập nhật: 26/09/2026. Đề: "Đề số 30 - Đề mở" (`De Thi Oracle Li
 - **Web**: `cd web` rồi `mvn spring-boot:run`, hoặc chạy sẵn: `java -jar web\target\suco-web-1.0.0.jar`, mở http://localhost:8080.
   Máy **chưa cài Maven** (đã dùng bản portable trong thư mục tạm, có thể mất). Nếu cần build lại: cài Maven hoặc dùng Maven có sẵn trong IntelliJ.
   Tài khoản demo: admin `hung.nv@utc.edu.vn` / `admin123`; user `anh.pd@st.utc.edu.vn` / `123456`.
+  Mật khẩu trong CSDL được **băm PBKDF2** (không còn plain text). CSDL đã dựng từ trước: chạy thêm `sql/09_bam_mat_khau.sql` bằng SUCO_APP. In hash mới: `javac -d out web/src/main/java/vn/utc/suco/util/MatKhau.java tools/BamMatKhau.java` rồi `java -cp out BamMatKhau <mật khẩu>`.
 - **Dựng lại CSDL từ đầu**: `sql/99_drop_all.sql` rồi `sql/00_run_all.sql` (cần mật khẩu SYSTEM). Cần SQL*Plus: `C:\app\GreyD\product\26ai\dbhomeFree\bin` (đặt `ORACLE_HOME`, `ORACLE_SID=FREE`; SYSDBA bằng `sqlplus / as sysdba`). File có tiếng Việt: chạy `chcp 65001` và `set NLS_LANG=.AL32UTF8` trước.
 - **Vẽ lại sơ đồ ER** (sau khi sửa cấu trúc bảng): xem `SO_DO_QUAN_HE.md`.
 - **Dựng lại báo cáo Word** (khi cần cập nhật số liệu): trong `tools/baocao/` chạy `npm install docx` một lần; `java -cp <ojdbc17.jar> XuatDuLieu.java <đường dẫn 05_queries.sql> dulieu.json`; `node build.js`; rồi `cap_nhat_muc_luc.ps1`. Lưu ý: chạy lại `build.js` sẽ **ghi đè** file Word, mất phần bạn đã chỉnh tay (bìa, ảnh). Chỉ dùng khi chưa chỉnh, hoặc lưu bản đã chỉnh sang tên khác trước.
@@ -40,7 +41,7 @@ Cập nhật: 26/09/2026. Đề: "Đề số 30 - Đề mở" (`De Thi Oracle Li
 
 ## Lưu ý, hạn chế đã biết
 
-- Mật khẩu người dùng lưu plain text (chỉ demo, đã ghi trong báo cáo).
+- Mật khẩu đã băm PBKDF2 + salt (báo cáo Word còn ghi plain text ở phần này, cần sửa lại cho khớp).
 - Web kết nối bằng chính `SUCO_APP`; hai role Oracle được minh họa bằng `U_NHANVIEN`, `U_QUANTRI` ở phần SQL (đã ghi trong báo cáo mục 5.4).
 - Oracle Free: **không** di chuyển datafile online (`ORA-00439`), tablespace mặc định là BIGFILE (cần `SMALLFILE` để thêm datafile); `impdp` cần tạo sẵn user đích. Đã sửa `07_admin_demo.sql` và ghi vào báo cáo.
 - `07_admin_demo.sql` là kịch bản chạy thủ công từng khối, chưa chạy nguyên file một lần; phần đã kiểm chứng được chạy bằng các script tương đương trong `sql/ketqua/kichban/` và các lệnh trực tiếp (RMAN, expdp/impdp). Trong báo cáo, log RMAN, log bật ARCHIVELOG và bảng quyền ở mục 4.4.4 được chép lại từ kết quả thật, vì các lần chạy đó chưa lưu ra file.

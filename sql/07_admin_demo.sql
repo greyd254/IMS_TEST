@@ -1,5 +1,5 @@
 -- =====================================================================
--- 07_admin_demo.sql — KỊCH BẢN DEMO QUẢN TRỊ ORACLE
+-- 07_admin_demo.sql - KỊCH BẢN DEMO QUẢN TRỊ ORACLE
 -- !!! KHÔNG chạy cả file một lần. Chạy THỦ CÔNG từng khối, đọc comment trước.
 -- Mỗi khối ghi rõ: chạy bằng user nào, ở CDB (CDB$ROOT) hay PDB (FREEPDB1).
 -- Kết nối mẫu:

@@ -10,16 +10,16 @@
 SET DEFINE OFF
 
 -- 1. NGUOI_DUNG (10 dòng: MA_ND 1-2 là ADMIN, 3-10 là USER)
-INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES ('Nguyễn Văn Hùng',  'hung.nv@utc.edu.vn',  'admin123',  'Trung tâm Công nghệ thông tin', 'ADMIN');
-INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES ('Trần Thị Thu Hà',  'ha.ttt@utc.edu.vn',   'admin123',  'Trung tâm Công nghệ thông tin', 'ADMIN');
-INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES ('Phạm Đức Anh',     'anh.pd@st.utc.edu.vn', '123456',   'Sinh viên Khoa Công nghệ thông tin', 'USER');
-INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES ('Lê Thị Lan',       'lan.lt@utc.edu.vn',   '123456',    'Khoa Kinh tế vận tải', 'USER');
-INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES ('Vũ Minh Tuấn',     'tuan.vm@utc.edu.vn',  '123456',    'Khoa Cơ khí', 'USER');
-INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES ('Đỗ Thanh Hằng',    'hang.dt@utc.edu.vn',  '123456',    'Phòng Đào tạo', 'USER');
-INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES ('Hoàng Văn Nam',    'nam.hv@utc.edu.vn',   '123456',    'Khoa Công trình', 'USER');
-INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES ('Ngô Quỳnh Trang',  'trang.nq@st.utc.edu.vn', '123456', 'Sinh viên Khoa Kinh tế vận tải', 'USER');
-INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES ('Bùi Xuân Trường',  'truong.bx@st.utc.edu.vn', '123456', 'Sinh viên Khoa Công trình', 'USER');
-INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES ('Đặng Thị Ngọc',    'ngoc.dt@utc.edu.vn',  '123456',    'Phòng Kế hoạch - Tài chính', 'USER');
+INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES ('Nguyễn Văn Hùng',  'hung.nv@utc.edu.vn',  'PBKDF2$120000$fY+9x/A0wBfvWPJFgeFj0A==$Lu8triqDKGHWc4NpV2NzbTAI+Fk4NhWtCkOMSxHcSuA=',  'Trung tâm Công nghệ thông tin', 'ADMIN');
+INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES ('Trần Thị Thu Hà',  'ha.ttt@utc.edu.vn',   'PBKDF2$120000$XAo60bnEE4Af5EoEODrTJw==$32Vbr+UdMEfIhigiYwKBPh54RupXpPNE9pKjJNm0FqA=',  'Trung tâm Công nghệ thông tin', 'ADMIN');
+INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES ('Phạm Đức Anh',     'anh.pd@st.utc.edu.vn', 'PBKDF2$120000$jxpm88XplJYh56VwD5cKgg==$gBPOUrnSKz2XK5laH7LmePliHf+PCuv73AJhMrD2fPs=',   'Sinh viên Khoa Công nghệ thông tin', 'USER');
+INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES ('Lê Thị Lan',       'lan.lt@utc.edu.vn',   'PBKDF2$120000$dVYpFu1zCMxa9TGtjKO/Eg==$AJTFS1xyctv1kuWa/Eo2xFojIw4hYDdnmjRqsP1CV04=',    'Khoa Kinh tế vận tải', 'USER');
+INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES ('Vũ Minh Tuấn',     'tuan.vm@utc.edu.vn',  'PBKDF2$120000$g6uoANlDXjCg8RtB9h26jg==$Dsl3EfttEvLW6+rWwVe3NH97BZ1tOIj6bmTGDhsUdbk=',    'Khoa Cơ khí', 'USER');
+INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES ('Đỗ Thanh Hằng',    'hang.dt@utc.edu.vn',  'PBKDF2$120000$SbufqQqJ92BkWOs4g7gI8g==$bEx7rNUaT8Te0gHoEMLRjjZkxy69TOnNM7FZQa1guFA=',    'Phòng Đào tạo', 'USER');
+INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES ('Hoàng Văn Nam',    'nam.hv@utc.edu.vn',   'PBKDF2$120000$8arO7BtiOims6mUYmFTQLQ==$n1w+BQb0SmpDe/vwdmQNseW6grxlpDWFsYQtrAarkXM=',    'Khoa Công trình', 'USER');
+INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES ('Ngô Quỳnh Trang',  'trang.nq@st.utc.edu.vn', 'PBKDF2$120000$IiSNI+xzXBjDoz6uor0RcA==$vFjeMrwDAEZWGOlzWZR+V+1nTH4+9yQkW3Tp/DnsvKw=', 'Sinh viên Khoa Kinh tế vận tải', 'USER');
+INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES ('Bùi Xuân Trường',  'truong.bx@st.utc.edu.vn', 'PBKDF2$120000$gnEJMmDqsP+wqSSbpL7GPA==$V8kpsTImFW6McpqTuZaJ817yXWeaAtpgy1EUg+5Uhdg=', 'Sinh viên Khoa Công trình', 'USER');
+INSERT INTO NGUOI_DUNG (HO_TEN, EMAIL, MAT_KHAU, DON_VI, VAI_TRO) VALUES ('Đặng Thị Ngọc',    'ngoc.dt@utc.edu.vn',  'PBKDF2$120000$19VxlYmKE33DhgSOPr3Qfw==$TWCZ9UkgSjn5Kw/thhnfF+yYhazVTB6CPtWAuQtk7EU=',    'Phòng Kế hoạch - Tài chính', 'USER');
 
 -- 2. PHONG (10 dòng)
 INSERT INTO PHONG (TEN_PHONG, TOA_NHA, TANG, LOAI_PHONG) VALUES ('Phòng máy 1 (A2-101)', 'A2', 1, 'PHONG_MAY');

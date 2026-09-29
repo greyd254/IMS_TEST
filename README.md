@@ -17,6 +17,8 @@ Sơ đồ bảng và quan hệ: xem [SO_DO_QUAN_HE.md](SO_DO_QUAN_HE.md) (ảnh 
 
 Mở terminal trong thư mục `sql/`. File có tiếng Việt có dấu (UTF-8): nên dùng **SQLcl** hoặc SQL Developer. Nếu dùng SQL*Plus trên Windows, chạy `chcp 65001` và `set NLS_LANG=.AL32UTF8` trước.
 
+**macOS/Linux:** trước khi mở SQL*Plus chạy `export NLS_LANG=.AL32UTF8` (Terminal phải để UTF-8). Nếu không, tiếng Việt trong `04_data.sql` bị lưu thành ký tự lỗi `?`. Cách chắc nhất là dùng SQLcl (Java, mặc định UTF-8). Đường dẫn `C:\ORADATA\` trong `07_admin_demo.sql` chỉ là ví dụ Windows, phải đổi `DEFINE dir` thành thư mục của máy bạn (Oracle chạy trong Docker thì dùng `/opt/oracle/oradata/`).
+
 **Cách nhanh:** `@00_run_all.sql` (hỏi mật khẩu SYSTEM một lần, chạy 01 -> 06 đúng user). Xóa sạch làm lại: `@99_drop_all.sql`.
 
 **Cách chạy từng file:**
@@ -52,7 +54,7 @@ Mở http://localhost:8080. Cấu hình kết nối trong `web/src/main/resource
 
 ## 3. Tài khoản demo
 
-Mật khẩu lưu plain text trong bảng `NGUOI_DUNG`, **chỉ dùng cho demo bài tập**.
+Mật khẩu được băm PBKDF2-HMAC-SHA256 + salt ngẫu nhiên (`web/…/util/MatKhau.java`) trước khi lưu vào `NGUOI_DUNG.MAT_KHAU`. CSDL dựng từ bản cũ: chạy thêm `sql/09_bam_mat_khau.sql`.
 
 | Vai trò | Email | Mật khẩu |
 |---|---|---|
