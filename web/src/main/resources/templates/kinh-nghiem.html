@@ -7,14 +7,18 @@
 <div class="container">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0">Kho kinh nghiệm xử lý sự cố</h5>
-    <!-- Lọc theo danh mục: gửi GET ?maDm=... -->
-    <form th:action="@{/kinh-nghiem}" method="get">
-      <select class="form-select" name="maDm" onchange="this.form.submit()">
-        <option value="">-- Tất cả danh mục --</option>
-        <option th:each="dm : ${dsDanhMuc}" th:value="${dm.maDm}" th:text="${dm.tenDm}"
-                th:selected="${dm.maDm == maDmLoc}"></option>
-      </select>
-    </form>
+    <div class="d-flex gap-2">
+      <!-- Lọc theo danh mục: gửi GET ?maDm=... -->
+      <form th:action="@{/kinh-nghiem}" method="get">
+        <select class="form-select" name="maDm" onchange="this.form.submit()">
+          <option value="">-- Tất cả danh mục --</option>
+          <option th:each="dm : ${dsDanhMuc}" th:value="${dm.maDm}" th:text="${dm.tenDm}"
+                  th:selected="${dm.maDm == maDmLoc}"></option>
+        </select>
+      </form>
+      <a th:if="${session.nguoiDung.laAdmin()}" class="btn btn-outline-primary text-nowrap"
+         th:href="@{/admin/kinh-nghiem}">Quản lý</a>
+    </div>
   </div>
 
   <div class="list-group">

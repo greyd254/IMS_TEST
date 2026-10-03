@@ -26,6 +26,14 @@
         <dt class="col-sm-3">Admin xử lý</dt><dd class="col-sm-9" th:text="${suCo.tenAdmin} ?: '-'"></dd>
         <dt class="col-sm-3">Ngày báo</dt><dd class="col-sm-9" th:text="${#temporals.format(suCo.ngayTao, 'dd/MM/yyyy HH:mm')}"></dd>
         <dt class="col-sm-3">Ngày hoàn thành</dt><dd class="col-sm-9" th:text="${#temporals.format(suCo.ngayHoanThanh, 'dd/MM/yyyy HH:mm')} ?: '-'"></dd>
+        <th:block th:if="${suCo.anhDinhKem}">
+          <dt class="col-sm-3">Ảnh đính kèm</dt>
+          <dd class="col-sm-9">
+            <a th:href="@{${suCo.anhDinhKem}}" target="_blank">
+              <img th:src="@{${suCo.anhDinhKem}}" style="max-width:240px;max-height:240px;object-fit:contain;" alt="Ảnh sự cố">
+            </a>
+          </dd>
+        </th:block>
       </dl>
     </div>
   </div>
@@ -59,6 +67,30 @@
                     th:text="'[' + ${b.tenDm} + '] ' + ${b.tieuDe}"
                     th:selected="${b.maBai == suCo.maBaiKn}"></option>
           </select>
+          <div class="form-text">
+            Chưa có bài phù hợp? <a th:href="@{/admin/kinh-nghiem}">Thêm bài kinh nghiệm mới</a>
+            (nhập xong, quay lại đây để chọn).
+          </div>
+        </div>
+        <div class="card bg-light border-0 p-3 mb-3">
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="luuKho" name="luuKho" value="true">
+            <label class="form-check-label" for="luuKho">
+              Lưu nguyên nhân + cách khắc phục vào kho kinh nghiệm (khi chưa chọn bài có sẵn ở trên)
+            </label>
+          </div>
+          <div class="row g-2 align-items-center">
+            <div class="col-md-4">
+              <label class="form-label mb-0" for="maDmKho">Lĩnh vực</label>
+              <select class="form-select" id="maDmKho" name="maDmKho">
+                <option th:each="dm : ${dsDanhMuc}" th:value="${dm.maDm}" th:text="${dm.tenDm}"
+                        th:selected="${dm.maDm == suCo.maDm}"></option>
+              </select>
+            </div>
+            <div class="col-md-8 small text-muted">
+              Bài mới lấy tiêu đề và mô tả của sự cố, nguyên nhân và cách khắc phục ở trên.
+            </div>
+          </div>
         </div>
         <button class="btn btn-primary" type="submit">Lưu cập nhật</button>
       </form>

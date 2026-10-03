@@ -84,6 +84,7 @@ CREATE TABLE SU_CO (
   NGUYEN_NHAN     VARCHAR2(1000 CHAR),
   CACH_KHAC_PHUC  VARCHAR2(1000 CHAR),
   MA_BAI_KN       NUMBER,
+  ANH_DINH_KEM    VARCHAR2(500 CHAR),              -- đường dẫn (URL) ảnh chụp sự cố, không bắt buộc; file thật lưu ở thư mục web/uploads
   NGAY_TAO        DATE DEFAULT SYSDATE NOT NULL,
   NGAY_HOAN_THANH DATE,
   CONSTRAINT PK_SU_CO PRIMARY KEY (MA_SC),

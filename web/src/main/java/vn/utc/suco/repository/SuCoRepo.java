@@ -17,7 +17,7 @@ public class SuCoRepo {
     // Đọc từ view V_SU_CO_CHI_TIET (đã JOIN sẵn, xem sql/05_queries.sql)
     private static final String SELECT =
             "SELECT MA_SC, TIEU_DE, MO_TA, MA_NGUOI_BAO, TEN_NGUOI_BAO, TEN_ADMIN, MA_TB, TEN_TB, TEN_PHONG, "
-                    + "MA_DM, TEN_DM, MUC_UU_TIEN, TRANG_THAI, NGUYEN_NHAN, CACH_KHAC_PHUC, MA_BAI_KN, "
+                    + "MA_DM, TEN_DM, MUC_UU_TIEN, TRANG_THAI, NGUYEN_NHAN, CACH_KHAC_PHUC, MA_BAI_KN, ANH_DINH_KEM, "
                     + "NGAY_TAO, NGAY_HOAN_THANH FROM V_SU_CO_CHI_TIET ";
 
     private static final RowMapper<SuCo> MAPPER = (rs, i) -> new SuCo(
@@ -26,6 +26,7 @@ public class SuCoRepo {
             rs.getObject("MA_TB", Long.class), rs.getString("TEN_TB"), rs.getString("TEN_PHONG"),
             rs.getLong("MA_DM"), rs.getString("TEN_DM"), rs.getString("MUC_UU_TIEN"), rs.getString("TRANG_THAI"),
             rs.getString("NGUYEN_NHAN"), rs.getString("CACH_KHAC_PHUC"), rs.getObject("MA_BAI_KN", Long.class),
+            rs.getString("ANH_DINH_KEM"),
             toLdt(rs.getTimestamp("NGAY_TAO")), toLdt(rs.getTimestamp("NGAY_HOAN_THANH")));
 
     private static LocalDateTime toLdt(Timestamp t) {
@@ -38,11 +39,17 @@ public class SuCoRepo {
         this.jdbc = jdbc;
     }
 
-    /** Người dùng báo sự cố mới. Trạng thái mặc định 'MOI', ngày tạo mặc định SYSDATE (do Oracle gán). */
-    public void taoMoi(String tieuDe, String moTa, Long maNguoiBao, Long maTb, Long maDm, String mucUuTien) {
-        jdbc.update("INSERT INTO SU_CO (TIEU_DE, MO_TA, MA_NGUOI_BAO, MA_TB, MA_DM, MUC_UU_TIEN) VALUES (?, ?, ?, ?, ?, ?)",
-                new Object[]{tieuDe, moTa, maNguoiBao, maTb, maDm, mucUuTien},
-                new int[]{Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.VARCHAR});
+    /**
+     * Người dùng báo sự cố mới. Trạng thái mặc định 'MOI', ngày tạo mặc định SYSDATE (do Oracle gán).
+     * anhDinhKem = đường dẫn ảnh chụp sự cố đã lưu ở thư mục uploads, có thể null (không bắt buộc).
+     */
+    public void taoMoi(String tieuDe, String moTa, Long maNguoiBao, Long maTb, Long maDm, String mucUuTien,
+                       String anhDinhKem) {
+        jdbc.update("INSERT INTO SU_CO (TIEU_DE, MO_TA, MA_NGUOI_BAO, MA_TB, MA_DM, MUC_UU_TIEN, ANH_DINH_KEM) "
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                new Object[]{tieuDe, moTa, maNguoiBao, maTb, maDm, mucUuTien, anhDinhKem},
+                new int[]{Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.VARCHAR,
+                        Types.VARCHAR});
     }
 
     /** Sự cố do chính người dùng này báo (màn hình /user). */

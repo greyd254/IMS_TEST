@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Sửa phòng')}"></head>
+<body>
+<nav th:replace="~{layout :: navbar}"></nav>
+<div th:replace="~{layout :: thongbao}"></div>
+
+<div class="container" style="max-width: 640px;">
+  <a th:href="@{/admin/phong}" class="btn btn-link px-0">&laquo; Quay lại danh sách</a>
+  <div class="card">
+    <div class="card-header">Sửa phòng #<span th:text="${p.maPhong}"></span></div>
+    <div class="card-body">
+      <form th:action="@{/admin/phong/{id}(id=${p.maPhong})}" method="post">
+        <div class="mb-3">
+          <label class="form-label" for="tenPhong">Tên phòng</label>
+          <input class="form-control" id="tenPhong" name="tenPhong" maxlength="100" required th:value="${p.tenPhong}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="toaNha">Tòa nhà</label>
+          <input class="form-control" id="toaNha" name="toaNha" maxlength="20" required th:value="${p.toaNha}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="tang">Tầng</label>
+          <input class="form-control" type="number" id="tang" name="tang" min="0" max="99" required th:value="${p.tang}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="loaiPhong">Loại phòng</label>
+          <select class="form-select" id="loaiPhong" name="loaiPhong">
+            <option th:each="e : ${dsLoai}" th:value="${e.key}" th:text="${e.value}" th:selected="${e.key == p.loaiPhong}"></option>
+          </select>
+        </div>
+        <button class="btn btn-primary" type="submit">Lưu</button>
+      </form>
+    </div>
+  </div>
+</div>
+</body>
+</html>

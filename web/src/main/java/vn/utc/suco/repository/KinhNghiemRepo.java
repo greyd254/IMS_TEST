@@ -1,10 +1,13 @@
 package vn.utc.suco.repository;
 
+import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import vn.utc.suco.model.BaiKinhNghiem;
 
@@ -40,5 +43,35 @@ public class KinhNghiemRepo {
 
     public Optional<BaiKinhNghiem> timTheoMa(Long maBai) {
         return jdbc.query(SELECT + "WHERE b.MA_BAI = ?", MAPPER, maBai).stream().findFirst();
+    }
+
+    /** Thêm bài kinh nghiệm mới và trả về MA_BAI vừa sinh. */
+    public long taoMoi(String tieuDe, Long maDm, String trieuChung, String nguyenNhan, String giaiPhap,
+                       Long maNguoiViet) {
+        KeyHolder khoa = new GeneratedKeyHolder();
+        jdbc.update(con -> {
+            PreparedStatement ps = con.prepareStatement(
+                    "INSERT INTO BAI_KINH_NGHIEM (TIEU_DE, MA_DM, TRIEU_CHUNG, NGUYEN_NHAN, GIAI_PHAP, MA_NGUOI_VIET) "
+                            + "VALUES (?, ?, ?, ?, ?, ?)", new String[]{"MA_BAI"});
+            ps.setString(1, tieuDe);
+            ps.setLong(2, maDm);
+            ps.setString(3, trieuChung);
+            ps.setString(4, nguyenNhan);
+            ps.setString(5, giaiPhap);
+            ps.setLong(6, maNguoiViet);
+            return ps;
+        }, khoa);
+        return khoa.getKey().longValue();
+    }
+
+    public void capNhat(Long maBai, String tieuDe, Long maDm, String trieuChung, String nguyenNhan, String giaiPhap) {
+        jdbc.update("UPDATE BAI_KINH_NGHIEM SET TIEU_DE = ?, MA_DM = ?, TRIEU_CHUNG = ?, NGUYEN_NHAN = ?, GIAI_PHAP = ? "
+                        + "WHERE MA_BAI = ?",
+                tieuDe, maDm, trieuChung, nguyenNhan, giaiPhap, maBai);
+    }
+
+    /** Xóa bài kinh nghiệm. Nếu đang được một sự cố tham chiếu (MA_BAI_KN), Oracle từ chối (ORA-02292). */
+    public void xoa(Long maBai) {
+        jdbc.update("DELETE FROM BAI_KINH_NGHIEM WHERE MA_BAI = ?", maBai);
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.utc.suco.model.NguoiDung;
 import vn.utc.suco.model.SuCo;
+import vn.utc.suco.repository.DanhMucRepo;
 import vn.utc.suco.repository.KinhNghiemRepo;
 import vn.utc.suco.repository.SuCoRepo;
 
@@ -21,10 +22,12 @@ public class AdminController {
 
     private final SuCoRepo suCoRepo;
     private final KinhNghiemRepo kinhNghiemRepo;
+    private final DanhMucRepo danhMucRepo;
 
-    public AdminController(SuCoRepo suCoRepo, KinhNghiemRepo kinhNghiemRepo) {
+    public AdminController(SuCoRepo suCoRepo, KinhNghiemRepo kinhNghiemRepo, DanhMucRepo danhMucRepo) {
         this.suCoRepo = suCoRepo;
         this.kinhNghiemRepo = kinhNghiemRepo;
+        this.danhMucRepo = danhMucRepo;
     }
 
     /** Danh sách tất cả sự cố, lọc theo trạng thái (tham số ?trangThai=...). */
@@ -46,22 +49,43 @@ public class AdminController {
         model.addAttribute("suCo", suCo);
         model.addAttribute("dsLichSu", suCoRepo.timLichSu(maSc));
         model.addAttribute("dsBaiKn", kinhNghiemRepo.timTheoDanhMuc(null));
+        model.addAttribute("dsDanhMuc", danhMucRepo.timTatCa());
         return "admin-chi-tiet";
     }
 
-    /** Lưu cập nhật. Trigger Oracle sẽ tự ghi lịch sử và ngày hoàn thành. */
+    /**
+     * Lưu cập nhật. Trigger Oracle sẽ tự ghi lịch sử và ngày hoàn thành.
+     * Nếu tick "luuKho" và không chọn bài có sẵn, nguyên nhân + cách khắc phục được tạo thành bài mới trong kho
+     * kinh nghiệm (thuộc danh mục maDmKho) và gắn vào sự cố.
+     */
     @PostMapping("/admin/{maSc}")
     public String capNhat(@PathVariable Long maSc, @RequestParam String trangThai,
                           @RequestParam(required = false) String nguyenNhan,
                           @RequestParam(required = false) String cachKhacPhuc,
                           @RequestParam(required = false) Long maBaiKn,
+                          @RequestParam(required = false) Boolean luuKho,
+                          @RequestParam(required = false) Long maDmKho,
                           HttpSession session, RedirectAttributes ra) {
         if (!TRANG_THAI.contains(trangThai)) {
             ra.addFlashAttribute("loi", "Trạng thái không hợp lệ");
             return "redirect:/admin/" + maSc;
         }
         NguoiDung admin = (NguoiDung) session.getAttribute("nguoiDung");
-        suCoRepo.capNhat(maSc, trangThai, nguyenNhan, cachKhacPhuc, maBaiKn, admin.maNd());
+        Long maBaiGan = maBaiKn;
+        if (Boolean.TRUE.equals(luuKho) && maBaiKn == null) {
+            if (nguyenNhan == null || nguyenNhan.isBlank() || cachKhacPhuc == null || cachKhacPhuc.isBlank()
+                    || maDmKho == null) {
+                ra.addFlashAttribute("loi", "Để lưu vào kho kinh nghiệm, cần nhập nguyên nhân, cách khắc phục và chọn lĩnh vực");
+                return "redirect:/admin/" + maSc;
+            }
+            SuCo suCo = suCoRepo.timTheoMa(maSc).orElse(null);
+            if (suCo == null) {
+                return "redirect:/admin";
+            }
+            maBaiGan = kinhNghiemRepo.taoMoi(suCo.tieuDe(), maDmKho, suCo.moTa(), nguyenNhan.trim(),
+                    cachKhacPhuc.trim(), admin.maNd());
+        }
+        suCoRepo.capNhat(maSc, trangThai, nguyenNhan, cachKhacPhuc, maBaiGan, admin.maNd());
         ra.addFlashAttribute("thongBao", "Đã lưu cập nhật sự cố");
         return "redirect:/admin/" + maSc;
     }

@@ -34,3 +34,7 @@ target/
 *.iml
 node_modules/
 ~$*
+
+### Ảnh đính kèm sự cố do user tải lên (xem LuuAnh.java) ###
+web/uploads/
+uploads/

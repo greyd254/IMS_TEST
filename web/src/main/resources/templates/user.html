@@ -10,7 +10,7 @@
   <div class="card mb-4">
     <div class="card-header">Báo sự cố mới</div>
     <div class="card-body">
-      <form th:action="@{/user/bao-cao}" method="post">
+      <form th:action="@{/user/bao-cao}" method="post" enctype="multipart/form-data">
         <div class="mb-3">
           <label class="form-label" for="tieuDe">Tiêu đề</label>
           <input class="form-control" id="tieuDe" name="tieuDe" maxlength="200" required>
@@ -43,6 +43,10 @@
             </select>
           </div>
         </div>
+        <div class="mb-3">
+          <label class="form-label" for="anh">Ảnh đính kèm (không bắt buộc)</label>
+          <input class="form-control" type="file" id="anh" name="anh" accept="image/jpeg,image/png,image/gif,image/webp">
+        </div>
         <button class="btn btn-primary" type="submit">Gửi báo cáo</button>
       </form>
     </div>
@@ -51,19 +55,25 @@
   <h5>Sự cố tôi đã báo</h5>
   <table class="table table-striped align-middle">
     <thead>
-      <tr><th>Mã</th><th>Tiêu đề</th><th>Thiết bị / Phòng</th><th>Danh mục</th><th>Ưu tiên</th><th>Trạng thái</th><th>Ngày báo</th></tr>
+      <tr><th>Mã</th><th>Tiêu đề</th><th>Thiết bị / Phòng</th><th>Danh mục</th><th>Ưu tiên</th><th>Trạng thái</th><th>Ngày báo</th><th>Ảnh</th></tr>
     </thead>
     <tbody>
       <tr th:each="sc : ${dsSuCo}">
         <td th:text="${sc.maSc}"></td>
-        <td th:text="${sc.tieuDe}"></td>
+        <td><a th:href="@{/user/{id}(id=${sc.maSc})}" th:text="${sc.tieuDe}"></a></td>
         <td><span th:text="${sc.tenTb}">-</span><br><small class="text-muted" th:text="${sc.tenPhong}"></small></td>
         <td th:text="${sc.tenDm}"></td>
         <td><span th:replace="~{layout :: uuTien(${sc.mucUuTien})}"></span></td>
         <td><span th:replace="~{layout :: trangThai(${sc.trangThai})}"></span></td>
         <td th:text="${#temporals.format(sc.ngayTao, 'dd/MM/yyyy HH:mm')}"></td>
+        <td>
+          <a th:if="${sc.anhDinhKem}" th:href="@{${sc.anhDinhKem}}" target="_blank">
+            <img th:src="@{${sc.anhDinhKem}}" style="max-width:48px;max-height:48px;object-fit:cover;" alt="Ảnh sự cố">
+          </a>
+          <span th:unless="${sc.anhDinhKem}">-</span>
+        </td>
       </tr>
-      <tr th:if="${#lists.isEmpty(dsSuCo)}"><td colspan="7" class="text-center text-muted">Bạn chưa báo sự cố nào</td></tr>
+      <tr th:if="${#lists.isEmpty(dsSuCo)}"><td colspan="8" class="text-center text-muted">Bạn chưa báo sự cố nào</td></tr>
     </tbody>
   </table>
 </div>

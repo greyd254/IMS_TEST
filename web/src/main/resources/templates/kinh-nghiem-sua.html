@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Sửa bài kinh nghiệm')}"></head>
+<body>
+<nav th:replace="~{layout :: navbar}"></nav>
+<div th:replace="~{layout :: thongbao}"></div>
+
+<div class="container" style="max-width: 720px;">
+  <a th:href="@{/admin/kinh-nghiem}" class="btn btn-link px-0">&laquo; Quay lại danh sách</a>
+  <div class="card">
+    <div class="card-header">Sửa bài kinh nghiệm #<span th:text="${bai.maBai}"></span></div>
+    <div class="card-body">
+      <form th:action="@{/admin/kinh-nghiem/{id}(id=${bai.maBai})}" method="post">
+        <div class="row">
+          <div class="col-md-8 mb-3">
+            <label class="form-label" for="tieuDe">Tiêu đề</label>
+            <input class="form-control" id="tieuDe" name="tieuDe" maxlength="200" required th:value="${bai.tieuDe}">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label" for="maDm">Danh mục</label>
+            <select class="form-select" id="maDm" name="maDm" required>
+              <option th:each="dm : ${dsDanhMuc}" th:value="${dm.maDm}" th:text="${dm.tenDm}"
+                      th:selected="${dm.maDm == bai.maDm}"></option>
+            </select>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="trieuChung">Triệu chứng</label>
+          <textarea class="form-control" id="trieuChung" name="trieuChung" rows="2" maxlength="1000" th:text="${bai.trieuChung}"></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="nguyenNhan">Nguyên nhân</label>
+          <textarea class="form-control" id="nguyenNhan" name="nguyenNhan" rows="2" maxlength="1000" th:text="${bai.nguyenNhan}"></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="giaiPhap">Giải pháp</label>
+          <textarea class="form-control" id="giaiPhap" name="giaiPhap" rows="2" maxlength="1000" required th:text="${bai.giaiPhap}"></textarea>
+        </div>
+        <button class="btn btn-primary" type="submit">Lưu</button>
+      </form>
+    </div>
+  </div>
+</div>
+</body>
+</html>

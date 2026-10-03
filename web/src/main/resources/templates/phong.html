@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Quản lý phòng')}"></head>
+<body>
+<nav th:replace="~{layout :: navbar}"></nav>
+<div th:replace="~{layout :: thongbao}"></div>
+
+<div class="container">
+  <!-- Form thêm phòng mới: dùng khi mở rộng khu vực hỗ trợ -->
+  <div class="card mb-4">
+    <div class="card-header">Thêm phòng</div>
+    <div class="card-body">
+      <form th:action="@{/admin/phong}" method="post" class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label" for="tenPhong">Tên phòng</label>
+          <input class="form-control" id="tenPhong" name="tenPhong" maxlength="100" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="toaNha">Tòa nhà</label>
+          <input class="form-control" id="toaNha" name="toaNha" maxlength="20" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="tang">Tầng</label>
+          <input class="form-control" type="number" id="tang" name="tang" min="0" max="99" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="loaiPhong">Loại phòng</label>
+          <select class="form-select" id="loaiPhong" name="loaiPhong">
+            <option th:each="e : ${dsLoai}" th:value="${e.key}" th:text="${e.value}"></option>
+          </select>
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+          <button class="btn btn-primary w-100" type="submit">Thêm</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <h5>Danh sách phòng</h5>
+  <table class="table table-striped align-middle">
+    <thead><tr><th>Mã</th><th>Tên phòng</th><th>Tòa nhà</th><th>Tầng</th><th>Loại</th><th></th></tr></thead>
+    <tbody>
+      <tr th:each="p : ${dsPhong}">
+        <td th:text="${p.maPhong}"></td>
+        <td th:text="${p.tenPhong}"></td>
+        <td th:text="${p.toaNha}"></td>
+        <td th:text="${p.tang}"></td>
+        <td th:text="${dsLoai[p.loaiPhong]}"></td>
+        <td class="text-nowrap">
+          <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/phong/{id}/sua(id=${p.maPhong})}">Sửa</a>
+          <form class="d-inline" th:action="@{/admin/phong/{id}/xoa(id=${p.maPhong})}" method="post"
+                onsubmit="return confirm('Xóa phòng này?');">
+            <button class="btn btn-sm btn-outline-danger" type="submit">Xóa</button>
+          </form>
+        </td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(dsPhong)}"><td colspan="6" class="text-center text-muted">Chưa có phòng</td></tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

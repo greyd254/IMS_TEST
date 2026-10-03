@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Chi tiết sự cố')}"></head>
+<body>
+<nav th:replace="~{layout :: navbar}"></nav>
+<div th:replace="~{layout :: thongbao}"></div>
+
+<div class="container">
+  <a th:href="@{/user}" class="btn btn-link px-0">&laquo; Quay lại danh sách</a>
+
+  <div class="card mb-4">
+    <div class="card-header">
+      Sự cố #<span th:text="${suCo.maSc}"></span>:
+      <strong th:text="${suCo.tieuDe}"></strong>
+    </div>
+    <div class="card-body">
+      <p class="xuong-dong" th:text="${suCo.moTa}"></p>
+      <dl class="row mb-0">
+        <dt class="col-sm-3">Thiết bị / Phòng</dt>
+        <dd class="col-sm-9"><span th:text="${suCo.tenTb} ?: '-'"></span> <small class="text-muted" th:text="${suCo.tenPhong}"></small></dd>
+        <dt class="col-sm-3">Danh mục</dt><dd class="col-sm-9" th:text="${suCo.tenDm}"></dd>
+        <dt class="col-sm-3">Mức ưu tiên</dt><dd class="col-sm-9"><span th:replace="~{layout :: uuTien(${suCo.mucUuTien})}"></span></dd>
+        <dt class="col-sm-3">Trạng thái</dt><dd class="col-sm-9"><span th:replace="~{layout :: trangThai(${suCo.trangThai})}"></span></dd>
+        <dt class="col-sm-3">Admin xử lý</dt><dd class="col-sm-9" th:text="${suCo.tenAdmin} ?: '-'"></dd>
+        <dt class="col-sm-3">Ngày báo</dt><dd class="col-sm-9" th:text="${#temporals.format(suCo.ngayTao, 'dd/MM/yyyy HH:mm')}"></dd>
+        <dt class="col-sm-3">Ngày hoàn thành</dt><dd class="col-sm-9" th:text="${#temporals.format(suCo.ngayHoanThanh, 'dd/MM/yyyy HH:mm')} ?: '-'"></dd>
+        <th:block th:if="${suCo.anhDinhKem}">
+          <dt class="col-sm-3">Ảnh đính kèm</dt>
+          <dd class="col-sm-9">
+            <a th:href="@{${suCo.anhDinhKem}}" target="_blank">
+              <img th:src="@{${suCo.anhDinhKem}}" style="max-width:240px;max-height:240px;object-fit:contain;" alt="Ảnh sự cố">
+            </a>
+          </dd>
+        </th:block>
+      </dl>
+    </div>
+  </div>
+
+  <!-- Phản hồi của admin sau khi xử lý -->
+  <div class="card mb-4">
+    <div class="card-header">Phản hồi từ IT</div>
+    <div class="card-body">
+      <p th:if="${suCo.nguyenNhan == null and suCo.cachKhacPhuc == null}" class="text-muted mb-0">
+        Chưa có phản hồi. IT sẽ cập nhật khi xử lý xong.
+      </p>
+      <dl class="row mb-0" th:unless="${suCo.nguyenNhan == null and suCo.cachKhacPhuc == null}">
+        <dt class="col-sm-3">Nguyên nhân</dt>
+        <dd class="col-sm-9 xuong-dong" th:text="${suCo.nguyenNhan} ?: '-'"></dd>
+        <dt class="col-sm-3">Cách khắc phục</dt>
+        <dd class="col-sm-9 xuong-dong" th:text="${suCo.cachKhacPhuc} ?: '-'"></dd>
+        <th:block th:if="${suCo.maBaiKn != null}">
+          <dt class="col-sm-3">Bài kinh nghiệm</dt>
+          <dd class="col-sm-9"><a th:href="@{/kinh-nghiem/{id}(id=${suCo.maBaiKn})}">Xem bài kinh nghiệm liên quan</a></dd>
+        </th:block>
+      </dl>
+    </div>
+  </div>
+
+  <!-- Lịch sử xử lý -->
+  <h5>Lịch sử xử lý</h5>
+  <table class="table table-sm table-striped">
+    <thead><tr><th>Thời gian</th><th>Người cập nhật</th><th>Từ</th><th>Sang</th></tr></thead>
+    <tbody>
+      <tr th:each="ls : ${dsLichSu}">
+        <td th:text="${#temporals.format(ls.thoiGian, 'dd/MM/yyyy HH:mm')}"></td>
+        <td th:text="${ls.tenNguoiCapNhat} ?: '-'"></td>
+        <td><th:block th:if="${ls.trangThaiCu != null}"><span th:replace="~{layout :: trangThai(${ls.trangThaiCu})}"></span></th:block></td>
+        <td><span th:replace="~{layout :: trangThai(${ls.trangThaiMoi})}"></span></td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(dsLichSu)}"><td colspan="4" class="text-center text-muted">Chưa có lịch sử</td></tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

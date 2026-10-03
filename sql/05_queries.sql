@@ -36,6 +36,7 @@ SELECT sc.MA_SC,
        sc.NGUYEN_NHAN,
        sc.CACH_KHAC_PHUC,
        sc.MA_BAI_KN,
+       sc.ANH_DINH_KEM,
        sc.NGAY_TAO,
        sc.NGAY_HOAN_THANH
   FROM SU_CO sc

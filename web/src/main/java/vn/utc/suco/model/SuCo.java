@@ -8,6 +8,6 @@ public record SuCo(Long maSc, String tieuDe, String moTa,
                    Long maTb, String tenTb, String tenPhong,
                    Long maDm, String tenDm,
                    String mucUuTien, String trangThai,
-                   String nguyenNhan, String cachKhacPhuc, Long maBaiKn,
+                   String nguyenNhan, String cachKhacPhuc, Long maBaiKn, String anhDinhKem,
                    LocalDateTime ngayTao, LocalDateTime ngayHoanThanh) {
 }

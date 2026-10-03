@@ -25,9 +25,17 @@
         <a class="nav-link" th:href="@{/admin/thiet-bi}">Thiết bị</a>
       </li>
       <li class="nav-item" th:if="${session.nguoiDung.laAdmin()}">
+        <a class="nav-link" th:href="@{/admin/phong}">Phòng</a>
+      </li>
+      <li class="nav-item" th:if="${session.nguoiDung.laAdmin()}">
         <a class="nav-link" th:href="@{/admin/nguoi-dung}">Người dùng</a>
       </li>
-      <li class="nav-item"><a class="nav-link" th:href="@{/kinh-nghiem}">Kho kinh nghiệm</a></li>
+      <li class="nav-item" th:unless="${session.nguoiDung.laAdmin()}">
+        <a class="nav-link" th:href="@{/kinh-nghiem}">Kho kinh nghiệm</a>
+      </li>
+      <li class="nav-item" th:if="${session.nguoiDung.laAdmin()}">
+        <a class="nav-link" th:href="@{/admin/kinh-nghiem}">Kho kinh nghiệm</a>
+      </li>
     </ul>
     <span class="navbar-text me-3">
       <span th:text="${session.nguoiDung.hoTen}">Tên</span>

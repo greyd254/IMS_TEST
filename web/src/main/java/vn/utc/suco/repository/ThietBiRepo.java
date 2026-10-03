@@ -34,8 +34,9 @@ public class ThietBiRepo {
     }
 
     public List<Phong> timTatCaPhong() {
-        return jdbc.query("SELECT MA_PHONG, TEN_PHONG FROM PHONG ORDER BY TOA_NHA, TEN_PHONG",
-                (rs, i) -> new Phong(rs.getLong("MA_PHONG"), rs.getString("TEN_PHONG")));
+        return jdbc.query("SELECT MA_PHONG, TEN_PHONG, TOA_NHA, TANG, LOAI_PHONG FROM PHONG ORDER BY TOA_NHA, TEN_PHONG",
+                (rs, i) -> new Phong(rs.getLong("MA_PHONG"), rs.getString("TEN_PHONG"), rs.getString("TOA_NHA"),
+                        rs.getInt("TANG"), rs.getString("LOAI_PHONG")));
     }
 
     public void taoMoi(String tenTb, String loaiTb, Long maPhong, String tinhTrang) {
