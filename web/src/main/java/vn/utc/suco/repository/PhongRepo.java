@@ -14,7 +14,7 @@ public class PhongRepo {
 
     private static final RowMapper<Phong> MAPPER = (rs, i) -> new Phong(
             rs.getLong("MA_PHONG"), rs.getString("TEN_PHONG"), rs.getString("TOA_NHA"),
-            rs.getInt("TANG"), rs.getString("LOAI_PHONG"));
+            rs.getObject("TANG", Integer.class), rs.getString("LOAI_PHONG"));
 
     private final JdbcTemplate jdbc;
 
@@ -30,12 +30,12 @@ public class PhongRepo {
         return jdbc.query(SELECT + "WHERE MA_PHONG = ?", MAPPER, maPhong).stream().findFirst();
     }
 
-    public void taoMoi(String tenPhong, String toaNha, int tang, String loaiPhong) {
+    public void taoMoi(String tenPhong, String toaNha, Integer tang, String loaiPhong) {
         jdbc.update("INSERT INTO PHONG (TEN_PHONG, TOA_NHA, TANG, LOAI_PHONG) VALUES (?, ?, ?, ?)",
                 tenPhong, toaNha, tang, loaiPhong);
     }
 
-    public void capNhat(Long maPhong, String tenPhong, String toaNha, int tang, String loaiPhong) {
+    public void capNhat(Long maPhong, String tenPhong, String toaNha, Integer tang, String loaiPhong) {
         jdbc.update("UPDATE PHONG SET TEN_PHONG = ?, TOA_NHA = ?, TANG = ?, LOAI_PHONG = ? WHERE MA_PHONG = ?",
                 tenPhong, toaNha, tang, loaiPhong, maPhong);
     }

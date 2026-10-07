@@ -7,10 +7,10 @@ Cập nhật: 26/09/2026. Đề: "Đề số 30 - Đề mở" (`De Thi Oracle Li
 | Mục đề (điểm) | Việc đã làm | Ở đâu |
 |---|---|---|
 | 1 (0,5) Giới thiệu, thực thể, quan hệ | Chương 1 báo cáo + sơ đồ ER | `docs/BaoCao_Oracle_QuanLySuCo.docx`, `docs/so_do_ER_SUCO_APP.png` |
-| 2 (2,5) CSDL | User `SUCO_APP`, tablespace `TS_SUCO`, 7 bảng, 28 ràng buộc, 2 trigger, 1 view, 77 bản ghi | `sql/01..05` |
-| 3 (1) Truy vấn | 15 truy vấn (yêu cầu tối thiểu 10) | `sql/05_queries.sql` |
+| 2 (2,5) CSDL | User `SUCO_APP`, tablespace `TS_SUCO`, 8 bảng, 2 trigger, 2 view, ~80 bản ghi | `sql/01..05`, `sql/11` |
+| 3 (1) Truy vấn | 17 truy vấn (yêu cầu tối thiểu 10) | `sql/05_queries.sql` |
 | 4 (5) Quản trị Oracle | Instance (NOMOUNT/MOUNT/READ ONLY/restricted), PDB, tablespace + datafile, ARCHIVELOG, RMAN khôi phục datafile mất, profile, user, role, expdp/impdp | `sql/06`, `07`, `08`; nhật ký thật ở `sql/ketqua/` |
-| 5 (1) Web | Spring Boot: đăng nhập, báo sự cố, xử lý sự cố, kho kinh nghiệm, **quản lý thiết bị (thêm/sửa/xóa), quản lý người dùng (thêm/sửa/xóa), xóa sự cố** | `web/` |
+| 5 (1) Web | Spring Boot: đăng nhập, báo sự cố, xử lý sự cố, kho kinh nghiệm, quản lý thiết bị/phòng/danh mục (thêm/sửa/xóa), quản lý người dùng (xóa mềm), **phản hồi sau xử lý, "sự cố hay gặp"** | `web/` |
 | Báo cáo Word | 43 trang, Times New Roman 13, mục lục, số trang | `docs/BaoCao_Oracle_QuanLySuCo.docx` |
 
 ## Việc còn lại (làm tiếp)
@@ -46,3 +46,16 @@ Cập nhật: 26/09/2026. Đề: "Đề số 30 - Đề mở" (`De Thi Oracle Li
 - Oracle Free: **không** di chuyển datafile online (`ORA-00439`), tablespace mặc định là BIGFILE (cần `SMALLFILE` để thêm datafile); `impdp` cần tạo sẵn user đích. Đã sửa `07_admin_demo.sql` và ghi vào báo cáo.
 - `07_admin_demo.sql` là kịch bản chạy thủ công từng khối, chưa chạy nguyên file một lần; phần đã kiểm chứng được chạy bằng các script tương đương trong `sql/ketqua/kichban/` và các lệnh trực tiếp (RMAN, expdp/impdp). Trong báo cáo, log RMAN, log bật ARCHIVELOG và bảng quyền ở mục 4.4.4 được chép lại từ kết quả thật, vì các lần chạy đó chưa lưu ra file.
 - Khi test web bằng curl trên Windows, gửi tiếng Việt qua tham số dòng lệnh bị sai mã hóa; dùng `--data-urlencode "ten@file_utf8.txt"`.
+
+## Cập nhật 07/10/2026 (góp ý mở rộng từ thành viên trong nhóm, làm sau khi nộp bài để không ảnh hưởng báo cáo đã viết)
+
+- **CSDL** (đã ALTER TABLE trực tiếp trên DB thật qua `sql/11_mo_rong_du_lieu.sql`; nếu rebuild từ đầu bằng `00_run_all.sql` thì đã có sẵn trong `02_tables.sql`/`04_data.sql`/`05_queries.sql`, không cần chạy lại file 11):
+  - `NGUOI_DUNG`: thêm `SDT`, `TRANG_THAI` (HOAT_DONG/KHONG_HOAT_DONG, mặc định HOAT_DONG), `MA_NGUOI_TAO`, `NGAY_XOA`, `MA_NGUOI_XOA` (2 cột sau tự tham chiếu NGUOI_DUNG). Xóa người dùng giờ là **xóa mềm** (đổi TRANG_THAI, không DELETE); tài khoản KHONG_HOAT_DONG không đăng nhập được.
+  - `THIET_BI`: thêm `NHA_CUNG_CAP`, `NGAY_LAP_DAT`, `HDSD` (đều nullable).
+  - `PHONG.TANG`: bỏ NOT NULL (văn phòng 1 tầng không cần ghi).
+  - Bảng mới `PHAN_HOI`: phản hồi của người báo sau khi sự cố HOAN_THANH (mức hài lòng 1-5 + nhận xét), mỗi sự cố chỉ 1 phản hồi (UNIQUE).
+  - View mới `V_SU_CO_THUONG_GAP`: đếm sự cố theo danh mục — cố tình làm view/truy vấn thay vì cột tần suất tĩnh trên SU_CO để khỏi phải tự đồng bộ tay.
+  - `sql/05_queries.sql`: từ 15 lên 17 truy vấn (Q16 top danh mục hay gặp, Q17 điểm hài lòng trung bình theo admin).
+  - **Ảnh `docs/so_do_ER_SUCO_APP.png` chưa cập nhật**: `tools/VeSoDoER.java` viết tay theo đúng 7 bảng cũ (lưới + đường nối cố định cho từng FK), chạy lại bị lỗi bố cục (PHAN_HOI đè lên PHONG, thiếu 4 đường nối tự tham chiếu/PHAN_HOI) nên đã khôi phục ảnh PNG cũ qua git. Sơ đồ Mermaid trong `SO_DO_QUAN_HE.md` đã đúng, đầy đủ 8 bảng; muốn có ảnh PNG mới cần sửa tay `VeSoDoER.java` trước (thêm ô lưới cho PHAN_HOI, thêm code vẽ 4 đường còn thiếu).
+- **Web**: CRUD danh mục sự cố (`/admin/danh-muc`, trước đó danh mục chỉ sửa được qua INSERT tay); nút "Vô hiệu hóa/Kích hoạt" người dùng thay cho xóa cứng; thêm SĐT, nhà cung cấp, ngày lắp đặt, HDSD vào form thêm/sửa; người dùng gửi phản hồi (1-5 + nhận xét) ở trang chi tiết sự cố khi đã HOAN_THANH, admin xem phản hồi (chỉ đọc) ở trang chi tiết xử lý; trang `/user` hiển thị khối "Sự cố hay gặp" theo danh mục.
+- Đã `mvn compile` sạch và chạy migration SQL thật trên DB đang có dữ liệu (dùng `tools/RunSql.java` + ojdbc17 jar trong `~/.m2`), kèm vài dòng dữ liệu demo an toàn (không dùng ID cố định, chỉ thêm khi còn thiếu). **Chưa test lại qua giao diện trình duyệt** — nên bật web rồi thử: thêm/sửa thiết bị có nhà cung cấp, vô hiệu hóa/kích hoạt người dùng, CRUD danh mục, báo sự cố xong gửi phản hồi — trước khi coi là xong hẳn.

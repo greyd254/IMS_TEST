@@ -5,9 +5,10 @@
 <nav th:replace="~{layout :: navbar}"></nav>
 
 <div class="container">
-  <a th:href="@{/kinh-nghiem}" class="btn btn-link px-0">&laquo; Quay lại kho kinh nghiệm</a>
+  <a th:href="@{/kinh-nghiem}" class="btn btn-link px-0"><i class="bi bi-arrow-left"></i> Quay lại kho kinh nghiệm</a>
   <div class="card">
     <div class="card-header">
+      <i class="bi bi-journal-text"></i>
       <span class="badge text-bg-secondary" th:text="${bai.tenDm}"></span>
       <strong th:text="${bai.tieuDe}"></strong>
     </div>

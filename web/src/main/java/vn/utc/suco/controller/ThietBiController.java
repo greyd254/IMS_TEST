@@ -1,5 +1,6 @@
 package vn.utc.suco.controller;
 
+import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -52,12 +53,14 @@ public class ThietBiController {
 
     @PostMapping("/admin/thiet-bi")
     public String them(@RequestParam String tenTb, @RequestParam String loaiTb, @RequestParam Long maPhong,
-                       @RequestParam String tinhTrang, RedirectAttributes ra) {
+                       @RequestParam String tinhTrang, @RequestParam(required = false) String nhaCungCap,
+                       @RequestParam(required = false) LocalDate ngayLapDat, @RequestParam(required = false) String hdsd,
+                       RedirectAttributes ra) {
         if (!hopLe(tenTb, loaiTb, tinhTrang)) {
             ra.addFlashAttribute("loi", "Vui lòng nhập tên thiết bị và chọn loại, tình trạng hợp lệ");
             return "redirect:/admin/thiet-bi";
         }
-        thietBiRepo.taoMoi(tenTb.trim(), loaiTb, maPhong, tinhTrang);
+        thietBiRepo.taoMoi(tenTb.trim(), loaiTb, maPhong, tinhTrang, nhaCungCap, ngayLapDat, hdsd);
         ra.addFlashAttribute("thongBao", "Đã thêm thiết bị");
         return "redirect:/admin/thiet-bi";
     }
@@ -76,12 +79,15 @@ public class ThietBiController {
 
     @PostMapping("/admin/thiet-bi/{maTb}")
     public String capNhat(@PathVariable Long maTb, @RequestParam String tenTb, @RequestParam String loaiTb,
-                          @RequestParam Long maPhong, @RequestParam String tinhTrang, RedirectAttributes ra) {
+                          @RequestParam Long maPhong, @RequestParam String tinhTrang,
+                          @RequestParam(required = false) String nhaCungCap,
+                          @RequestParam(required = false) LocalDate ngayLapDat,
+                          @RequestParam(required = false) String hdsd, RedirectAttributes ra) {
         if (!hopLe(tenTb, loaiTb, tinhTrang)) {
             ra.addFlashAttribute("loi", "Dữ liệu không hợp lệ");
             return "redirect:/admin/thiet-bi/" + maTb + "/sua";
         }
-        thietBiRepo.capNhat(maTb, tenTb.trim(), loaiTb, maPhong, tinhTrang);
+        thietBiRepo.capNhat(maTb, tenTb.trim(), loaiTb, maPhong, tinhTrang, nhaCungCap, ngayLapDat, hdsd);
         ra.addFlashAttribute("thongBao", "Đã cập nhật thiết bị");
         return "redirect:/admin/thiet-bi";
     }

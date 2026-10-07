@@ -5,8 +5,11 @@
 <nav th:replace="~{layout :: navbar}"></nav>
 
 <div class="container">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="mb-0">Kho kinh nghiệm xử lý sự cố</h5>
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div class="tieu-de-trang mb-0">
+      <i class="bi bi-journal-text"></i>
+      <h5>Kho kinh nghiệm xử lý sự cố</h5>
+    </div>
     <div class="d-flex gap-2">
       <!-- Lọc theo danh mục: gửi GET ?maDm=... -->
       <form th:action="@{/kinh-nghiem}" method="get">
@@ -17,7 +20,7 @@
         </select>
       </form>
       <a th:if="${session.nguoiDung.laAdmin()}" class="btn btn-outline-primary text-nowrap"
-         th:href="@{/admin/kinh-nghiem}">Quản lý</a>
+         th:href="@{/admin/kinh-nghiem}"><i class="bi bi-gear"></i> Quản lý</a>
     </div>
   </div>
 
@@ -33,7 +36,7 @@
         <span th:text="${#temporals.format(b.ngayTao, 'dd/MM/yyyy')}"></span>
       </small>
     </a>
-    <div class="list-group-item text-muted text-center" th:if="${#lists.isEmpty(dsBai)}">Chưa có bài kinh nghiệm nào</div>
+    <div class="trong-rong" th:if="${#lists.isEmpty(dsBai)}"><i class="bi bi-inbox"></i>Chưa có bài kinh nghiệm nào</div>
   </div>
 </div>
 </body>

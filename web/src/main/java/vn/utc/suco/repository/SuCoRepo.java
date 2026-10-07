@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import vn.utc.suco.model.LichSu;
 import vn.utc.suco.model.SuCo;
+import vn.utc.suco.model.SuCoHayGap;
 
 @Repository
 public class SuCoRepo {
@@ -90,6 +91,16 @@ public class SuCoRepo {
     public void xoa(Long maSc) {
         jdbc.update("DELETE FROM LICH_SU_XU_LY WHERE MA_SC = ?", maSc);
         jdbc.update("DELETE FROM SU_CO WHERE MA_SC = ?", maSc);
+    }
+
+    /**
+     * Top danh mục sự cố hay gặp nhất (đọc từ view V_SU_CO_THUONG_GAP, đếm bằng SQL thay vì lưu cột
+     * tần suất tĩnh trên SU_CO để khỏi phải tự đồng bộ tay). Dùng cho trang người dùng.
+     */
+    public List<SuCoHayGap> timSuCoHayGap() {
+        return jdbc.query("SELECT MA_DM, TEN_DM, SO_LAN_BAO FROM V_SU_CO_THUONG_GAP "
+                        + "ORDER BY SO_LAN_BAO DESC FETCH FIRST 5 ROWS ONLY",
+                (rs, i) -> new SuCoHayGap(rs.getLong("MA_DM"), rs.getString("TEN_DM"), rs.getInt("SO_LAN_BAO")));
     }
 
     /** Lịch sử xử lý của một sự cố, cũ trước mới sau. */

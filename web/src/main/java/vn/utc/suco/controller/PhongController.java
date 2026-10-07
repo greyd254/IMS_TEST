@@ -40,9 +40,10 @@ public class PhongController {
     }
 
     @PostMapping("/admin/phong")
-    public String them(@RequestParam String tenPhong, @RequestParam String toaNha, @RequestParam Integer tang,
+    public String them(@RequestParam String tenPhong, @RequestParam String toaNha,
+                       @RequestParam(required = false) Integer tang,
                        @RequestParam String loaiPhong, RedirectAttributes ra) {
-        if (!hopLe(tenPhong, toaNha, tang, loaiPhong)) {
+        if (!hopLe(tenPhong, toaNha, loaiPhong)) {
             ra.addFlashAttribute("loi", "Vui lòng nhập tên phòng, tòa nhà, tầng và chọn loại phòng hợp lệ");
             return "redirect:/admin/phong";
         }
@@ -64,8 +65,9 @@ public class PhongController {
 
     @PostMapping("/admin/phong/{maPhong}")
     public String capNhat(@PathVariable Long maPhong, @RequestParam String tenPhong, @RequestParam String toaNha,
-                          @RequestParam Integer tang, @RequestParam String loaiPhong, RedirectAttributes ra) {
-        if (!hopLe(tenPhong, toaNha, tang, loaiPhong)) {
+                          @RequestParam(required = false) Integer tang, @RequestParam String loaiPhong,
+                          RedirectAttributes ra) {
+        if (!hopLe(tenPhong, toaNha, loaiPhong)) {
             ra.addFlashAttribute("loi", "Dữ liệu không hợp lệ");
             return "redirect:/admin/phong/" + maPhong + "/sua";
         }
@@ -86,8 +88,8 @@ public class PhongController {
         return "redirect:/admin/phong";
     }
 
-    private boolean hopLe(String tenPhong, String toaNha, Integer tang, String loaiPhong) {
+    private boolean hopLe(String tenPhong, String toaNha, String loaiPhong) {
         return tenPhong != null && !tenPhong.isBlank() && toaNha != null && !toaNha.isBlank()
-                && tang != null && LOAI.containsKey(loaiPhong);
+                && LOAI.containsKey(loaiPhong);
     }
 }

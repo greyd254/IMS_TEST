@@ -13,6 +13,7 @@ import vn.utc.suco.model.NguoiDung;
 import vn.utc.suco.model.SuCo;
 import vn.utc.suco.repository.DanhMucRepo;
 import vn.utc.suco.repository.KinhNghiemRepo;
+import vn.utc.suco.repository.PhanHoiRepo;
 import vn.utc.suco.repository.SuCoRepo;
 
 /** Màn hình admin (chỉ vai trò ADMIN, đã được AuthInterceptor chặn cho USER). */
@@ -23,11 +24,14 @@ public class AdminController {
     private final SuCoRepo suCoRepo;
     private final KinhNghiemRepo kinhNghiemRepo;
     private final DanhMucRepo danhMucRepo;
+    private final PhanHoiRepo phanHoiRepo;
 
-    public AdminController(SuCoRepo suCoRepo, KinhNghiemRepo kinhNghiemRepo, DanhMucRepo danhMucRepo) {
+    public AdminController(SuCoRepo suCoRepo, KinhNghiemRepo kinhNghiemRepo, DanhMucRepo danhMucRepo,
+                           PhanHoiRepo phanHoiRepo) {
         this.suCoRepo = suCoRepo;
         this.kinhNghiemRepo = kinhNghiemRepo;
         this.danhMucRepo = danhMucRepo;
+        this.phanHoiRepo = phanHoiRepo;
     }
 
     /** Danh sách tất cả sự cố, lọc theo trạng thái (tham số ?trangThai=...). */
@@ -50,6 +54,7 @@ public class AdminController {
         model.addAttribute("dsLichSu", suCoRepo.timLichSu(maSc));
         model.addAttribute("dsBaiKn", kinhNghiemRepo.timTheoDanhMuc(null));
         model.addAttribute("dsDanhMuc", danhMucRepo.timTatCa());
+        model.addAttribute("phanHoi", phanHoiRepo.timTheoSuCo(maSc).orElse(null));
         return "admin-chi-tiet";
     }
 

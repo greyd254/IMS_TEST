@@ -6,12 +6,12 @@
 <div th:replace="~{layout :: thongbao}"></div>
 
 <div class="container">
-  <a th:href="@{/admin}" class="btn btn-link px-0">&laquo; Quay lại danh sách</a>
+  <a th:href="@{/admin}" class="btn btn-link px-0"><i class="bi bi-arrow-left"></i> Quay lại danh sách</a>
 
   <!-- Thông tin sự cố (chỉ đọc) -->
   <div class="card mb-4">
     <div class="card-header">
-      Sự cố #<span th:text="${suCo.maSc}"></span>:
+      <i class="bi bi-card-text"></i>Sự cố #<span th:text="${suCo.maSc}"></span>:
       <strong th:text="${suCo.tieuDe}"></strong>
     </div>
     <div class="card-body">
@@ -40,7 +40,7 @@
 
   <!-- Form cập nhật: khi lưu, MA_ADMIN_XU_LY được gán = admin đang đăng nhập (xem AdminController) -->
   <div class="card mb-4">
-    <div class="card-header">Cập nhật xử lý</div>
+    <div class="card-header"><i class="bi bi-gear"></i>Cập nhật xử lý</div>
     <div class="card-body">
       <form th:action="@{/admin/{id}(id=${suCo.maSc})}" method="post">
         <div class="mb-3">
@@ -92,31 +92,48 @@
             </div>
           </div>
         </div>
-        <button class="btn btn-primary" type="submit">Lưu cập nhật</button>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-check2"></i> Lưu cập nhật</button>
       </form>
       <!-- Xóa sự cố (kèm lịch sử xử lý) -->
       <form class="mt-3" th:action="@{/admin/{id}/xoa(id=${suCo.maSc})}" method="post"
             onsubmit="return confirm('Xóa sự cố này cùng lịch sử xử lý?');">
-        <button class="btn btn-outline-danger btn-sm" type="submit">Xóa sự cố</button>
+        <button class="btn btn-outline-danger btn-sm" type="submit"><i class="bi bi-trash"></i> Xóa sự cố</button>
       </form>
     </div>
   </div>
 
+  <!-- Phản hồi của người báo (chỉ đọc; người dùng tự gửi ở trang /user khi sự cố đã HOAN_THANH) -->
+  <div class="card mb-4" th:if="${phanHoi != null}">
+    <div class="card-header"><i class="bi bi-star"></i>Phản hồi của người báo</div>
+    <div class="card-body">
+      <dl class="row mb-0">
+        <dt class="col-sm-3">Mức hài lòng</dt><dd class="col-sm-9" th:text="${phanHoi.mucHaiLong} + ' / 5'"></dd>
+        <dt class="col-sm-3">Nhận xét</dt><dd class="col-sm-9" th:text="${phanHoi.noiDung} ?: '-'"></dd>
+      </dl>
+    </div>
+  </div>
+
   <!-- Lịch sử xử lý từ bảng LICH_SU_XU_LY (do trigger ghi) -->
-  <h5>Lịch sử xử lý</h5>
-  <table class="table table-sm table-striped">
-    <thead><tr><th>Thời gian</th><th>Người cập nhật</th><th>Từ</th><th>Sang</th><th>Ghi chú</th></tr></thead>
-    <tbody>
-      <tr th:each="ls : ${dsLichSu}">
-        <td th:text="${#temporals.format(ls.thoiGian, 'dd/MM/yyyy HH:mm')}"></td>
-        <td th:text="${ls.tenNguoiCapNhat} ?: '-'"></td>
-        <td><th:block th:if="${ls.trangThaiCu != null}"><span th:replace="~{layout :: trangThai(${ls.trangThaiCu})}"></span></th:block></td>
-        <td><span th:replace="~{layout :: trangThai(${ls.trangThaiMoi})}"></span></td>
-        <td th:text="${ls.ghiChu}"></td>
-      </tr>
-      <tr th:if="${#lists.isEmpty(dsLichSu)}"><td colspan="5" class="text-center text-muted">Chưa có lịch sử</td></tr>
-    </tbody>
-  </table>
+  <div th:replace="~{layout :: tieuDe('bi-clock-history','Lịch sử xử lý')}"></div>
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table table-sm table-striped mb-0">
+        <thead><tr><th>Thời gian</th><th>Người cập nhật</th><th>Từ</th><th>Sang</th><th>Ghi chú</th></tr></thead>
+        <tbody>
+          <tr th:each="ls : ${dsLichSu}">
+            <td th:text="${#temporals.format(ls.thoiGian, 'dd/MM/yyyy HH:mm')}"></td>
+            <td th:text="${ls.tenNguoiCapNhat} ?: '-'"></td>
+            <td><th:block th:if="${ls.trangThaiCu != null}"><span th:replace="~{layout :: trangThai(${ls.trangThaiCu})}"></span></th:block></td>
+            <td><span th:replace="~{layout :: trangThai(${ls.trangThaiMoi})}"></span></td>
+            <td th:text="${ls.ghiChu}"></td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(dsLichSu)}">
+            <td colspan="5" class="trong-rong"><i class="bi bi-inbox"></i>Chưa có lịch sử</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 </body>
 </html>

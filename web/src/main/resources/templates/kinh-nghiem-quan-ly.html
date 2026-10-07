@@ -6,12 +6,12 @@
 <div th:replace="~{layout :: thongbao}"></div>
 
 <div class="container">
-  <a th:href="@{/kinh-nghiem}" class="btn btn-link px-0">Xem như trang kho kinh nghiệm &raquo;</a>
+  <a th:href="@{/kinh-nghiem}" class="btn btn-link px-0">Xem như trang kho kinh nghiệm <i class="bi bi-arrow-right"></i></a>
 
   <!-- Form thêm bài kinh nghiệm mới. Sau khi thêm, bài này sẽ hiện ở đây và ở ô chọn "Bài kinh nghiệm liên quan"
        khi xử lý sự cố (xem AdminController / admin-chi-tiet.html). -->
   <div class="card mb-4">
-    <div class="card-header">Thêm bài kinh nghiệm</div>
+    <div class="card-header"><i class="bi bi-journal-plus"></i>Thêm bài kinh nghiệm</div>
     <div class="card-body">
       <form th:action="@{/admin/kinh-nghiem}" method="post">
         <div class="row">
@@ -38,32 +38,38 @@
           <label class="form-label" for="giaiPhap">Giải pháp</label>
           <textarea class="form-control" id="giaiPhap" name="giaiPhap" rows="2" maxlength="1000" required></textarea>
         </div>
-        <button class="btn btn-primary" type="submit">Thêm</button>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg"></i> Thêm</button>
       </form>
     </div>
   </div>
 
-  <h5>Danh sách bài kinh nghiệm</h5>
-  <table class="table table-striped align-middle">
-    <thead><tr><th>Mã</th><th>Tiêu đề</th><th>Danh mục</th><th>Người viết</th><th>Ngày tạo</th><th></th></tr></thead>
-    <tbody>
-      <tr th:each="b : ${dsBai}">
-        <td th:text="${b.maBai}"></td>
-        <td th:text="${b.tieuDe}"></td>
-        <td th:text="${b.tenDm}"></td>
-        <td th:text="${b.tenNguoiViet}"></td>
-        <td th:text="${#temporals.format(b.ngayTao, 'dd/MM/yyyy')}"></td>
-        <td class="text-nowrap">
-          <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/kinh-nghiem/{id}/sua(id=${b.maBai})}">Sửa</a>
-          <form class="d-inline" th:action="@{/admin/kinh-nghiem/{id}/xoa(id=${b.maBai})}" method="post"
-                onsubmit="return confirm('Xóa bài kinh nghiệm này?');">
-            <button class="btn btn-sm btn-outline-danger" type="submit">Xóa</button>
-          </form>
-        </td>
-      </tr>
-      <tr th:if="${#lists.isEmpty(dsBai)}"><td colspan="6" class="text-center text-muted">Chưa có bài kinh nghiệm</td></tr>
-    </tbody>
-  </table>
+  <div th:replace="~{layout :: tieuDe('bi-journal-text','Danh sách bài kinh nghiệm')}"></div>
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table table-striped align-middle mb-0">
+        <thead><tr><th>Mã</th><th>Tiêu đề</th><th>Danh mục</th><th>Người viết</th><th>Ngày tạo</th><th></th></tr></thead>
+        <tbody>
+          <tr th:each="b : ${dsBai}">
+            <td th:text="${b.maBai}"></td>
+            <td th:text="${b.tieuDe}"></td>
+            <td th:text="${b.tenDm}"></td>
+            <td th:text="${b.tenNguoiViet}"></td>
+            <td th:text="${#temporals.format(b.ngayTao, 'dd/MM/yyyy')}"></td>
+            <td class="text-nowrap">
+              <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/kinh-nghiem/{id}/sua(id=${b.maBai})}"><i class="bi bi-pencil-square"></i> Sửa</a>
+              <form class="d-inline" th:action="@{/admin/kinh-nghiem/{id}/xoa(id=${b.maBai})}" method="post"
+                    onsubmit="return confirm('Xóa bài kinh nghiệm này?');">
+                <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i> Xóa</button>
+              </form>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(dsBai)}">
+            <td colspan="6" class="trong-rong"><i class="bi bi-inbox"></i>Chưa có bài kinh nghiệm</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 </body>
 </html>

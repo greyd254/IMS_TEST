@@ -115,6 +115,28 @@ INSERT INTO LICH_SU_XU_LY VALUES (DEFAULT, 9,  1, 'MOI', 'DANG_XU_LY', 'Đang ki
 INSERT INTO LICH_SU_XU_LY VALUES (DEFAULT, 10, 2, 'MOI', 'DANG_XU_LY', 'Đang thử thay thanh RAM', TIMESTAMP '2026-09-06 08:30:00');
 INSERT INTO LICH_SU_XU_LY VALUES (DEFAULT, 11, 2, 'MOI', 'DANG_XU_LY', 'Chờ nhập bóng đèn thay thế', TIMESTAMP '2026-09-16 09:15:00');
 
+-- 8. Dữ liệu mẫu cho các cột/bảng bổ sung (SĐT, người tạo, nhà cung cấp, ngày lắp đặt, HDSD, tầng NULL, phản hồi)
+UPDATE NGUOI_DUNG SET SDT = '0912345678' WHERE MA_ND = 1;
+UPDATE NGUOI_DUNG SET SDT = '0923456789' WHERE MA_ND = 2;
+UPDATE NGUOI_DUNG SET SDT = '0934567890' WHERE MA_ND = 3;
+-- Các tài khoản USER demo do admin 1 tạo sẵn (minh họa MA_NGUOI_TAO)
+UPDATE NGUOI_DUNG SET MA_NGUOI_TAO = 1 WHERE MA_ND IN (3, 4, 5, 6, 7, 8, 9, 10);
+
+UPDATE THIET_BI SET NHA_CUNG_CAP = 'FPT Shop', NGAY_LAP_DAT = DATE '2023-09-01' WHERE MA_TB = 2;
+UPDATE THIET_BI SET NHA_CUNG_CAP = 'Epson Việt Nam', NGAY_LAP_DAT = DATE '2021-08-20' WHERE MA_TB = 5;
+UPDATE THIET_BI SET NHA_CUNG_CAP = 'Dell Việt Nam', NGAY_LAP_DAT = DATE '2022-03-15',
+       HDSD = 'Khởi động lại bằng nút nguồn giữ 5 giây nếu treo máy. Không rút dây mạng khi đang cập nhật phần mềm.'
+ WHERE MA_TB = 10;
+
+-- Văn phòng nhỏ, chỉ 1 tầng nên không cần ghi số tầng (minh họa TANG cho phép NULL)
+UPDATE PHONG SET TANG = NULL WHERE LOAI_PHONG = 'VAN_PHONG';
+
+-- Phản hồi của người báo sau khi sự cố đã HOAN_THANH (MA_SC 1-4)
+INSERT INTO PHAN_HOI (MA_SC, MA_NGUOI_PHAN_HOI, MUC_HAI_LONG, NOI_DUNG) VALUES (1, 8, 5, 'Xử lý nhanh, mạng ổn định trở lại ngay trong buổi học.');
+INSERT INTO PHAN_HOI (MA_SC, MA_NGUOI_PHAN_HOI, MUC_HAI_LONG, NOI_DUNG) VALUES (2, 7, 4, 'Khắc phục kịp giờ giảng, cảm ơn bộ phận IT.');
+INSERT INTO PHAN_HOI (MA_SC, MA_NGUOI_PHAN_HOI, MUC_HAI_LONG, NOI_DUNG) VALUES (3, 3, 5, 'Máy chạy mượt hẳn sau khi thay ổ SSD.');
+INSERT INTO PHAN_HOI (MA_SC, MA_NGUOI_PHAN_HOI, MUC_HAI_LONG, NOI_DUNG) VALUES (4, 4, 3, 'Đã xử lý được nhưng mất hơi lâu mới mở lại được tài khoản.');
+
 COMMIT;
 
 -- Kiểm tra số dòng của từng bảng

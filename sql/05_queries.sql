@@ -1,7 +1,7 @@
 -- =====================================================================
 -- 05_queries.sql
 -- CHẠY BẰNG: SUCO_APP, kết nối vào FREEPDB1 (sau khi đã có dữ liệu ở file 04)
--- MỤC ĐÍCH : VIEW phục vụ web + 15 truy vấn mẫu (cơ bản, JOIN, lồng, GROUP BY...).
+-- MỤC ĐÍCH : 2 VIEW phục vụ web + 17 truy vấn mẫu (cơ bản, JOIN, lồng, GROUP BY...).
 -- =====================================================================
 SET DEFINE OFF
 SET LINESIZE 250
@@ -45,6 +45,18 @@ SELECT sc.MA_SC,
   LEFT JOIN THIET_BI tb ON tb.MA_TB = sc.MA_TB
   LEFT JOIN PHONG p ON p.MA_PHONG = tb.MA_PHONG
   JOIN DANH_MUC_SU_CO dm ON dm.MA_DM = sc.MA_DM;
+
+-- ---------------------------------------------------------------------
+-- VIEW V_SU_CO_THUONG_GAP: đếm số sự cố theo từng danh mục để biết "sự cố hay gặp".
+-- Tính bằng truy vấn thay vì lưu thành cột trên SU_CO, vì đây là giá trị SUY RA được
+-- (COUNT), lưu cứng sẽ phải tự đồng bộ tay và dễ lệch với dữ liệu thật.
+-- Web (trang người dùng) và báo cáo đều đọc từ view này.
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE VIEW V_SU_CO_THUONG_GAP AS
+SELECT dm.MA_DM, dm.TEN_DM, COUNT(sc.MA_SC) AS SO_LAN_BAO
+  FROM DANH_MUC_SU_CO dm
+  LEFT JOIN SU_CO sc ON sc.MA_DM = dm.MA_DM
+ GROUP BY dm.MA_DM, dm.TEN_DM;
 
 -- Q1. Truy vấn cơ bản có điều kiện: sự cố mức CAO chưa hoàn thành, mới nhất trước
 SELECT MA_SC, TIEU_DE, TRANG_THAI, NGAY_TAO
@@ -152,3 +164,17 @@ SELECT TRANG_THAI, MUC_UU_TIEN, COUNT(*) AS SO_SU_CO
   FROM SU_CO
  GROUP BY TRANG_THAI, MUC_UU_TIEN
  ORDER BY TRANG_THAI, MUC_UU_TIEN;
+
+-- Q16. Top 3 danh mục sự cố hay gặp nhất (đọc từ view V_SU_CO_THUONG_GAP)
+SELECT TEN_DM, SO_LAN_BAO
+  FROM V_SU_CO_THUONG_GAP
+ ORDER BY SO_LAN_BAO DESC
+ FETCH FIRST 3 ROWS WITH TIES;
+
+-- Q17. Mức hài lòng trung bình theo admin xử lý, dựa trên phản hồi của người báo sự cố (JOIN PHAN_HOI)
+SELECT nd.HO_TEN, COUNT(ph.MA_PH) AS SO_PHAN_HOI, ROUND(AVG(ph.MUC_HAI_LONG), 2) AS DIEM_TB
+  FROM PHAN_HOI ph
+  JOIN SU_CO sc ON sc.MA_SC = ph.MA_SC
+  JOIN NGUOI_DUNG nd ON nd.MA_ND = sc.MA_ADMIN_XU_LY
+ GROUP BY nd.HO_TEN
+ ORDER BY DIEM_TB DESC;

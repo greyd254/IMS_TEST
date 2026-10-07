@@ -8,7 +8,7 @@
 <div class="container">
   <!-- Form thêm người dùng mới -->
   <div class="card mb-4">
-    <div class="card-header">Thêm người dùng</div>
+    <div class="card-header"><i class="bi bi-person-plus"></i>Thêm người dùng</div>
     <div class="card-body">
       <form th:action="@{/admin/nguoi-dung}" method="post" class="row g-3">
         <div class="col-md-3">
@@ -33,36 +33,55 @@
             <option th:each="e : ${dsVaiTro}" th:value="${e.key}" th:text="${e.value}"></option>
           </select>
         </div>
+        <div class="col-md-3">
+          <label class="form-label" for="sdt">Số điện thoại</label>
+          <input class="form-control" id="sdt" name="sdt" maxlength="20">
+        </div>
         <div class="col-12">
-          <button class="btn btn-primary" type="submit">Thêm</button>
+          <button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg"></i> Thêm</button>
         </div>
       </form>
     </div>
   </div>
 
-  <h5>Danh sách người dùng</h5>
-  <table class="table table-striped align-middle">
-    <thead><tr><th>Mã</th><th>Họ tên</th><th>Email</th><th>Đơn vị</th><th>Vai trò</th><th></th></tr></thead>
-    <tbody>
-      <tr th:each="nd : ${dsNguoiDung}">
-        <td th:text="${nd.maNd}"></td>
-        <td th:text="${nd.hoTen}"></td>
-        <td th:text="${nd.email}"></td>
-        <td th:text="${nd.donVi}"></td>
-        <td>
-          <span class="badge" th:text="${dsVaiTro[nd.vaiTro]}"
-                th:classappend="${nd.vaiTro == 'ADMIN'} ? 'text-bg-danger' : 'text-bg-secondary'"></span>
-        </td>
-        <td class="text-nowrap">
-          <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/nguoi-dung/{id}/sua(id=${nd.maNd})}">Sửa</a>
-          <form class="d-inline" th:action="@{/admin/nguoi-dung/{id}/xoa(id=${nd.maNd})}" method="post"
-                onsubmit="return confirm('Xóa người dùng này?');">
-            <button class="btn btn-sm btn-outline-danger" type="submit">Xóa</button>
-          </form>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <div th:replace="~{layout :: tieuDe('bi-people','Danh sách người dùng')}"></div>
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table table-striped align-middle mb-0">
+        <thead><tr><th>Mã</th><th>Họ tên</th><th>Email</th><th>SĐT</th><th>Đơn vị</th><th>Vai trò</th><th>Trạng thái</th><th></th></tr></thead>
+        <tbody>
+          <tr th:each="nd : ${dsNguoiDung}">
+            <td th:text="${nd.maNd}"></td>
+            <td th:text="${nd.hoTen}"></td>
+            <td th:text="${nd.email}"></td>
+            <td th:text="${nd.sdt} ?: '-'"></td>
+            <td th:text="${nd.donVi}"></td>
+            <td>
+              <span class="badge" th:text="${dsVaiTro[nd.vaiTro]}"
+                    th:classappend="${nd.vaiTro == 'ADMIN'} ? 'text-bg-danger' : 'text-bg-secondary'"></span>
+            </td>
+            <td>
+              <span class="badge" th:classappend="${nd.dangHoatDong()} ? 'text-bg-success' : 'text-bg-secondary'"
+                    th:text="${nd.dangHoatDong()} ? 'Hoạt động' : 'Không hoạt động'"></span>
+            </td>
+            <td class="text-nowrap">
+              <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/nguoi-dung/{id}/sua(id=${nd.maNd})}"><i class="bi bi-pencil-square"></i> Sửa</a>
+              <form class="d-inline" th:if="${nd.dangHoatDong()}" th:action="@{/admin/nguoi-dung/{id}/xoa(id=${nd.maNd})}" method="post"
+                    onsubmit="return confirm('Vô hiệu hóa người dùng này? (không xóa dữ liệu, có thể kích hoạt lại)');">
+                <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-slash-circle"></i> Vô hiệu hóa</button>
+              </form>
+              <form class="d-inline" th:unless="${nd.dangHoatDong()}" th:action="@{/admin/nguoi-dung/{id}/kich-hoat(id=${nd.maNd})}" method="post">
+                <button class="btn btn-sm btn-outline-success" type="submit"><i class="bi bi-check-circle"></i> Kích hoạt</button>
+              </form>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(dsNguoiDung)}">
+            <td colspan="8" class="trong-rong"><i class="bi bi-inbox"></i>Chưa có người dùng</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 </body>
 </html>

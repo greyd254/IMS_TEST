@@ -6,11 +6,11 @@
 <div th:replace="~{layout :: thongbao}"></div>
 
 <div class="container">
-  <a th:href="@{/user}" class="btn btn-link px-0">&laquo; Quay lại danh sách</a>
+  <a th:href="@{/user}" class="btn btn-link px-0"><i class="bi bi-arrow-left"></i> Quay lại danh sách</a>
 
   <div class="card mb-4">
     <div class="card-header">
-      Sự cố #<span th:text="${suCo.maSc}"></span>:
+      <i class="bi bi-card-text"></i>Sự cố #<span th:text="${suCo.maSc}"></span>:
       <strong th:text="${suCo.tieuDe}"></strong>
     </div>
     <div class="card-body">
@@ -38,7 +38,7 @@
 
   <!-- Phản hồi của admin sau khi xử lý -->
   <div class="card mb-4">
-    <div class="card-header">Phản hồi từ IT</div>
+    <div class="card-header"><i class="bi bi-chat-dots"></i>Phản hồi từ IT</div>
     <div class="card-body">
       <p th:if="${suCo.nguyenNhan == null and suCo.cachKhacPhuc == null}" class="text-muted mb-0">
         Chưa có phản hồi. IT sẽ cập nhật khi xử lý xong.
@@ -56,20 +56,56 @@
     </div>
   </div>
 
+  <!-- Phản hồi của người báo, chỉ cho gửi khi sự cố đã HOAN_THANH và chưa phản hồi lần nào -->
+  <div class="card mb-4" th:if="${suCo.trangThai == 'HOAN_THANH'}">
+    <div class="card-header"><i class="bi bi-star"></i>Phản hồi của bạn</div>
+    <div class="card-body" th:if="${phanHoi == null}">
+      <form th:action="@{/user/{id}/phan-hoi(id=${suCo.maSc})}" method="post">
+        <div class="mb-3">
+          <label class="form-label" for="mucHaiLong">Mức hài lòng</label>
+          <select class="form-select" id="mucHaiLong" name="mucHaiLong" style="max-width: 220px;">
+            <option value="5">5 - Rất hài lòng</option>
+            <option value="4">4 - Hài lòng</option>
+            <option value="3" selected>3 - Bình thường</option>
+            <option value="2">2 - Chưa hài lòng</option>
+            <option value="1">1 - Không hài lòng</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="noiDung">Nhận xét (không bắt buộc)</label>
+          <textarea class="form-control" id="noiDung" name="noiDung" rows="2" maxlength="1000"></textarea>
+        </div>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Gửi phản hồi</button>
+      </form>
+    </div>
+    <div class="card-body" th:unless="${phanHoi == null}">
+      <dl class="row mb-0">
+        <dt class="col-sm-3">Mức hài lòng</dt><dd class="col-sm-9" th:text="${phanHoi.mucHaiLong} + ' / 5'"></dd>
+        <dt class="col-sm-3">Nhận xét</dt><dd class="col-sm-9" th:text="${phanHoi.noiDung} ?: '-'"></dd>
+      </dl>
+    </div>
+  </div>
+
   <!-- Lịch sử xử lý -->
-  <h5>Lịch sử xử lý</h5>
-  <table class="table table-sm table-striped">
-    <thead><tr><th>Thời gian</th><th>Người cập nhật</th><th>Từ</th><th>Sang</th></tr></thead>
-    <tbody>
-      <tr th:each="ls : ${dsLichSu}">
-        <td th:text="${#temporals.format(ls.thoiGian, 'dd/MM/yyyy HH:mm')}"></td>
-        <td th:text="${ls.tenNguoiCapNhat} ?: '-'"></td>
-        <td><th:block th:if="${ls.trangThaiCu != null}"><span th:replace="~{layout :: trangThai(${ls.trangThaiCu})}"></span></th:block></td>
-        <td><span th:replace="~{layout :: trangThai(${ls.trangThaiMoi})}"></span></td>
-      </tr>
-      <tr th:if="${#lists.isEmpty(dsLichSu)}"><td colspan="4" class="text-center text-muted">Chưa có lịch sử</td></tr>
-    </tbody>
-  </table>
+  <div th:replace="~{layout :: tieuDe('bi-clock-history','Lịch sử xử lý')}"></div>
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table table-sm table-striped mb-0">
+        <thead><tr><th>Thời gian</th><th>Người cập nhật</th><th>Từ</th><th>Sang</th></tr></thead>
+        <tbody>
+          <tr th:each="ls : ${dsLichSu}">
+            <td th:text="${#temporals.format(ls.thoiGian, 'dd/MM/yyyy HH:mm')}"></td>
+            <td th:text="${ls.tenNguoiCapNhat} ?: '-'"></td>
+            <td><th:block th:if="${ls.trangThaiCu != null}"><span th:replace="~{layout :: trangThai(${ls.trangThaiCu})}"></span></th:block></td>
+            <td><span th:replace="~{layout :: trangThai(${ls.trangThaiMoi})}"></span></td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(dsLichSu)}">
+            <td colspan="4" class="trong-rong"><i class="bi bi-inbox"></i>Chưa có lịch sử</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 </body>
 </html>

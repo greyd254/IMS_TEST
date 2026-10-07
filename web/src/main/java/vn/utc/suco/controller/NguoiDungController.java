@@ -3,7 +3,6 @@ package vn.utc.suco.controller;
 import jakarta.servlet.http.HttpSession;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -41,13 +40,15 @@ public class NguoiDungController {
     @PostMapping("/admin/nguoi-dung")
     public String them(@RequestParam String hoTen, @RequestParam String email, @RequestParam String matKhau,
                        @RequestParam(required = false) String donVi, @RequestParam String vaiTro,
-                       RedirectAttributes ra) {
+                       @RequestParam(required = false) String sdt,
+                       HttpSession session, RedirectAttributes ra) {
         if (!hopLe(hoTen, email, vaiTro) || matKhau.isBlank()) {
             ra.addFlashAttribute("loi", "Vui lòng nhập họ tên, email hợp lệ, mật khẩu và chọn vai trò");
             return "redirect:/admin/nguoi-dung";
         }
+        NguoiDung toi = (NguoiDung) session.getAttribute("nguoiDung");
         try {
-            nguoiDungRepo.taoMoi(hoTen.trim(), email.trim().toLowerCase(), matKhau, donVi, vaiTro);
+            nguoiDungRepo.taoMoi(hoTen.trim(), email.trim().toLowerCase(), matKhau, donVi, vaiTro, sdt, toi.maNd());
             ra.addFlashAttribute("thongBao", "Đã thêm người dùng");
         } catch (DuplicateKeyException e) {
             // Vi phạm UQ_NGUOI_DUNG_EMAIL
@@ -70,6 +71,7 @@ public class NguoiDungController {
     @PostMapping("/admin/nguoi-dung/{maNd}")
     public String capNhat(@PathVariable Long maNd, @RequestParam String hoTen, @RequestParam String email,
                           @RequestParam(required = false) String donVi, @RequestParam String vaiTro,
+                          @RequestParam(required = false) String sdt,
                           @RequestParam(required = false) String matKhau,
                           HttpSession session, RedirectAttributes ra) {
         NguoiDung toi = (NguoiDung) session.getAttribute("nguoiDung");
@@ -83,7 +85,7 @@ public class NguoiDungController {
             return "redirect:/admin/nguoi-dung/" + maNd + "/sua";
         }
         try {
-            nguoiDungRepo.capNhat(maNd, hoTen.trim(), email.trim().toLowerCase(), donVi, vaiTro, matKhau);
+            nguoiDungRepo.capNhat(maNd, hoTen.trim(), email.trim().toLowerCase(), donVi, vaiTro, sdt, matKhau);
         } catch (DuplicateKeyException e) {
             ra.addFlashAttribute("loi", "Email này đã được sử dụng bởi người khác");
             return "redirect:/admin/nguoi-dung/" + maNd + "/sua";
@@ -96,20 +98,23 @@ public class NguoiDungController {
         return "redirect:/admin/nguoi-dung";
     }
 
+    /** Xóa mềm: chuyển tài khoản sang KHONG_HOAT_DONG thay vì DELETE, để giữ lại lịch sử gắn với người này. */
     @PostMapping("/admin/nguoi-dung/{maNd}/xoa")
     public String xoa(@PathVariable Long maNd, HttpSession session, RedirectAttributes ra) {
         NguoiDung toi = (NguoiDung) session.getAttribute("nguoiDung");
         if (maNd.equals(toi.maNd())) {
-            ra.addFlashAttribute("loi", "Bạn không thể tự xóa tài khoản đang đăng nhập");
+            ra.addFlashAttribute("loi", "Bạn không thể tự vô hiệu hóa tài khoản đang đăng nhập");
             return "redirect:/admin/nguoi-dung";
         }
-        try {
-            nguoiDungRepo.xoa(maNd);
-            ra.addFlashAttribute("thongBao", "Đã xóa người dùng");
-        } catch (DataIntegrityViolationException e) {
-            // Khóa ngoại: người dùng này đã báo sự cố, xử lý sự cố, viết bài kinh nghiệm hoặc có trong lịch sử
-            ra.addFlashAttribute("loi", "Không thể xóa: người dùng này đã có sự cố, bài kinh nghiệm hoặc lịch sử xử lý gắn với họ");
-        }
+        nguoiDungRepo.voHieuHoa(maNd, toi.maNd());
+        ra.addFlashAttribute("thongBao", "Đã vô hiệu hóa người dùng (không đăng nhập được, dữ liệu cũ vẫn giữ nguyên)");
+        return "redirect:/admin/nguoi-dung";
+    }
+
+    @PostMapping("/admin/nguoi-dung/{maNd}/kich-hoat")
+    public String kichHoat(@PathVariable Long maNd, RedirectAttributes ra) {
+        nguoiDungRepo.kichHoatLai(maNd);
+        ra.addFlashAttribute("thongBao", "Đã kích hoạt lại người dùng");
         return "redirect:/admin/nguoi-dung";
     }
 

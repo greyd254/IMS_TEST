@@ -1,0 +1,216 @@
+/* Giao diện dùng chung: chỉ chỉnh màu sắc/khoảng cách/bo góc trên nền Bootstrap 5.3 có sẵn,
+   không đổi cấu trúc HTML nên không ảnh hưởng logic Thymeleaf ở các trang. */
+
+:root {
+  --bs-primary: 37, 99, 173;        /* ghi đè bằng rgb "r, g, b" để khớp cách Bootstrap 5.3 dùng var */
+  --bs-primary-rgb: 37, 99, 173;
+  --bs-link-color: #2563ad;
+  --bs-link-hover-color: #1a4a84;
+  --bs-border-radius: .6rem;
+  --bs-border-radius-sm: .45rem;
+  --bs-border-radius-lg: .8rem;
+  --sc-bg: #eef1f8;
+  --sc-header-bg: #f7f9fd;
+  --sc-shadow: 0 1px 3px rgba(20, 30, 60, .08), 0 1px 2px rgba(20, 30, 60, .06);
+  --sc-sidebar-w: 240px;
+}
+
+body {
+  background: var(--sc-bg);
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: #1f2430;
+}
+
+.xuong-dong { white-space: pre-line; }
+
+/* Thanh điều hướng: điện thoại = thanh ngang dính trên đầu; từ md (>=768px) = menu dọc cố định bên trái */
+.navbar {
+  box-shadow: var(--sc-shadow);
+}
+.navbar-brand {
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+.navbar .nav-link {
+  border-radius: .5rem;
+  padding: .5rem .7rem;
+  transition: background-color .15s ease;
+}
+.navbar .nav-link:hover,
+.navbar .nav-link:focus {
+  background-color: rgba(255, 255, 255, .12);
+}
+.navbar .nav-item + .nav-item { margin-left: .15rem; }
+
+.sidebar-nav {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  margin-bottom: 1rem;
+}
+.sidebar-nav .sidebar-inner {
+  padding: .5rem 1rem;
+}
+.sidebar-nav .navbar-text {
+  line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+  /* Đẩy nội dung trang sang phải để nhường chỗ cho menu dọc; .container không còn bị giới hạn
+     độ rộng cố định theo breakpoint (sẽ bị tràn) mà co giãn theo khoảng trống còn lại. */
+  body:has(> nav.sidebar-nav) {
+    padding-left: var(--sc-sidebar-w);
+  }
+  body:has(> nav.sidebar-nav) .container {
+    max-width: 100%;
+  }
+
+  .sidebar-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--sc-sidebar-w);
+    margin-bottom: 0;
+    overflow-y: auto;
+  }
+  .sidebar-nav .sidebar-inner {
+    height: 100%;
+    padding: 1.1rem .85rem;
+  }
+  .sidebar-nav .navbar-brand {
+    font-size: 1rem;
+    line-height: 1.25;
+  }
+  .sidebar-nav .navbar-toggler {
+    display: none;
+  }
+  .sidebar-nav .navbar-collapse {
+    display: flex !important;
+    flex-direction: column;
+    flex: 1;
+    margin-top: 1.25rem;
+  }
+  .sidebar-nav .navbar-nav {
+    flex-direction: column !important;
+    width: 100%;
+  }
+  .sidebar-nav .navbar-nav .nav-item + .nav-item { margin-left: 0; }
+  .sidebar-nav .navbar-nav .nav-link { width: 100%; }
+  .sidebar-nav .navbar-text {
+    width: 100%;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, .15);
+  }
+}
+
+/* Thẻ nội dung */
+.card {
+  border: 1px solid rgba(20, 30, 60, .07);
+  border-radius: var(--bs-border-radius-lg);
+  box-shadow: var(--sc-shadow);
+}
+.card-header {
+  background-color: var(--sc-header-bg);
+  font-weight: 600;
+  border-bottom: 1px solid rgba(20, 30, 60, .07);
+}
+.card-header .bi { margin-right: .4rem; color: rgb(var(--bs-primary-rgb)); }
+
+/* Tiêu đề trang: icon + chữ, dùng chung qua layout :: tieuDe */
+.tieu-de-trang {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  margin-bottom: 1rem;
+}
+.tieu-de-trang .bi {
+  font-size: 1.2rem;
+  color: rgb(var(--bs-primary-rgb));
+  background: rgba(var(--bs-primary-rgb), .1);
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: .6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.tieu-de-trang h5 { margin: 0; font-weight: 700; }
+
+/* Bảng dữ liệu: bọc trong thẻ card, bỏ viền thừa, hàng hover rõ hơn */
+.card > .table-responsive:last-child table,
+.card > .table-responsive:first-child table { margin-bottom: 0; }
+.table {
+  --bs-table-hover-bg: rgba(var(--bs-primary-rgb), .05);
+}
+.table thead th {
+  text-transform: uppercase;
+  font-size: .72rem;
+  letter-spacing: .04em;
+  color: #6b7280;
+  background-color: var(--sc-header-bg);
+  border-bottom-width: 1px;
+}
+.table td, .table th { vertical-align: middle; }
+
+/* Trạng thái rỗng */
+.trong-rong {
+  text-align: center;
+  color: #8a92a6;
+  padding: 2rem 1rem;
+}
+.trong-rong .bi { font-size: 1.6rem; display: block; margin-bottom: .4rem; opacity: .6; }
+
+/* Nút bấm: icon + chữ cách đều */
+.btn .bi { margin-right: .3rem; }
+.btn-sm .bi { margin-right: .25rem; }
+.btn { border-radius: var(--bs-border-radius); }
+
+/* Badge dày dặn hơn một chút cho dễ đọc */
+.badge { font-weight: 600; padding: .4em .6em; }
+
+/* Form */
+.form-label { font-weight: 600; font-size: .92rem; color: #333a4d; }
+.form-control:focus, .form-select:focus {
+  border-color: rgba(var(--bs-primary-rgb), .5);
+  box-shadow: 0 0 0 .2rem rgba(var(--bs-primary-rgb), .15);
+}
+
+/* Trang đăng nhập */
+.trang-dang-nhap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #2563ad 0%, #173c70 100%);
+  padding: 1rem;
+}
+.trang-dang-nhap .card { border: none; }
+.trang-dang-nhap .bieu-tuong {
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 1rem;
+  background: rgba(var(--bs-primary-rgb), .12);
+  color: rgb(var(--bs-primary-rgb));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin: 0 auto .75rem;
+}
+
+/* Avatar chữ cái đầu tên người dùng trên thanh điều hướng */
+.avatar-chu {
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .2);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .8rem;
+  font-weight: 700;
+  margin-right: .4rem;
+}
