@@ -40,6 +40,7 @@ public class AdminController {
         String loc = (trangThai != null && TRANG_THAI.contains(trangThai)) ? trangThai : null;
         model.addAttribute("dsSuCo", suCoRepo.timTatCa(loc));
         model.addAttribute("trangThaiLoc", loc);
+        model.addAttribute("dem", suCoRepo.demTheoTrangThai());   // số liệu cho các ô lọc nhanh
         return "admin";
     }
 

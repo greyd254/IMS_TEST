@@ -3,9 +3,12 @@ package vn.utc.suco.repository;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -101,6 +104,21 @@ public class SuCoRepo {
         return jdbc.query("SELECT MA_DM, TEN_DM, SO_LAN_BAO FROM V_SU_CO_THUONG_GAP "
                         + "ORDER BY SO_LAN_BAO DESC FETCH FIRST 5 ROWS ONLY",
                 (rs, i) -> new SuCoHayGap(rs.getLong("MA_DM"), rs.getString("TEN_DM"), rs.getInt("SO_LAN_BAO")));
+    }
+
+    /**
+     * Đếm số sự cố theo từng trạng thái (GROUP BY), dùng cho các ô số liệu kiêm nút lọc nhanh ở
+     * đầu trang /admin. Trạng thái nào chưa có sự cố thì không có trong Map (giao diện hiểu là 0).
+     */
+    public Map<String, Integer> demTheoTrangThai() {
+        ResultSetExtractor<Map<String, Integer>> doc = rs -> {
+            Map<String, Integer> dem = new LinkedHashMap<>();
+            while (rs.next()) {
+                dem.put(rs.getString("TRANG_THAI"), rs.getInt("SO_LUONG"));
+            }
+            return dem;
+        };
+        return jdbc.query("SELECT TRANG_THAI, COUNT(*) AS SO_LUONG FROM SU_CO GROUP BY TRANG_THAI", doc);
     }
 
     /** Lịch sử xử lý của một sự cố, cũ trước mới sau. */

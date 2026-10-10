@@ -2,27 +2,36 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{layout :: head('Sửa danh mục')}"></head>
 <body>
-<nav th:replace="~{layout :: navbar}"></nav>
-<div th:replace="~{layout :: thongbao}"></div>
+<th:block th:replace="~{layout :: menu('danh-muc')}"></th:block>
 
-<div class="container" style="max-width: 640px;">
-  <a th:href="@{/admin/danh-muc}" class="btn btn-link px-0"><i class="bi bi-arrow-left"></i> Quay lại danh sách</a>
-  <div class="card">
-    <div class="card-header"><i class="bi bi-pencil-square"></i>Sửa danh mục #<span th:text="${dm.maDm}"></span></div>
-    <div class="card-body">
-      <form th:action="@{/admin/danh-muc/{id}(id=${dm.maDm})}" method="post">
-        <div class="mb-3">
-          <label class="form-label" for="tenDm">Tên danh mục</label>
-          <input class="form-control" id="tenDm" name="tenDm" maxlength="100" required th:value="${dm.tenDm}">
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="moTa">Mô tả</label>
-          <textarea class="form-control" id="moTa" name="moTa" rows="3" maxlength="500" th:text="${dm.moTa}"></textarea>
-        </div>
-        <button class="btn btn-primary" type="submit"><i class="bi bi-check2"></i> Lưu</button>
-      </form>
+<main class="noi-dung">
+  <div class="container-xxl hep">
+    <th:block th:replace="~{layout :: thongbao}"></th:block>
+
+    <a th:href="@{/admin/danh-muc}" class="quay-lai"><i class="bi bi-arrow-left"></i> Quay lại danh sách danh mục</a>
+
+    <div class="card">
+      <div class="card-header">
+        <i class="bi bi-pencil-square"></i>Sửa danh mục #<span th:text="${dm.maDm}"></span>
+      </div>
+      <div class="card-body">
+        <form th:action="@{/admin/danh-muc/{id}(id=${dm.maDm})}" method="post" class="row g-3">
+          <div class="col-12">
+            <label class="form-label" for="tenDm">Tên danh mục <span class="text-danger">*</span></label>
+            <input class="form-control" id="tenDm" name="tenDm" maxlength="100" required th:value="${dm.tenDm}">
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="moTa">Mô tả</label>
+            <textarea class="form-control" id="moTa" name="moTa" rows="3" maxlength="500" th:text="${dm.moTa}"></textarea>
+          </div>
+          <div class="col-12 d-flex gap-2">
+            <button class="btn btn-primary" type="submit"><i class="bi bi-check2"></i> Lưu</button>
+            <a class="btn btn-outline-secondary" th:href="@{/admin/danh-muc}">Hủy</a>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
-</div>
+</main>
 </body>
 </html>

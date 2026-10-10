@@ -2,74 +2,100 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{layout :: head('Quản lý kho kinh nghiệm')}"></head>
 <body>
-<nav th:replace="~{layout :: navbar}"></nav>
-<div th:replace="~{layout :: thongbao}"></div>
+<th:block th:replace="~{layout :: menu('kinh-nghiem')}"></th:block>
 
-<div class="container">
-  <a th:href="@{/kinh-nghiem}" class="btn btn-link px-0">Xem như trang kho kinh nghiệm <i class="bi bi-arrow-right"></i></a>
+<main class="noi-dung">
+  <div class="container-xxl">
+    <th:block th:replace="~{layout :: thongbao}"></th:block>
 
-  <!-- Form thêm bài kinh nghiệm mới. Sau khi thêm, bài này sẽ hiện ở đây và ở ô chọn "Bài kinh nghiệm liên quan"
-       khi xử lý sự cố (xem AdminController / admin-chi-tiet.html). -->
-  <div class="card mb-4">
-    <div class="card-header"><i class="bi bi-journal-plus"></i>Thêm bài kinh nghiệm</div>
-    <div class="card-body">
-      <form th:action="@{/admin/kinh-nghiem}" method="post">
-        <div class="row">
-          <div class="col-md-8 mb-3">
-            <label class="form-label" for="tieuDe">Tiêu đề</label>
-            <input class="form-control" id="tieuDe" name="tieuDe" maxlength="200" required>
-          </div>
-          <div class="col-md-4 mb-3">
-            <label class="form-label" for="maDm">Danh mục</label>
-            <select class="form-select" id="maDm" name="maDm" required>
-              <option th:each="dm : ${dsDanhMuc}" th:value="${dm.maDm}" th:text="${dm.tenDm}"></option>
-            </select>
-          </div>
+    <div class="thanh-trang">
+      <div th:replace="~{layout :: tieuDe('bi-journal-text','Kho kinh nghiệm (quản lý)','Bài thêm ở đây sẽ hiện trong ô chọn bài liên quan khi xử lý sự cố')}"></div>
+      <div class="hanh-dong">
+        <input type="search" class="form-control o-tim" data-loc="#bangBaiKn"
+               placeholder="Tìm bài theo tiêu đề..." aria-label="Tìm bài kinh nghiệm">
+        <button class="btn btn-primary text-nowrap" type="button" data-bs-toggle="collapse"
+                data-bs-target="#formThem" aria-expanded="false" aria-controls="formThem">
+          <i class="bi bi-journal-plus"></i> Thêm bài
+        </button>
+        <a th:href="@{/kinh-nghiem}" class="btn btn-outline-secondary text-nowrap">
+          <i class="bi bi-eye"></i> Xem như người dùng
+        </a>
+      </div>
+    </div>
+
+    <div class="collapse mb-3" id="formThem" th:classappend="${loi} ? 'show'">
+      <div class="card">
+        <div class="card-header"><i class="bi bi-journal-plus"></i>Thêm bài kinh nghiệm</div>
+        <div class="card-body">
+          <form th:action="@{/admin/kinh-nghiem}" method="post" class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label" for="tieuDe">Tiêu đề <span class="text-danger">*</span></label>
+              <input class="form-control" id="tieuDe" name="tieuDe" maxlength="200" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="maDm">Danh mục <span class="text-danger">*</span></label>
+              <select class="form-select" id="maDm" name="maDm" required>
+                <option th:each="dm : ${dsDanhMuc}" th:value="${dm.maDm}" th:text="${dm.tenDm}"></option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="trieuChung">Triệu chứng</label>
+              <textarea class="form-control" id="trieuChung" name="trieuChung" rows="3" maxlength="1000"></textarea>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="nguyenNhan">Nguyên nhân</label>
+              <textarea class="form-control" id="nguyenNhan" name="nguyenNhan" rows="3" maxlength="1000"></textarea>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="giaiPhap">Giải pháp <span class="text-danger">*</span></label>
+              <textarea class="form-control" id="giaiPhap" name="giaiPhap" rows="3" maxlength="1000" required></textarea>
+            </div>
+            <div class="col-12 d-flex gap-2">
+              <button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg"></i> Thêm bài</button>
+              <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#formThem">Đóng</button>
+            </div>
+          </form>
         </div>
-        <div class="mb-3">
-          <label class="form-label" for="trieuChung">Triệu chứng</label>
-          <textarea class="form-control" id="trieuChung" name="trieuChung" rows="2" maxlength="1000"></textarea>
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="nguyenNhan">Nguyên nhân</label>
-          <textarea class="form-control" id="nguyenNhan" name="nguyenNhan" rows="2" maxlength="1000"></textarea>
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="giaiPhap">Giải pháp</label>
-          <textarea class="form-control" id="giaiPhap" name="giaiPhap" rows="2" maxlength="1000" required></textarea>
-        </div>
-        <button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg"></i> Thêm</button>
-      </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle bang-gon" id="bangBaiKn">
+          <thead><tr><th>Mã</th><th>Tiêu đề</th><th>Danh mục</th><th>Người viết</th><th>Ngày tạo</th><th></th></tr></thead>
+          <tbody>
+            <tr th:each="b : ${dsBai}">
+              <td data-label="Mã" class="an-mobile" th:text="'#' + ${b.maBai}"></td>
+              <td class="o-chinh">
+                <a th:href="@{/kinh-nghiem/{id}(id=${b.maBai})}" th:text="${b.tieuDe}"></a>
+                <span class="o-phu d-md-none" th:text="'#' + ${b.maBai}"></span>
+              </td>
+              <td data-label="Danh mục">
+                <span class="badge text-bg-secondary" th:text="${b.tenDm}"></span>
+              </td>
+              <td data-label="Người viết" th:text="${b.tenNguoiViet}"></td>
+              <td data-label="Ngày tạo" th:text="${#temporals.format(b.ngayTao, 'dd/MM/yyyy')}"></td>
+              <td>
+                <span class="nhom-nut">
+                  <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/kinh-nghiem/{id}/sua(id=${b.maBai})}">
+                    <i class="bi bi-pencil-square"></i> Sửa
+                  </a>
+                  <form th:action="@{/admin/kinh-nghiem/{id}/xoa(id=${b.maBai})}" method="post"
+                        onsubmit="return confirm('Xóa bài kinh nghiệm này?');">
+                    <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i> Xóa</button>
+                  </form>
+                </span>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(dsBai)}">
+              <td colspan="6" class="trong-rong"><i class="bi bi-inbox"></i>Chưa có bài kinh nghiệm</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
-
-  <div th:replace="~{layout :: tieuDe('bi-journal-text','Danh sách bài kinh nghiệm')}"></div>
-  <div class="card">
-    <div class="table-responsive">
-      <table class="table table-striped align-middle mb-0">
-        <thead><tr><th>Mã</th><th>Tiêu đề</th><th>Danh mục</th><th>Người viết</th><th>Ngày tạo</th><th></th></tr></thead>
-        <tbody>
-          <tr th:each="b : ${dsBai}">
-            <td th:text="${b.maBai}"></td>
-            <td th:text="${b.tieuDe}"></td>
-            <td th:text="${b.tenDm}"></td>
-            <td th:text="${b.tenNguoiViet}"></td>
-            <td th:text="${#temporals.format(b.ngayTao, 'dd/MM/yyyy')}"></td>
-            <td class="text-nowrap">
-              <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/kinh-nghiem/{id}/sua(id=${b.maBai})}"><i class="bi bi-pencil-square"></i> Sửa</a>
-              <form class="d-inline" th:action="@{/admin/kinh-nghiem/{id}/xoa(id=${b.maBai})}" method="post"
-                    onsubmit="return confirm('Xóa bài kinh nghiệm này?');">
-                <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i> Xóa</button>
-              </form>
-            </td>
-          </tr>
-          <tr th:if="${#lists.isEmpty(dsBai)}">
-            <td colspan="6" class="trong-rong"><i class="bi bi-inbox"></i>Chưa có bài kinh nghiệm</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
+</main>
 </body>
 </html>

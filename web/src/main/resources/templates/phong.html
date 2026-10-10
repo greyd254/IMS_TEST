@@ -2,67 +2,92 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{layout :: head('Quản lý phòng')}"></head>
 <body>
-<nav th:replace="~{layout :: navbar}"></nav>
-<div th:replace="~{layout :: thongbao}"></div>
+<th:block th:replace="~{layout :: menu('phong')}"></th:block>
 
-<div class="container">
-  <!-- Form thêm phòng mới: dùng khi mở rộng khu vực hỗ trợ -->
-  <div class="card mb-4">
-    <div class="card-header"><i class="bi bi-door-open"></i>Thêm phòng</div>
-    <div class="card-body">
-      <form th:action="@{/admin/phong}" method="post" class="row g-3">
-        <div class="col-md-4">
-          <label class="form-label" for="tenPhong">Tên phòng</label>
-          <input class="form-control" id="tenPhong" name="tenPhong" maxlength="100" required>
+<main class="noi-dung">
+  <div class="container-xxl">
+    <th:block th:replace="~{layout :: thongbao}"></th:block>
+
+    <div class="thanh-trang">
+      <div th:replace="~{layout :: tieuDe('bi-door-open','Phòng',null)}"></div>
+      <div class="hanh-dong">
+        <input type="search" class="form-control o-tim" data-loc="#bangPhong"
+               placeholder="Tìm tên phòng, tòa nhà..." aria-label="Tìm phòng">
+        <button class="btn btn-primary text-nowrap" type="button" data-bs-toggle="collapse"
+                data-bs-target="#formThem" aria-expanded="false" aria-controls="formThem">
+          <i class="bi bi-plus-lg"></i> Thêm phòng
+        </button>
+      </div>
+    </div>
+
+    <!-- Form thêm phòng: dùng khi mở rộng khu vực hỗ trợ -->
+    <div class="collapse mb-3" id="formThem" th:classappend="${loi} ? 'show'">
+      <div class="card">
+        <div class="card-header"><i class="bi bi-plus-circle"></i>Thêm phòng mới</div>
+        <div class="card-body">
+          <form th:action="@{/admin/phong}" method="post" class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label" for="tenPhong">Tên phòng <span class="text-danger">*</span></label>
+              <input class="form-control" id="tenPhong" name="tenPhong" maxlength="100" required>
+            </div>
+            <div class="col-md-3 col-6">
+              <label class="form-label" for="toaNha">Tòa nhà <span class="text-danger">*</span></label>
+              <input class="form-control" id="toaNha" name="toaNha" maxlength="20" required>
+            </div>
+            <div class="col-md-2 col-6">
+              <label class="form-label" for="tang">Tầng</label>
+              <input class="form-control" type="number" id="tang" name="tang" min="0" max="99" placeholder="Tùy chọn">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label" for="loaiPhong">Loại phòng</label>
+              <select class="form-select" id="loaiPhong" name="loaiPhong">
+                <option th:each="e : ${dsLoai}" th:value="${e.key}" th:text="${e.value}"></option>
+              </select>
+            </div>
+            <div class="col-12 d-flex gap-2">
+              <button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg"></i> Thêm phòng</button>
+              <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#formThem">Đóng</button>
+            </div>
+          </form>
         </div>
-        <div class="col-md-3">
-          <label class="form-label" for="toaNha">Tòa nhà</label>
-          <input class="form-control" id="toaNha" name="toaNha" maxlength="20" required>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label" for="tang">Tầng</label>
-          <input class="form-control" type="number" id="tang" name="tang" min="0" max="99" placeholder="Không bắt buộc">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label" for="loaiPhong">Loại phòng</label>
-          <select class="form-select" id="loaiPhong" name="loaiPhong">
-            <option th:each="e : ${dsLoai}" th:value="${e.key}" th:text="${e.value}"></option>
-          </select>
-        </div>
-        <div class="col-md-1 d-flex align-items-end">
-          <button class="btn btn-primary w-100" type="submit"><i class="bi bi-plus-lg"></i></button>
-        </div>
-      </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle bang-gon" id="bangPhong">
+          <thead><tr><th>Mã</th><th>Tên phòng</th><th>Tòa nhà</th><th>Tầng</th><th>Loại</th><th></th></tr></thead>
+          <tbody>
+            <tr th:each="p : ${dsPhong}">
+              <td data-label="Mã" class="an-mobile" th:text="'#' + ${p.maPhong}"></td>
+              <td class="o-chinh">
+                <span th:text="${p.tenPhong}"></span>
+                <span class="o-phu d-md-none" th:text="'#' + ${p.maPhong}"></span>
+              </td>
+              <td data-label="Tòa nhà" th:text="${p.toaNha}"></td>
+              <td data-label="Tầng" th:text="${p.tang} ?: '-'"></td>
+              <td data-label="Loại" th:text="${dsLoai[p.loaiPhong]}"></td>
+              <td>
+                <span class="nhom-nut">
+                  <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/phong/{id}/sua(id=${p.maPhong})}">
+                    <i class="bi bi-pencil-square"></i> Sửa
+                  </a>
+                  <form th:action="@{/admin/phong/{id}/xoa(id=${p.maPhong})}" method="post"
+                        onsubmit="return confirm('Xóa phòng này?');">
+                    <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i> Xóa</button>
+                  </form>
+                </span>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(dsPhong)}">
+              <td colspan="6" class="trong-rong"><i class="bi bi-inbox"></i>Chưa có phòng</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
-
-  <div th:replace="~{layout :: tieuDe('bi-door-open','Danh sách phòng')}"></div>
-  <div class="card">
-    <div class="table-responsive">
-      <table class="table table-striped align-middle mb-0">
-        <thead><tr><th>Mã</th><th>Tên phòng</th><th>Tòa nhà</th><th>Tầng</th><th>Loại</th><th></th></tr></thead>
-        <tbody>
-          <tr th:each="p : ${dsPhong}">
-            <td th:text="${p.maPhong}"></td>
-            <td th:text="${p.tenPhong}"></td>
-            <td th:text="${p.toaNha}"></td>
-            <td th:text="${p.tang} ?: '-'"></td>
-            <td th:text="${dsLoai[p.loaiPhong]}"></td>
-            <td class="text-nowrap">
-              <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/phong/{id}/sua(id=${p.maPhong})}"><i class="bi bi-pencil-square"></i> Sửa</a>
-              <form class="d-inline" th:action="@{/admin/phong/{id}/xoa(id=${p.maPhong})}" method="post"
-                    onsubmit="return confirm('Xóa phòng này?');">
-                <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i> Xóa</button>
-              </form>
-            </td>
-          </tr>
-          <tr th:if="${#lists.isEmpty(dsPhong)}">
-            <td colspan="6" class="trong-rong"><i class="bi bi-inbox"></i>Chưa có phòng</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
+</main>
 </body>
 </html>

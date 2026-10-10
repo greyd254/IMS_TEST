@@ -2,55 +2,79 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{layout :: head('Quản lý danh mục sự cố')}"></head>
 <body>
-<nav th:replace="~{layout :: navbar}"></nav>
-<div th:replace="~{layout :: thongbao}"></div>
+<th:block th:replace="~{layout :: menu('danh-muc')}"></th:block>
 
-<div class="container">
-  <!-- Form thêm danh mục mới -->
-  <div class="card mb-4">
-    <div class="card-header"><i class="bi bi-tag"></i>Thêm danh mục</div>
-    <div class="card-body">
-      <form th:action="@{/admin/danh-muc}" method="post" class="row g-3">
-        <div class="col-md-4">
-          <label class="form-label" for="tenDm">Tên danh mục</label>
-          <input class="form-control" id="tenDm" name="tenDm" maxlength="100" required>
+<main class="noi-dung">
+  <div class="container-xxl">
+    <th:block th:replace="~{layout :: thongbao}"></th:block>
+
+    <div class="thanh-trang">
+      <div th:replace="~{layout :: tieuDe('bi-tags','Danh mục sự cố','Dùng cho ô chọn danh mục khi báo sự cố và viết bài kinh nghiệm')}"></div>
+      <div class="hanh-dong">
+        <input type="search" class="form-control o-tim" data-loc="#bangDanhMuc"
+               placeholder="Tìm danh mục..." aria-label="Tìm danh mục">
+        <button class="btn btn-primary text-nowrap" type="button" data-bs-toggle="collapse"
+                data-bs-target="#formThem" aria-expanded="false" aria-controls="formThem">
+          <i class="bi bi-plus-lg"></i> Thêm danh mục
+        </button>
+      </div>
+    </div>
+
+    <div class="collapse mb-3" id="formThem" th:classappend="${loi} ? 'show'">
+      <div class="card">
+        <div class="card-header"><i class="bi bi-plus-circle"></i>Thêm danh mục mới</div>
+        <div class="card-body">
+          <form th:action="@{/admin/danh-muc}" method="post" class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label" for="tenDm">Tên danh mục <span class="text-danger">*</span></label>
+              <input class="form-control" id="tenDm" name="tenDm" maxlength="100" required>
+            </div>
+            <div class="col-md-8">
+              <label class="form-label" for="moTa">Mô tả</label>
+              <input class="form-control" id="moTa" name="moTa" maxlength="500">
+            </div>
+            <div class="col-12 d-flex gap-2">
+              <button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg"></i> Thêm danh mục</button>
+              <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#formThem">Đóng</button>
+            </div>
+          </form>
         </div>
-        <div class="col-md-7">
-          <label class="form-label" for="moTa">Mô tả</label>
-          <input class="form-control" id="moTa" name="moTa" maxlength="500">
-        </div>
-        <div class="col-md-1 d-flex align-items-end">
-          <button class="btn btn-primary w-100" type="submit"><i class="bi bi-plus-lg"></i></button>
-        </div>
-      </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle bang-gon" id="bangDanhMuc">
+          <thead><tr><th>Mã</th><th>Tên danh mục</th><th>Mô tả</th><th></th></tr></thead>
+          <tbody>
+            <tr th:each="dm : ${dsDanhMuc}">
+              <td data-label="Mã" class="an-mobile" th:text="'#' + ${dm.maDm}"></td>
+              <td class="o-chinh">
+                <span th:text="${dm.tenDm}"></span>
+                <span class="o-phu d-md-none" th:text="'#' + ${dm.maDm}"></span>
+              </td>
+              <td data-label="Mô tả" th:text="${dm.moTa} ?: '-'"></td>
+              <td>
+                <span class="nhom-nut">
+                  <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/danh-muc/{id}/sua(id=${dm.maDm})}">
+                    <i class="bi bi-pencil-square"></i> Sửa
+                  </a>
+                  <form th:action="@{/admin/danh-muc/{id}/xoa(id=${dm.maDm})}" method="post"
+                        onsubmit="return confirm('Xóa danh mục này?');">
+                    <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i> Xóa</button>
+                  </form>
+                </span>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(dsDanhMuc)}">
+              <td colspan="4" class="trong-rong"><i class="bi bi-inbox"></i>Chưa có danh mục</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
-
-  <div th:replace="~{layout :: tieuDe('bi-tags','Danh sách danh mục')}"></div>
-  <div class="card">
-    <div class="table-responsive">
-      <table class="table table-striped align-middle mb-0">
-        <thead><tr><th>Mã</th><th>Tên danh mục</th><th>Mô tả</th><th></th></tr></thead>
-        <tbody>
-          <tr th:each="dm : ${dsDanhMuc}">
-            <td th:text="${dm.maDm}"></td>
-            <td th:text="${dm.tenDm}"></td>
-            <td th:text="${dm.moTa}"></td>
-            <td class="text-nowrap">
-              <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/danh-muc/{id}/sua(id=${dm.maDm})}"><i class="bi bi-pencil-square"></i> Sửa</a>
-              <form class="d-inline" th:action="@{/admin/danh-muc/{id}/xoa(id=${dm.maDm})}" method="post"
-                    onsubmit="return confirm('Xóa danh mục này?');">
-                <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i> Xóa</button>
-              </form>
-            </td>
-          </tr>
-          <tr th:if="${#lists.isEmpty(dsDanhMuc)}">
-            <td colspan="4" class="trong-rong"><i class="bi bi-inbox"></i>Chưa có danh mục</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
+</main>
 </body>
 </html>

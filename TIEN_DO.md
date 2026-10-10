@@ -59,3 +59,19 @@ Cập nhật: 26/09/2026. Đề: "Đề số 30 - Đề mở" (`De Thi Oracle Li
   - **Ảnh `docs/so_do_ER_SUCO_APP.png` chưa cập nhật**: `tools/VeSoDoER.java` viết tay theo đúng 7 bảng cũ (lưới + đường nối cố định cho từng FK), chạy lại bị lỗi bố cục (PHAN_HOI đè lên PHONG, thiếu 4 đường nối tự tham chiếu/PHAN_HOI) nên đã khôi phục ảnh PNG cũ qua git. Sơ đồ Mermaid trong `SO_DO_QUAN_HE.md` đã đúng, đầy đủ 8 bảng; muốn có ảnh PNG mới cần sửa tay `VeSoDoER.java` trước (thêm ô lưới cho PHAN_HOI, thêm code vẽ 4 đường còn thiếu).
 - **Web**: CRUD danh mục sự cố (`/admin/danh-muc`, trước đó danh mục chỉ sửa được qua INSERT tay); nút "Vô hiệu hóa/Kích hoạt" người dùng thay cho xóa cứng; thêm SĐT, nhà cung cấp, ngày lắp đặt, HDSD vào form thêm/sửa; người dùng gửi phản hồi (1-5 + nhận xét) ở trang chi tiết sự cố khi đã HOAN_THANH, admin xem phản hồi (chỉ đọc) ở trang chi tiết xử lý; trang `/user` hiển thị khối "Sự cố hay gặp" theo danh mục.
 - Đã `mvn compile` sạch và chạy migration SQL thật trên DB đang có dữ liệu (dùng `tools/RunSql.java` + ojdbc17 jar trong `~/.m2`), kèm vài dòng dữ liệu demo an toàn (không dùng ID cố định, chỉ thêm khi còn thiếu). **Chưa test lại qua giao diện trình duyệt** — nên bật web rồi thử: thêm/sửa thiết bị có nhà cung cấp, vô hiệu hóa/kích hoạt người dùng, CRUD danh mục, báo sự cố xong gửi phản hồi — trước khi coi là xong hẳn.
+
+## Cập nhật 10/10/2026 (sắp xếp lại giao diện web cho gọn, dùng được trên cả điện thoại và máy tính)
+
+Chỉ đụng tới `web/src/main/resources` (template + CSS + 1 file JS nhỏ) và 2 file Java nhỏ, **không đổi CSDL, không đổi đường dẫn (URL) nào** nên các truy vấn/báo cáo đã viết vẫn đúng.
+
+- **Menu**: máy tính = cột dọc cố định bên trái, chia nhóm "Xử lý hằng ngày" / "Dữ liệu nền", tô sáng mục đang mở (mỗi trang truyền tên mục vào fragment `layout :: menu('...')`). Điện thoại = thanh trên + ngăn kéo trượt (Bootstrap offcanvas) thay cho menu xổ đẩy nội dung như trước.
+- **Bảng dữ liệu**: dưới 768px tự xếp mỗi dòng thành một thẻ, mỗi ô có nhãn ở bên trái (lớp `.bang-gon` + thuộc tính `data-label` trên `<td>`), hết cảnh phải kéo ngang trên điện thoại.
+- **Ô tìm nhanh** ở mọi danh sách (`static/js/app.js`): lọc ngay trên trang, bỏ dấu tiếng Việt nên gõ "may in" vẫn ra "Máy in".
+- **Trang `/admin`**: 4 ô số liệu Tất cả / Mới / Đang xử lý / Hoàn thành, bấm vào là lọc (thay ô select cũ). Số đếm lấy bằng `SuCoRepo.demTheoTrangThai()` (GROUP BY trên SU_CO).
+- **Trang chi tiết sự cố**: máy tính chia 2 cột — trái là thông tin + phản hồi + lịch sử, phải là form cập nhật, không phải cuộn dài như trước.
+- **Trang `/user`**: thêm 3 ô đếm sự cố của chính mình, form báo sự cố và khối "Sự cố hay gặp" nằm cạnh nhau trên màn rộng.
+- **Các trang quản lý** (thiết bị, phòng, danh mục, người dùng, kho kinh nghiệm): form "Thêm" thu gọn sau một nút, mở ra khi cần (tự mở lại nếu lần gửi trước bị lỗi), nên danh sách hiện ngay đầu trang.
+- **Kho kinh nghiệm**: danh sách dạng lưới thẻ thay cho list-group.
+- Đã kiểm tra thật bằng Chrome ở 2 khổ 1440px và 390px cho các trang chính; ô tìm, nút Thêm và menu điện thoại chạy đúng, không lỗi JS.
+
+**Lưu ý vận hành gặp hôm nay**: Oracle không mở được vì Fast Recovery Area 5 GB đã đầy 100% (43 archive log ~4,84 GB) → `ORA-19809` rồi `ORA-16038`, instance tự tắt khi OPEN. Cách xử lý đã làm: `STARTUP MOUNT` → RMAN `crosscheck archivelog all; delete noprompt archivelog all; delete noprompt obsolete;` → `ALTER DATABASE OPEN; ALTER PLUGGABLE DATABASE ALL OPEN;`. Sau đó FRA còn 0,37 GB. Vì DB vẫn ở ARCHIVELOG nên log sẽ đầy lại; nếu không cần demo RMAN nữa thì cân nhắc đưa về NOARCHIVELOG (xem mục "Trạng thái máy Oracle" ở trên).
