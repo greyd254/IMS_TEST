@@ -38,3 +38,6 @@ node_modules/
 ### Ảnh đính kèm sự cố do user tải lên (xem LuuAnh.java) ###
 web/uploads/
 uploads/
+
+### De bai / prompt goc, giu o may, khong day len GitHub (repo nay la public) ###
+src/PROMT.MD
