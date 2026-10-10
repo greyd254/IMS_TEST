@@ -56,7 +56,7 @@ Cập nhật: 26/09/2026. Đề: "Đề số 30 - Đề mở" (`De Thi Oracle Li
   - Bảng mới `PHAN_HOI`: phản hồi của người báo sau khi sự cố HOAN_THANH (mức hài lòng 1-5 + nhận xét), mỗi sự cố chỉ 1 phản hồi (UNIQUE).
   - View mới `V_SU_CO_THUONG_GAP`: đếm sự cố theo danh mục — cố tình làm view/truy vấn thay vì cột tần suất tĩnh trên SU_CO để khỏi phải tự đồng bộ tay.
   - `sql/05_queries.sql`: từ 15 lên 17 truy vấn (Q16 top danh mục hay gặp, Q17 điểm hài lòng trung bình theo admin).
-  - **Ảnh `docs/so_do_ER_SUCO_APP.png` chưa cập nhật**: `tools/VeSoDoER.java` viết tay theo đúng 7 bảng cũ (lưới + đường nối cố định cho từng FK), chạy lại bị lỗi bố cục (PHAN_HOI đè lên PHONG, thiếu 4 đường nối tự tham chiếu/PHAN_HOI) nên đã khôi phục ảnh PNG cũ qua git. Sơ đồ Mermaid trong `SO_DO_QUAN_HE.md` đã đúng, đầy đủ 8 bảng; muốn có ảnh PNG mới cần sửa tay `VeSoDoER.java` trước (thêm ô lưới cho PHAN_HOI, thêm code vẽ 4 đường còn thiếu).
+  - **Ảnh `docs/so_do_ER_SUCO_APP.png`**: lúc đó chưa cập nhật được vì `tools/VeSoDoER.java` viết tay theo đúng 7 bảng cũ. **Đã xử lý xong ngày 10/10/2026** (xem mục cuối file).
 - **Web**: CRUD danh mục sự cố (`/admin/danh-muc`, trước đó danh mục chỉ sửa được qua INSERT tay); nút "Vô hiệu hóa/Kích hoạt" người dùng thay cho xóa cứng; thêm SĐT, nhà cung cấp, ngày lắp đặt, HDSD vào form thêm/sửa; người dùng gửi phản hồi (1-5 + nhận xét) ở trang chi tiết sự cố khi đã HOAN_THANH, admin xem phản hồi (chỉ đọc) ở trang chi tiết xử lý; trang `/user` hiển thị khối "Sự cố hay gặp" theo danh mục.
 - Đã `mvn compile` sạch và chạy migration SQL thật trên DB đang có dữ liệu (dùng `tools/RunSql.java` + ojdbc17 jar trong `~/.m2`), kèm vài dòng dữ liệu demo an toàn (không dùng ID cố định, chỉ thêm khi còn thiếu). **Chưa test lại qua giao diện trình duyệt** — nên bật web rồi thử: thêm/sửa thiết bị có nhà cung cấp, vô hiệu hóa/kích hoạt người dùng, CRUD danh mục, báo sự cố xong gửi phản hồi — trước khi coi là xong hẳn.
 
@@ -75,3 +75,14 @@ Chỉ đụng tới `web/src/main/resources` (template + CSS + 1 file JS nhỏ) 
 - Đã kiểm tra thật bằng Chrome ở 2 khổ 1440px và 390px cho các trang chính; ô tìm, nút Thêm và menu điện thoại chạy đúng, không lỗi JS.
 
 **Lưu ý vận hành gặp hôm nay**: Oracle không mở được vì Fast Recovery Area 5 GB đã đầy 100% (43 archive log ~4,84 GB) → `ORA-19809` rồi `ORA-16038`, instance tự tắt khi OPEN. Cách xử lý đã làm: `STARTUP MOUNT` → RMAN `crosscheck archivelog all; delete noprompt archivelog all; delete noprompt obsolete;` → `ALTER DATABASE OPEN; ALTER PLUGGABLE DATABASE ALL OPEN;`. Sau đó FRA còn 0,37 GB. Vì DB vẫn ở ARCHIVELOG nên log sẽ đầy lại; nếu không cần demo RMAN nữa thì cân nhắc đưa về NOARCHIVELOG (xem mục "Trạng thái máy Oracle" ở trên).
+
+### Vẽ lại sơ đồ ER (10/10/2026)
+
+`tools/VeSoDoER.java` đã sửa xong, ảnh `docs/so_do_ER_SUCO_APP.png` giờ **đủ 8 bảng, 14 khóa ngoại**, đọc trực tiếp từ từ điển dữ liệu Oracle nên khớp CSDL thật:
+
+- Thêm `PHAN_HOI` vào lưới bố trí ở ô trên cùng bên phải; nối với `SU_CO` qua hành lang ngang giữa hàng 0 và hàng 1, nối với `NGUOI_DUNG` qua hành lang phía trên (đã nới `top` từ 92 lên 124 để có chỗ).
+- Vẽ 2 khóa ngoại tự tham chiếu của `NGUOI_DUNG` (`MA_NGUOI_TAO`, `MA_NGUOI_XOA`) thành hai vòng nhỏ dưới đáy bảng, nằm hai bên đường `MA_NGUOI_CAP_NHAT`.
+- Phân biệt quan hệ 1-1: cột khóa ngoại có UNIQUE (`PHAN_HOI.MA_SC`) vẽ đầu con là `O|` (không hoặc một) thay vì chân chim; nhãn khóa trong bảng hiện `FK,UK`.
+- Chạy lại: `java -cp %USERPROFILE%\.m2\repository\com\oracle\database\jdbc\ojdbc17\23.26.3.0.0\ojdbc17-23.26.3.0.0.jar tools\VeSoDoER.java` (mặc định ghi đè `docs/so_do_ER_SUCO_APP.png`). Nếu sau này thêm bảng/khóa ngoại mới mà chưa khai báo đường vẽ, chương trình in `CANH BAO: chua co duong noi cho ...` — phải thêm nhánh vẽ trong `VeSoDoER.java`.
+
+Còn lại duy nhất: **báo cáo Word `docs/BaoCao_Oracle_QuanLySuCo.docx`** vẫn là bản đã nộp 26/09, chưa có `PHAN_HOI`, các chức năng web thêm sau và giao diện mới. Nếu cập nhật thì nên lưu sang tên khác để giữ nguyên bản đã nộp.

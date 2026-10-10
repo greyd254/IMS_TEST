@@ -6,9 +6,11 @@ Schema `SUCO_APP`, tablespace `TS_SUCO`.
 
 ![Sơ đồ quan hệ SUCO_APP](docs/so_do_ER_SUCO_APP.png)
 
-File ảnh: `docs/so_do_ER_SUCO_APP.png` (2928 x 2446 px, chèn vào Word nên để trang nằm ngang hoặc để ảnh chiếm cả chiều rộng trang). Ảnh được vẽ bằng `tools/VeSoDoER.java`: chương trình đọc bảng, cột, kiểu dữ liệu, khóa chính, khóa ngoại, ràng buộc duy nhất và NOT NULL từ từ điển dữ liệu Oracle (`user_tab_columns`, `user_constraints`, `user_cons_columns`).
+File ảnh: `docs/so_do_ER_SUCO_APP.png` (2892 x 2678 px, chèn vào Word nên để trang nằm ngang hoặc để ảnh chiếm cả chiều rộng trang). Ảnh được vẽ bằng `tools/VeSoDoER.java`: chương trình đọc bảng, cột, kiểu dữ liệu, khóa chính, khóa ngoại, ràng buộc duy nhất và NOT NULL từ từ điển dữ liệu Oracle (`user_tab_columns`, `user_constraints`, `user_cons_columns`).
 
-**Lưu ý (sau khi thêm bảng PHAN_HOI, 07/10/2026):** vị trí bảng và đường nối trong `VeSoDoER.java` được viết tay theo đúng 7 bảng ban đầu (lưới cố định + từng đường FK gọi tên biến riêng), không tự suy luận bố cục cho bảng mới. Đã thử chạy lại và bảng `PHAN_HOI` bị đặt đè lên bảng `PHONG`, thiếu 4 đường nối (2 khóa ngoại tự tham chiếu của `NGUOI_DUNG`, 2 khóa ngoại của `PHAN_HOI`) — nên đã khôi phục lại ảnh PNG cũ (7 bảng, khớp commit trước) thay vì dùng bản lỗi. Ảnh hiện tại **chưa có** `PHAN_HOI` và các cột mới; sơ đồ Mermaid bên dưới mới là bản đúng, đầy đủ. Muốn có ảnh PNG đúng, cần sửa tay `VeSoDoER.java` (thêm ô lưới cho `PHAN_HOI`, thêm code vẽ 4 đường còn thiếu) rồi chạy lại lệnh dưới đây.
+**Cập nhật 10/10/2026:** ảnh đã vẽ lại, **đủ 8 bảng và 14 khóa ngoại**, khớp với sơ đồ Mermaid bên dưới. `VeSoDoER.java` đã được sửa: thêm ô lưới cho `PHAN_HOI` (góc trên bên phải, nối với `SU_CO` qua hành lang giữa hàng 0 - hàng 1 và với `NGUOI_DUNG` qua hành lang phía trên), vẽ 2 khóa ngoại tự tham chiếu của `NGUOI_DUNG` thành hai vòng nhỏ dưới đáy bảng, và phân biệt quan hệ 1-1: cột khóa ngoại có UNIQUE (`PHAN_HOI.MA_SC`) được vẽ đầu con là `O|` (không hoặc một) thay vì chân chim.
+
+Lưu ý khi sửa cấu trúc bảng về sau: bố cục trong `VeSoDoER.java` vẫn là **viết tay** (lưới 3x3 cố định + mỗi khóa ngoại một nhánh `if` riêng chỉ ra đường đi). Thêm bảng hoặc khóa ngoại mới thì phải thêm ô lưới và nhánh vẽ tương ứng, nếu không chương trình in `CANH BAO: chua co duong noi cho ...` và bỏ qua đường đó.
 
 Vẽ lại sau khi sửa cấu trúc bảng:
 
