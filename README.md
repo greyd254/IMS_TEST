@@ -36,7 +36,9 @@ Không chạy lại `00_run_all.sql` (sẽ lỗi vì đối tượng đã tồn 
 | Cần làm | File | Chạy bằng |
 |---|---|---|
 | CSDL dựng từ **bản cũ** (mật khẩu còn plain text), đăng nhập web bị lỗi | `09_bam_mat_khau.sql` (băm PBKDF2 mật khẩu 10 user mẫu) | SUCO_APP |
-| Xem lại 15 truy vấn mẫu, hoặc tạo lại view `V_SU_CO_CHI_TIET` (web bắt buộc phải có view này) | `05_queries.sql` | SUCO_APP |
+| Xem lại 17 truy vấn mẫu, hoặc tạo lại view `V_SU_CO_CHI_TIET` và `V_SU_CO_THUONG_GAP` (web bắt buộc phải có 2 view này) | `05_queries.sql` | SUCO_APP |
+| CSDL dựng trước 02/10/2026: thêm cột ảnh đính kèm `SU_CO.ANH_DINH_KEM` | `10_them_anh_dinh_kem.sql` | SUCO_APP |
+| CSDL dựng trước 07/10/2026: thêm bảng `PHAN_HOI`, các cột mới của `NGUOI_DUNG`/`THIET_BI`, view `V_SU_CO_THUONG_GAP` | `11_mo_rong_du_lieu.sql` | SUCO_APP |
 | Tạo lại phân quyền, user demo `U_NHANVIEN`, `U_QUANTRI` | `06_users_roles.sql` | SYSTEM |
 | Demo profile, khóa/mở khóa user, quota, role nhiều cấp | `08_quan_tri_user.sql` | SYSTEM |
 | Demo quản trị: instance, tablespace, RMAN, expdp/impdp | `07_admin_demo.sql` | SYSDBA, **chạy thủ công từng khối** |
@@ -56,8 +58,12 @@ Ví dụ: `sql system@localhost:1521/FREEPDB1` rồi `@08_quan_tri_user.sql`.
 | `06_users_roles.sql` | phân quyền, user demo | SYSTEM |
 | `07_admin_demo.sql` | kịch bản quản trị | SYSDBA |
 | `08_quan_tri_user.sql` | profile, quản trị user | SYSTEM |
-| `09_bam_mat_khau.sql` | nâng cấp CSDL bản cũ | SUCO_APP |
+| `09_bam_mat_khau.sql` | nâng cấp CSDL bản cũ (băm mật khẩu) | SUCO_APP |
+| `10_them_anh_dinh_kem.sql` | nâng cấp CSDL bản cũ (cột ảnh đính kèm) | SUCO_APP |
+| `11_mo_rong_du_lieu.sql` | nâng cấp CSDL bản cũ (bảng PHAN_HOI, cột mới, view thường gặp) | SUCO_APP |
 | `99_drop_all.sql` | xóa sạch | SYSTEM |
+
+File 10 và 11 chỉ dùng cho CSDL đã dựng từ trước. Nếu dựng mới bằng `00_run_all.sql` thì mọi thứ đã có sẵn trong `02_tables.sql` / `04_data.sql` / `05_queries.sql`, **không chạy lại 2 file này**.
 
 Báo cáo Word: `docs/BaoCao_Oracle_QuanLySuCo.docx`. Log các lần chạy thật của 07 và 08 (SQL*Plus, expdp, impdp) nằm trong `sql/ketqua/`, dùng làm bằng chứng cho báo cáo.
 
@@ -100,12 +106,18 @@ Tài khoản Oracle demo (file 06): `U_NHANVIEN` / `Nhanvien_123` (role `ROLE_AP
 
 ## 4. Chức năng
 
-1. **Đăng nhập** (`/login`): kiểm tra email + mật khẩu trong `NGUOI_DUNG`, lưu vào `HttpSession`. USER -> `/user`, ADMIN -> `/admin`, `/logout` để thoát. Chưa đăng nhập thì bị chuyển về `/login`.
-2. **/user**: form báo sự cố (thiết bị, danh mục lấy từ CSDL) và bảng sự cố của chính mình.
-3. **/admin**: (chỉ ADMIN) bảng mọi sự cố, lọc theo trạng thái; trang chi tiết đổi trạng thái, ghi nguyên nhân, cách khắc phục, chọn bài kinh nghiệm, **xóa sự cố** (kèm lịch sử); hiển thị lịch sử xử lý.
-   - **/admin/thiet-bi**: danh sách, **thêm, sửa, xóa** thiết bị. Thiết bị đã có sự cố thì Oracle chặn xóa (khóa ngoại), web báo lỗi dễ hiểu.
-   - **/admin/nguoi-dung**: danh sách, **thêm, sửa, xóa** người dùng, đổi vai trò, đặt lại mật khẩu (để trống = giữ nguyên). Email không được trùng; admin không tự xóa hoặc tự hạ quyền chính mình; người dùng đã có sự cố/bài viết thì không xóa được.
-4. **/kinh-nghiem**: danh sách bài kinh nghiệm, lọc theo danh mục, xem chi tiết (USER và ADMIN đều xem được).
+1. **Đăng nhập** (`/login`): kiểm tra email + mật khẩu trong `NGUOI_DUNG`, lưu vào `HttpSession`. USER -> `/user`, ADMIN -> `/admin`, `/logout` để thoát. Chưa đăng nhập thì bị chuyển về `/login`. Tài khoản `KHONG_HOAT_DONG` không đăng nhập được.
+2. **/user**: form báo sự cố (thiết bị, danh mục lấy từ CSDL, **ảnh đính kèm** tùy chọn), số đếm sự cố của mình theo trạng thái, khối **"sự cố hay gặp"** (đọc view `V_SU_CO_THUONG_GAP`) và bảng sự cố của chính mình.
+   - **/user/{id}**: xem chi tiết sự cố của mình, nguyên nhân / cách khắc phục do IT ghi, lịch sử xử lý; khi sự cố đã `HOAN_THANH` thì **gửi phản hồi** (mức hài lòng 1-5 + nhận xét, mỗi sự cố chỉ 1 lần, bảng `PHAN_HOI`).
+3. **/admin**: (chỉ ADMIN) bảng mọi sự cố, 4 ô số liệu bấm vào để lọc theo trạng thái; trang chi tiết đổi trạng thái, ghi nguyên nhân, cách khắc phục, chọn hoặc **tạo luôn bài kinh nghiệm** từ nội dung vừa nhập, xem phản hồi của người báo, **xóa sự cố** (kèm lịch sử); hiển thị lịch sử xử lý.
+   - **/admin/thiet-bi**: danh sách, **thêm, sửa, xóa** thiết bị (kèm nhà cung cấp, ngày lắp đặt, hướng dẫn sử dụng). Thiết bị đã có sự cố thì Oracle chặn xóa (khóa ngoại), web báo lỗi dễ hiểu.
+   - **/admin/phong**: danh sách, **thêm, sửa, xóa** phòng. Phòng còn thiết bị thì không xóa được.
+   - **/admin/danh-muc**: danh sách, **thêm, sửa, xóa** danh mục sự cố. Tên không được trùng; danh mục còn sự cố hoặc bài kinh nghiệm thì không xóa được.
+   - **/admin/nguoi-dung**: danh sách, **thêm, sửa** người dùng, đổi vai trò, đặt lại mật khẩu (để trống = giữ nguyên), **vô hiệu hóa / kích hoạt lại** (xóa mềm: đổi `TRANG_THAI`, ghi `NGAY_XOA`/`MA_NGUOI_XOA`, **không** DELETE nên dữ liệu cũ vẫn còn). Email không được trùng; admin không tự vô hiệu hóa hoặc tự hạ quyền chính mình.
+   - **/admin/kinh-nghiem**: **thêm, sửa, xóa** bài kinh nghiệm. Bài đang được một sự cố tham chiếu thì không xóa được.
+4. **/kinh-nghiem**: danh sách bài kinh nghiệm dạng lưới thẻ, lọc theo danh mục, tìm nhanh theo tiêu đề, xem chi tiết (USER và ADMIN đều xem được).
+
+**Giao diện** (từ 10/10/2026): dùng được cả trên điện thoại và máy tính. Máy tính có menu dọc cố định bên trái; điện thoại có thanh trên + menu kéo ra, và các bảng dữ liệu tự xếp lại thành từng thẻ thay vì phải kéo ngang. Mọi danh sách đều có ô tìm nhanh lọc ngay trên trang (không cần tải lại, bỏ dấu tiếng Việt nên gõ `may in` vẫn ra `Máy in`).
 
 ## 5. Luồng MVC
 
@@ -127,8 +139,10 @@ Ví dụ luồng "admin đổi trạng thái": `POST /admin/{id}` -> `AdminContr
 ## 6. Cấu trúc thư mục
 
 ```
-sql/     00_run_all.sql, 01..09, 99_drop_all.sql; ketqua/ (log chạy thật của phần quản trị, kịch bản thử trong ketqua/kichban/)
-web/     pom.xml, src/main/java/vn/utc/suco/{model,repository,controller,config,util}, src/main/resources/{application.properties,templates}
+sql/     00_run_all.sql, 01..11, 99_drop_all.sql; ketqua/ (log chạy thật của phần quản trị, kịch bản thử trong ketqua/kichban/)
+web/     pom.xml, src/main/java/vn/utc/suco/{model,repository,controller,config,util},
+         src/main/resources/{application.properties, templates/*.html, static/css/app.css, static/js/app.js},
+         uploads/ (ảnh đính kèm người dùng tải lên, map ra URL /uploads/**)
 docs/    BaoCao_Oracle_QuanLySuCo.docx (báo cáo Word), so_do_ER_SUCO_APP.png (sơ đồ ER)
 tools/   BamMatKhau.java (in hash mật khẩu), VeSoDoER.java (vẽ ER), RunSql.java, baocao/ (dựng báo cáo Word)
 ```
