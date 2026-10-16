@@ -180,6 +180,25 @@
         </div>
       </div>
     </div>
+
+    <!-- Trao đổi qua lại với người báo: không giới hạn số lần, mọi trạng thái sự cố -->
+    <div class="card mt-3 mt-xl-4">
+      <div class="card-header"><i class="bi bi-chat-left-text"></i>Trao đổi với người báo</div>
+      <div class="card-body">
+        <form th:action="@{/admin/{id}/binh-luan(id=${suCo.maSc})}" method="post" enctype="multipart/form-data"
+              class="mb-3 pb-3 border-bottom">
+          <div class="mb-2">
+            <textarea class="form-control" name="noiDung" rows="2" maxlength="1000"
+                      placeholder="Nhập nội dung trao đổi..."></textarea>
+          </div>
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <input type="file" class="form-control form-control-sm" style="max-width: 260px" name="tep">
+            <button class="btn btn-primary btn-sm ms-auto" type="submit"><i class="bi bi-send"></i> Gửi</button>
+          </div>
+        </form>
+        <div th:replace="~{layout :: dsBinhLuan(${dsBinhLuan})}"></div>
+      </div>
+    </div>
   </div>
 </main>
 </body>

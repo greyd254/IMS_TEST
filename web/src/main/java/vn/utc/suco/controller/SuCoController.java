@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.utc.suco.model.NguoiDung;
 import vn.utc.suco.model.SuCo;
+import vn.utc.suco.repository.BinhLuanRepo;
 import vn.utc.suco.repository.DanhMucRepo;
 import vn.utc.suco.repository.PhanHoiRepo;
 import vn.utc.suco.repository.SuCoRepo;
@@ -29,14 +30,16 @@ public class SuCoController {
     private final ThietBiRepo thietBiRepo;
     private final DanhMucRepo danhMucRepo;
     private final PhanHoiRepo phanHoiRepo;
+    private final BinhLuanRepo binhLuanRepo;
     private final LuuAnh luuAnh;
 
     public SuCoController(SuCoRepo suCoRepo, ThietBiRepo thietBiRepo, DanhMucRepo danhMucRepo,
-                          PhanHoiRepo phanHoiRepo, LuuAnh luuAnh) {
+                          PhanHoiRepo phanHoiRepo, BinhLuanRepo binhLuanRepo, LuuAnh luuAnh) {
         this.suCoRepo = suCoRepo;
         this.thietBiRepo = thietBiRepo;
         this.danhMucRepo = danhMucRepo;
         this.phanHoiRepo = phanHoiRepo;
+        this.binhLuanRepo = binhLuanRepo;
         this.luuAnh = luuAnh;
     }
 
@@ -61,7 +64,36 @@ public class SuCoController {
         model.addAttribute("suCo", suCo.get());
         model.addAttribute("dsLichSu", suCoRepo.timLichSu(maSc));
         model.addAttribute("phanHoi", phanHoiRepo.timTheoSuCo(maSc).orElse(null));
+        model.addAttribute("dsBinhLuan", binhLuanRepo.timTheoSuCo(maSc));
         return "user-chi-tiet";
+    }
+
+    /** Người báo gửi tin nhắn trao đổi với IT (không giới hạn số lần, không cần chờ sự cố hoàn thành). */
+    @PostMapping("/user/{maSc}/binh-luan")
+    public String guiBinhLuan(@PathVariable Long maSc, @RequestParam(required = false) String noiDung,
+                              @RequestParam(required = false) MultipartFile tep,
+                              HttpSession session, RedirectAttributes ra) {
+        NguoiDung nd = (NguoiDung) session.getAttribute("nguoiDung");
+        SuCo suCo = suCoRepo.timTheoMa(maSc).filter(sc -> sc.maNguoiBao().equals(nd.maNd())).orElse(null);
+        if (suCo == null) {
+            return "redirect:/user";
+        }
+        if ((noiDung == null || noiDung.isBlank()) && (tep == null || tep.isEmpty())) {
+            ra.addFlashAttribute("loi", "Nhập nội dung hoặc chọn file để gửi");
+            return "redirect:/user/" + maSc;
+        }
+        String duongDanTep;
+        try {
+            duongDanTep = luuAnh.luuTep(tep);
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("loi", e.getMessage());
+            return "redirect:/user/" + maSc;
+        } catch (IOException e) {
+            ra.addFlashAttribute("loi", "Không lưu được file đính kèm, vui lòng thử lại");
+            return "redirect:/user/" + maSc;
+        }
+        binhLuanRepo.taoMoi(maSc, nd.maNd(), noiDung == null || noiDung.isBlank() ? null : noiDung.trim(), duongDanTep);
+        return "redirect:/user/" + maSc;
     }
 
     /**

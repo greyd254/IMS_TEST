@@ -70,6 +70,11 @@
         <div class="menu-nhom">Xử lý hằng ngày</div>
         <ul class="menu-ds">
           <li>
+            <a th:href="@{/admin/thong-ke}" th:classappend="${muc == 'thong-ke'} ? 'dang-chon'">
+              <i class="bi bi-bar-chart-line"></i> Thống kê
+            </a>
+          </li>
+          <li>
             <a th:href="@{/admin}" th:classappend="${muc == 'suco'} ? 'dang-chon'">
               <i class="bi bi-life-preserver"></i> Sự cố
             </a>
@@ -152,6 +157,58 @@
 <span th:fragment="uuTien(t)" class="badge"
       th:classappend="${t == 'THAP'} ? 'text-bg-info' : (${t == 'TRUNG_BINH'} ? 'text-bg-primary' : 'text-bg-danger')"
       th:text="${t == 'THAP'} ? 'Thấp' : (${t == 'TRUNG_BINH'} ? 'Trung bình' : 'Cao')">Thấp</span>
+
+<!--/*
+  Danh sách cột ngang cho trang /admin/thong-ke.
+  ds = List<ThongKeCot> (nhan, soLuong, phanTram đã tính sẵn ở tầng Java).
+  kieu = 'trangthai' | 'tinhtrang' | null -> tô màu thanh theo đúng 3 nhãn cố định của loại đó, còn lại giữ màu xanh mặc định.
+*/-->
+<div th:fragment="bieuDo(ds, kieu)" class="khoi-bieu-do">
+  <div class="dong" th:each="d : ${ds}">
+    <div class="hang-tren">
+      <span class="nhan" th:text="${d.nhan}"></span>
+      <span class="so" th:text="${d.soLuong}"></span>
+    </div>
+    <div class="thanh-nen">
+      <div class="thanh-day" th:style="'width:' + ${d.phanTram} + '%'"
+           th:classappend="${kieu == 'trangthai'} ? (${d.nhan == 'Mới'} ? 'mo' : (${d.nhan == 'Đang xử lý'} ? 'canh-bao' : 'tot'))
+                            : (${kieu == 'tinhtrang'} ? (${d.nhan == 'Hoạt động'} ? 'tot' : (${d.nhan == 'Đang sửa'} ? 'canh-bao' : 'xau')) : '')"></div>
+    </div>
+  </div>
+  <p class="trong-rong mb-0" th:if="${#lists.isEmpty(ds)}"><i class="bi bi-inbox"></i>Chưa có dữ liệu</p>
+</div>
+
+<!--/*
+  Danh sách trao đổi trên 1 sự cố (user-chi-tiet.html, admin-chi-tiet.html). ds = List<BinhLuan>,
+  đã sắp mới nhất lên trước ở tầng repo (ORDER BY THOI_GIAN DESC). Form gửi tin nhắn nằm riêng ở
+  từng trang (đường dẫn POST khác nhau giữa /user và /admin) nên không đưa vào đây.
+*/-->
+<div th:fragment="dsBinhLuan(ds)" class="khoi-binh-luan">
+  <div class="binh-luan" th:each="bl : ${ds}">
+    <span class="avt" th:classappend="${bl.vaiTroNguoiGui == 'ADMIN'} ? 'admin'"
+          th:text="${#strings.toUpperCase(#strings.substring(bl.tenNguoiGui, 0, 1))}">?</span>
+    <div class="noi">
+      <div class="dau">
+        <span class="ten" th:text="${bl.tenNguoiGui}"></span>
+        <span class="badge" th:classappend="${bl.vaiTroNguoiGui == 'ADMIN'} ? 'text-bg-danger' : 'text-bg-secondary'"
+              th:text="${bl.vaiTroNguoiGui == 'ADMIN'} ? 'IT' : 'Người báo'"></span>
+        <span class="luc" th:text="${#temporals.format(bl.thoiGian, 'dd/MM/yyyy HH:mm')}"></span>
+      </div>
+      <p class="noi-dung-bl" th:if="${bl.noiDung}" th:text="${bl.noiDung}"></p>
+      <div class="tep-dinh-kem" th:if="${bl.tepDinhKem}">
+        <a th:if="${bl.tepDinhKem.matches('(?i).*\.(jpg|jpeg|png|gif|webp)$')}"
+           th:href="@{${bl.tepDinhKem}}" target="_blank">
+          <img class="anh-to" th:src="@{${bl.tepDinhKem}}" alt="File đính kèm">
+        </a>
+        <a th:unless="${bl.tepDinhKem.matches('(?i).*\.(jpg|jpeg|png|gif|webp)$')}"
+           th:href="@{${bl.tepDinhKem}}" target="_blank">
+          <i class="bi bi-paperclip"></i> Xem file đính kèm
+        </a>
+      </div>
+    </div>
+  </div>
+  <p class="trong-rong mb-0" th:if="${#lists.isEmpty(ds)}"><i class="bi bi-chat"></i>Chưa có trao đổi nào</p>
+</div>
 
 </body>
 </html>

@@ -39,6 +39,7 @@ Không chạy lại `00_run_all.sql` (sẽ lỗi vì đối tượng đã tồn 
 | Xem lại 17 truy vấn mẫu, hoặc tạo lại view `V_SU_CO_CHI_TIET` và `V_SU_CO_THUONG_GAP` (web bắt buộc phải có 2 view này) | `05_queries.sql` | SUCO_APP |
 | CSDL dựng trước 02/10/2026: thêm cột ảnh đính kèm `SU_CO.ANH_DINH_KEM` | `10_them_anh_dinh_kem.sql` | SUCO_APP |
 | CSDL dựng trước 07/10/2026: thêm bảng `PHAN_HOI`, các cột mới của `NGUOI_DUNG`/`THIET_BI`, view `V_SU_CO_THUONG_GAP` | `11_mo_rong_du_lieu.sql` | SUCO_APP |
+| CSDL dựng trước 17/10/2026: thêm bảng `BINH_LUAN_SU_CO` (trao đổi qua lại trên sự cố) | `12_binh_luan.sql` | SUCO_APP |
 | Tạo lại phân quyền, user demo `U_NHANVIEN`, `U_QUANTRI` | `06_users_roles.sql` | SYSTEM |
 | Demo profile, khóa/mở khóa user, quota, role nhiều cấp | `08_quan_tri_user.sql` | SYSTEM |
 | Demo quản trị: instance, tablespace, RMAN, expdp/impdp | `07_admin_demo.sql` | SYSDBA, **chạy thủ công từng khối** |
@@ -61,9 +62,10 @@ Ví dụ: `sql system@localhost:1521/FREEPDB1` rồi `@08_quan_tri_user.sql`.
 | `09_bam_mat_khau.sql` | nâng cấp CSDL bản cũ (băm mật khẩu) | SUCO_APP |
 | `10_them_anh_dinh_kem.sql` | nâng cấp CSDL bản cũ (cột ảnh đính kèm) | SUCO_APP |
 | `11_mo_rong_du_lieu.sql` | nâng cấp CSDL bản cũ (bảng PHAN_HOI, cột mới, view thường gặp) | SUCO_APP |
+| `12_binh_luan.sql` | nâng cấp CSDL bản cũ (bảng BINH_LUAN_SU_CO) | SUCO_APP |
 | `99_drop_all.sql` | xóa sạch | SYSTEM |
 
-File 10 và 11 chỉ dùng cho CSDL đã dựng từ trước. Nếu dựng mới bằng `00_run_all.sql` thì mọi thứ đã có sẵn trong `02_tables.sql` / `04_data.sql` / `05_queries.sql`, **không chạy lại 2 file này**.
+File 10, 11 và 12 chỉ dùng cho CSDL đã dựng từ trước. Nếu dựng mới bằng `00_run_all.sql` thì mọi thứ đã có sẵn trong `02_tables.sql` / `04_data.sql` / `05_queries.sql`, **không chạy lại 3 file này**.
 
 Báo cáo Word: `docs/BaoCao_Oracle_QuanLySuCo.docx`. Log các lần chạy thật của 07 và 08 (SQL*Plus, expdp, impdp) nằm trong `sql/ketqua/`, dùng làm bằng chứng cho báo cáo.
 
@@ -108,8 +110,8 @@ Tài khoản Oracle demo (file 06): `U_NHANVIEN` / `Nhanvien_123` (role `ROLE_AP
 
 1. **Đăng nhập** (`/login`): kiểm tra email + mật khẩu trong `NGUOI_DUNG`, lưu vào `HttpSession`. USER -> `/user`, ADMIN -> `/admin`, `/logout` để thoát. Chưa đăng nhập thì bị chuyển về `/login`. Tài khoản `KHONG_HOAT_DONG` không đăng nhập được.
 2. **/user**: form báo sự cố (thiết bị, danh mục lấy từ CSDL, **ảnh đính kèm** tùy chọn), số đếm sự cố của mình theo trạng thái, khối **"sự cố hay gặp"** (đọc view `V_SU_CO_THUONG_GAP`) và bảng sự cố của chính mình.
-   - **/user/{id}**: xem chi tiết sự cố của mình, nguyên nhân / cách khắc phục do IT ghi, lịch sử xử lý; khi sự cố đã `HOAN_THANH` thì **gửi phản hồi** (mức hài lòng 1-5 + nhận xét, mỗi sự cố chỉ 1 lần, bảng `PHAN_HOI`).
-3. **/admin**: (chỉ ADMIN) bảng mọi sự cố, 4 ô số liệu bấm vào để lọc theo trạng thái; trang chi tiết đổi trạng thái, ghi nguyên nhân, cách khắc phục, chọn hoặc **tạo luôn bài kinh nghiệm** từ nội dung vừa nhập, xem phản hồi của người báo, **xóa sự cố** (kèm lịch sử); hiển thị lịch sử xử lý.
+   - **/user/{id}**: xem chi tiết sự cố của mình, nguyên nhân / cách khắc phục do IT ghi, lịch sử xử lý; khi sự cố đã `HOAN_THANH` thì **gửi phản hồi** (mức hài lòng 1-5 + nhận xét, mỗi sự cố chỉ 1 lần, bảng `PHAN_HOI`); và khối **trao đổi** để nhắn qua lại với IT bất kỳ lúc nào (không giới hạn số lần, có thể đính kèm file, bảng `BINH_LUAN_SU_CO`).
+3. **/admin**: (chỉ ADMIN) bảng mọi sự cố, 4 ô số liệu bấm vào để lọc theo trạng thái; trang chi tiết đổi trạng thái, ghi nguyên nhân, cách khắc phục, chọn hoặc **tạo luôn bài kinh nghiệm** từ nội dung vừa nhập, xem phản hồi của người báo, **trao đổi** qua lại với người báo (kèm file), **xóa sự cố** (kèm lịch sử); hiển thị lịch sử xử lý.
    - **/admin/thiet-bi**: danh sách, **thêm, sửa, xóa** thiết bị (kèm nhà cung cấp, ngày lắp đặt, hướng dẫn sử dụng). Thiết bị đã có sự cố thì Oracle chặn xóa (khóa ngoại), web báo lỗi dễ hiểu.
    - **/admin/phong**: danh sách, **thêm, sửa, xóa** phòng. Phòng còn thiết bị thì không xóa được.
    - **/admin/danh-muc**: danh sách, **thêm, sửa, xóa** danh mục sự cố. Tên không được trùng; danh mục còn sự cố hoặc bài kinh nghiệm thì không xóa được.

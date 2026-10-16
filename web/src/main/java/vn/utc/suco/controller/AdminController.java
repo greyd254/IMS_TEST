@@ -1,6 +1,7 @@
 package vn.utc.suco.controller;
 
 import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
 import java.util.Set;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -8,13 +9,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.utc.suco.model.NguoiDung;
 import vn.utc.suco.model.SuCo;
+import vn.utc.suco.repository.BinhLuanRepo;
 import vn.utc.suco.repository.DanhMucRepo;
 import vn.utc.suco.repository.KinhNghiemRepo;
 import vn.utc.suco.repository.PhanHoiRepo;
 import vn.utc.suco.repository.SuCoRepo;
+import vn.utc.suco.util.LuuAnh;
 
 /** Màn hình admin (chỉ vai trò ADMIN, đã được AuthInterceptor chặn cho USER). */
 @Controller
@@ -25,13 +29,17 @@ public class AdminController {
     private final KinhNghiemRepo kinhNghiemRepo;
     private final DanhMucRepo danhMucRepo;
     private final PhanHoiRepo phanHoiRepo;
+    private final BinhLuanRepo binhLuanRepo;
+    private final LuuAnh luuAnh;
 
     public AdminController(SuCoRepo suCoRepo, KinhNghiemRepo kinhNghiemRepo, DanhMucRepo danhMucRepo,
-                           PhanHoiRepo phanHoiRepo) {
+                           PhanHoiRepo phanHoiRepo, BinhLuanRepo binhLuanRepo, LuuAnh luuAnh) {
         this.suCoRepo = suCoRepo;
         this.kinhNghiemRepo = kinhNghiemRepo;
         this.danhMucRepo = danhMucRepo;
         this.phanHoiRepo = phanHoiRepo;
+        this.binhLuanRepo = binhLuanRepo;
+        this.luuAnh = luuAnh;
     }
 
     /** Danh sách tất cả sự cố, lọc theo trạng thái (tham số ?trangThai=...). */
@@ -56,7 +64,36 @@ public class AdminController {
         model.addAttribute("dsBaiKn", kinhNghiemRepo.timTheoDanhMuc(null));
         model.addAttribute("dsDanhMuc", danhMucRepo.timTatCa());
         model.addAttribute("phanHoi", phanHoiRepo.timTheoSuCo(maSc).orElse(null));
+        model.addAttribute("dsBinhLuan", binhLuanRepo.timTheoSuCo(maSc));
         return "admin-chi-tiet";
+    }
+
+    /** Admin gửi tin nhắn trao đổi với người báo (không giới hạn số lần, mọi sự cố, kèm file được). */
+    @PostMapping("/admin/{maSc}/binh-luan")
+    public String guiBinhLuan(@PathVariable Long maSc, @RequestParam(required = false) String noiDung,
+                              @RequestParam(required = false) MultipartFile tep,
+                              HttpSession session, RedirectAttributes ra) {
+        if (suCoRepo.timTheoMa(maSc).isEmpty()) {
+            return "redirect:/admin";
+        }
+        if ((noiDung == null || noiDung.isBlank()) && (tep == null || tep.isEmpty())) {
+            ra.addFlashAttribute("loi", "Nhập nội dung hoặc chọn file để gửi");
+            return "redirect:/admin/" + maSc;
+        }
+        NguoiDung admin = (NguoiDung) session.getAttribute("nguoiDung");
+        String duongDanTep;
+        try {
+            duongDanTep = luuAnh.luuTep(tep);
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("loi", e.getMessage());
+            return "redirect:/admin/" + maSc;
+        } catch (IOException e) {
+            ra.addFlashAttribute("loi", "Không lưu được file đính kèm, vui lòng thử lại");
+            return "redirect:/admin/" + maSc;
+        }
+        binhLuanRepo.taoMoi(maSc, admin.maNd(), noiDung == null || noiDung.isBlank() ? null : noiDung.trim(),
+                duongDanTep);
+        return "redirect:/admin/" + maSc;
     }
 
     /**

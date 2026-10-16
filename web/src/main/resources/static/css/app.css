@@ -322,6 +322,59 @@ a.o-thong-ke:hover { border-color: rgba(var(--bs-primary-rgb), .45); color: inhe
 .o-thong-ke .cham.dang { background: #e0a800; }
 .o-thong-ke .cham.xong { background: #1a9c5b; }
 
+.o-thong-ke .ghi-chu { display: block; font-size: .78rem; color: var(--sc-mo); margin-top: .1rem; }
+
+/* ============================ THỐNG KÊ (trang /admin/thong-ke) ============================ */
+
+/* Danh sách cột ngang: mỗi "dong" là nhãn + số liệu trên một thanh nền, thanh "day" dài theo % đã tính sẵn */
+.khoi-bieu-do { display: flex; flex-direction: column; gap: .6rem; }
+.khoi-bieu-do .dong { display: flex; flex-direction: column; gap: .25rem; font-size: .85rem; }
+.khoi-bieu-do .hang-tren { display: flex; justify-content: space-between; gap: .5rem; }
+.khoi-bieu-do .nhan { color: #3d4557; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.khoi-bieu-do .so { font-weight: 600; color: var(--sc-mo); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.khoi-bieu-do .thanh-nen { height: .5rem; background: var(--sc-nen); border-radius: 999px; overflow: hidden; }
+.khoi-bieu-do .thanh-day { height: 100%; background: var(--sc-xanh); border-radius: 999px; }
+.khoi-bieu-do .thanh-day.mo { background: #6c757d; }
+.khoi-bieu-do .thanh-day.tot { background: #1a9c5b; }
+.khoi-bieu-do .thanh-day.canh-bao { background: #e0a800; }
+.khoi-bieu-do .thanh-day.xau { background: #dc3545; }
+
+/* Biểu đồ cột dọc cho xu hướng theo tháng */
+.cot-thang { display: flex; align-items: flex-end; gap: clamp(.4rem, 2vw, 1rem); height: 150px; padding-top: .5rem; }
+.cot-thang .cot { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: .3rem; min-width: 0; }
+.cot-thang .cot .so { font-size: .75rem; font-weight: 600; color: var(--sc-mo); }
+.cot-thang .cot .thanh { width: 100%; max-width: 38px; background: var(--sc-xanh); border-radius: .3rem .3rem 0 0; min-height: 3px; }
+.cot-thang .cot .nhan { font-size: .72rem; color: var(--sc-mo); white-space: nowrap; }
+
+.sao-hai-long .bi-star-fill { color: #e0a800; }
+.sao-hai-long .bi-star { color: var(--sc-vien); }
+
+/* ============================ TRAO ĐỔI (bình luận qua lại trên sự cố) ============================ */
+
+.khoi-binh-luan { display: flex; flex-direction: column; gap: 1rem; }
+.binh-luan { display: flex; gap: .6rem; align-items: flex-start; }
+.binh-luan .avt {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .8rem;
+  font-weight: 700;
+  color: #fff;
+  background: #6c757d;
+}
+.binh-luan .avt.admin { background: var(--sc-xanh); }
+.binh-luan .noi { flex: 1; min-width: 0; }
+.binh-luan .dau { display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem; margin-bottom: .2rem; }
+.binh-luan .ten { font-weight: 600; font-size: .88rem; }
+.binh-luan .luc { font-size: .78rem; color: var(--sc-mo); }
+.binh-luan .noi-dung-bl { font-size: .9rem; white-space: pre-line; margin: 0; }
+.binh-luan .tep-dinh-kem { margin-top: .4rem; }
+.binh-luan .tep-dinh-kem a { font-size: .85rem; display: inline-block; }
+
 /* Khối hướng dẫn nhỏ */
 .goi-y {
   background: rgba(var(--bs-primary-rgb), .06);
