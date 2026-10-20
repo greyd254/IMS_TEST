@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Kho kinh nghiệm')}"></head>
+<body>
+<th:block th:replace="~{layout :: menu('kinh-nghiem')}"></th:block>
+
+<main class="noi-dung">
+  <div class="container-xxl">
+    <th:block th:replace="~{layout :: thongbao}"></th:block>
+
+    <div class="thanh-trang">
+      <div th:replace="~{layout :: tieuDe('bi-journal-text','Kho kinh nghiệm','Cách xử lý các sự cố đã gặp, tra trước khi báo sự cố mới')}"></div>
+      <div class="hanh-dong">
+        <input type="search" class="form-control o-tim" data-loc="#dsBaiKn"
+               placeholder="Tìm bài theo tiêu đề..." aria-label="Tìm bài kinh nghiệm">
+        <!-- Lọc theo danh mục: gửi GET ?maDm=... -->
+        <form th:action="@{/kinh-nghiem}" method="get">
+          <select class="form-select" name="maDm" onchange="this.form.submit()" aria-label="Lọc theo danh mục">
+            <option value="">-- Tất cả danh mục --</option>
+            <option th:each="dm : ${dsDanhMuc}" th:value="${dm.maDm}" th:text="${dm.tenDm}"
+                    th:selected="${dm.maDm == maDmLoc}"></option>
+          </select>
+        </form>
+        <a th:if="${session.nguoiDung.laAdmin()}" class="btn btn-outline-primary text-nowrap"
+           th:href="@{/admin/kinh-nghiem}"><i class="bi bi-gear"></i> Quản lý</a>
+      </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xxl-3 g-3" id="dsBaiKn">
+      <div class="col" th:each="b : ${dsBai}">
+        <a class="card h-100 text-decoration-none text-reset" th:href="@{/kinh-nghiem/{id}(id=${b.maBai})}">
+          <div class="card-body">
+            <span class="badge text-bg-secondary mb-2" th:text="${b.tenDm}"></span>
+            <h6 class="fw-semibold" th:text="${b.tieuDe}"></h6>
+            <p class="o-phu mb-0">
+              <i class="bi bi-person"></i> <span th:text="${b.tenNguoiViet}"></span> ·
+              <span th:text="${#temporals.format(b.ngayTao, 'dd/MM/yyyy')}"></span>
+            </p>
+          </div>
+        </a>
+      </div>
+      <div class="trong-rong" th:if="${#lists.isEmpty(dsBai)}">
+        <i class="bi bi-inbox"></i>Chưa có bài kinh nghiệm nào
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Sửa phòng')}"></head>
+<body>
+<th:block th:replace="~{layout :: menu('phong')}"></th:block>
+
+<main class="noi-dung">
+  <div class="container-xxl hep">
+    <th:block th:replace="~{layout :: thongbao}"></th:block>
+
+    <a th:href="@{/admin/phong}" class="quay-lai"><i class="bi bi-arrow-left"></i> Quay lại danh sách phòng</a>
+
+    <div class="card">
+      <div class="card-header">
+        <i class="bi bi-pencil-square"></i>Sửa phòng #<span th:text="${p.maPhong}"></span>
+      </div>
+      <div class="card-body">
+        <form th:action="@{/admin/phong/{id}(id=${p.maPhong})}" method="post" class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="tenPhong">Tên phòng <span class="text-danger">*</span></label>
+            <input class="form-control" id="tenPhong" name="tenPhong" maxlength="100" required th:value="${p.tenPhong}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="toaNha">Tòa nhà <span class="text-danger">*</span></label>
+            <input class="form-control" id="toaNha" name="toaNha" maxlength="20" required th:value="${p.toaNha}">
+          </div>
+          <div class="col-md-6 col-6">
+            <label class="form-label" for="tang">Tầng</label>
+            <input class="form-control" type="number" id="tang" name="tang" min="0" max="99"
+                   placeholder="Tùy chọn" th:value="${p.tang}">
+          </div>
+          <div class="col-md-6 col-6">
+            <label class="form-label" for="loaiPhong">Loại phòng</label>
+            <select class="form-select" id="loaiPhong" name="loaiPhong">
+              <option th:each="e : ${dsLoai}" th:value="${e.key}" th:text="${e.value}"
+                      th:selected="${e.key == p.loaiPhong}"></option>
+            </select>
+          </div>
+          <div class="col-12 d-flex gap-2">
+            <button class="btn btn-primary" type="submit"><i class="bi bi-check2"></i> Lưu</button>
+            <a class="btn btn-outline-secondary" th:href="@{/admin/phong}">Hủy</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

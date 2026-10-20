@@ -1,0 +1,142 @@
+package vn.utc.suco.repository;
+
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+import vn.utc.suco.model.LichSu;
+import vn.utc.suco.model.MucUuTien;
+import vn.utc.suco.model.SuCo;
+import vn.utc.suco.model.SuCoHayGap;
+import vn.utc.suco.model.TrangThaiSuCo;
+
+@Repository
+public class SuCoRepo {
+    // Đọc từ view V_SU_CO_CHI_TIET (đã JOIN sẵn, xem sql/05_queries.sql)
+    private static final String SELECT =
+            "SELECT MA_SC, TIEU_DE, MO_TA, MA_NGUOI_BAO, TEN_NGUOI_BAO, TEN_ADMIN, MA_TB, TEN_TB, TEN_PHONG, "
+                    + "MA_DM, TEN_DM, MUC_UU_TIEN, TRANG_THAI, NGUYEN_NHAN, CACH_KHAC_PHUC, MA_BAI_KN, ANH_DINH_KEM, "
+                    + "NGAY_TAO, NGAY_HOAN_THANH FROM V_SU_CO_CHI_TIET ";
+
+    private static final RowMapper<SuCo> MAPPER = (rs, i) -> new SuCo(
+            rs.getLong("MA_SC"), rs.getString("TIEU_DE"), rs.getString("MO_TA"),
+            rs.getLong("MA_NGUOI_BAO"), rs.getString("TEN_NGUOI_BAO"), rs.getString("TEN_ADMIN"),
+            rs.getObject("MA_TB", Long.class), rs.getString("TEN_TB"), rs.getString("TEN_PHONG"),
+            rs.getLong("MA_DM"), rs.getString("TEN_DM"), MucUuTien.valueOf(rs.getString("MUC_UU_TIEN")),
+            TrangThaiSuCo.valueOf(rs.getString("TRANG_THAI")),
+            rs.getString("NGUYEN_NHAN"), rs.getString("CACH_KHAC_PHUC"), rs.getObject("MA_BAI_KN", Long.class),
+            rs.getString("ANH_DINH_KEM"),
+            toLdt(rs.getTimestamp("NGAY_TAO")), toLdt(rs.getTimestamp("NGAY_HOAN_THANH")));
+
+    private static LocalDateTime toLdt(Timestamp t) {
+        return t == null ? null : t.toLocalDateTime();
+    }
+
+    private final JdbcTemplate jdbc;
+
+    public SuCoRepo(JdbcTemplate jdbc) {
+        this.jdbc = jdbc;
+    }
+
+    /**
+     * Người dùng báo sự cố mới. Trạng thái mặc định 'MOI', ngày tạo mặc định SYSDATE (do Oracle gán).
+     * anhDinhKem = đường dẫn ảnh chụp sự cố đã lưu ở thư mục uploads, có thể null (không bắt buộc).
+     */
+    public void taoMoi(String tieuDe, String moTa, Long maNguoiBao, Long maTb, Long maDm, String mucUuTien,
+                       String anhDinhKem) {
+        jdbc.update("INSERT INTO SU_CO (TIEU_DE, MO_TA, MA_NGUOI_BAO, MA_TB, MA_DM, MUC_UU_TIEN, ANH_DINH_KEM) "
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                new Object[]{tieuDe, moTa, maNguoiBao, maTb, maDm, mucUuTien, anhDinhKem},
+                new int[]{Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.VARCHAR,
+                        Types.VARCHAR});
+    }
+
+    /** Sự cố do chính người dùng này báo (màn hình /user). */
+    public List<SuCo> timTheoNguoiBao(Long maNd) {
+        return jdbc.query(SELECT + "WHERE MA_NGUOI_BAO = ? ORDER BY NGAY_TAO DESC, MA_SC DESC", MAPPER, maNd);
+    }
+
+    /** Tất cả sự cố cho admin; trangThai = null nghĩa là không lọc. */
+    public List<SuCo> timTatCa(String trangThai) {
+        if (trangThai == null) {
+            return jdbc.query(SELECT + "ORDER BY NGAY_TAO DESC, MA_SC DESC", MAPPER);
+        }
+        return jdbc.query(SELECT + "WHERE TRANG_THAI = ? ORDER BY NGAY_TAO DESC, MA_SC DESC", MAPPER, trangThai);
+    }
+
+    public Optional<SuCo> timTheoMa(Long maSc) {
+        return jdbc.query(SELECT + "WHERE MA_SC = ?", MAPPER, maSc).stream().findFirst();
+    }
+
+    /**
+     * Admin cập nhật sự cố. Gán MA_ADMIN_XU_LY = admin đang đăng nhập:
+     * trigger TRG_SU_CO_LICH_SU dùng cột này làm "người cập nhật" khi ghi lịch sử,
+     * còn TRG_SU_CO_HOAN_THANH tự gán NGAY_HOAN_THANH khi chuyển sang HOAN_THANH.
+     */
+    public void capNhat(Long maSc, String trangThai, String nguyenNhan, String cachKhacPhuc,
+                        Long maBaiKn, Long maAdmin) {
+        jdbc.update("UPDATE SU_CO SET TRANG_THAI = ?, NGUYEN_NHAN = ?, CACH_KHAC_PHUC = ?, "
+                        + "MA_BAI_KN = ?, MA_ADMIN_XU_LY = ? WHERE MA_SC = ?",
+                new Object[]{trangThai, nguyenNhan, cachKhacPhuc, maBaiKn, maAdmin, maSc},
+                new int[]{Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC});
+    }
+
+    /**
+     * Xóa sự cố. Phải xóa LICH_SU_XU_LY (bảng con, có khóa ngoại tới SU_CO) trước rồi mới xóa SU_CO.
+     * @Transactional để 2 lệnh DELETE cùng thành công hoặc cùng hoàn tác (Oracle COMMIT/ROLLBACK).
+     */
+    @Transactional
+    public void xoa(Long maSc) {
+        jdbc.update("DELETE FROM LICH_SU_XU_LY WHERE MA_SC = ?", maSc);
+        jdbc.update("DELETE FROM SU_CO WHERE MA_SC = ?", maSc);
+    }
+
+    /**
+     * Top danh mục sự cố hay gặp nhất (đọc từ view V_SU_CO_THUONG_GAP, đếm bằng SQL thay vì lưu cột
+     * tần suất tĩnh trên SU_CO để khỏi phải tự đồng bộ tay). Dùng cho trang người dùng.
+     */
+    public List<SuCoHayGap> timSuCoHayGap() {
+        return jdbc.query("SELECT MA_DM, TEN_DM, SO_LAN_BAO FROM V_SU_CO_THUONG_GAP "
+                        + "ORDER BY SO_LAN_BAO DESC FETCH FIRST 5 ROWS ONLY",
+                (rs, i) -> new SuCoHayGap(rs.getLong("MA_DM"), rs.getString("TEN_DM"), rs.getInt("SO_LAN_BAO")));
+    }
+
+    /**
+     * Đếm số sự cố theo từng trạng thái (GROUP BY), dùng cho các ô số liệu kiêm nút lọc nhanh ở
+     * đầu trang /admin. Trạng thái nào chưa có sự cố thì không có trong Map (giao diện hiểu là 0).
+     */
+    public Map<String, Integer> demTheoTrangThai() {
+        ResultSetExtractor<Map<String, Integer>> doc = rs -> {
+            Map<String, Integer> dem = new LinkedHashMap<>();
+            while (rs.next()) {
+                dem.put(rs.getString("TRANG_THAI"), rs.getInt("SO_LUONG"));
+            }
+            return dem;
+        };
+        return jdbc.query("SELECT TRANG_THAI, COUNT(*) AS SO_LUONG FROM SU_CO GROUP BY TRANG_THAI", doc);
+    }
+
+    /** Lịch sử xử lý của một sự cố, cũ trước mới sau. */
+    public List<LichSu> timLichSu(Long maSc) {
+        return jdbc.query(
+                "SELECT ls.THOI_GIAN, nd.HO_TEN, ls.TRANG_THAI_CU, ls.TRANG_THAI_MOI, ls.GHI_CHU "
+                        + "FROM LICH_SU_XU_LY ls LEFT JOIN NGUOI_DUNG nd ON nd.MA_ND = ls.MA_NGUOI_CAP_NHAT "
+                        + "WHERE ls.MA_SC = ? ORDER BY ls.THOI_GIAN, ls.MA_LS",
+                (rs, i) -> new LichSu(toLdt(rs.getTimestamp("THOI_GIAN")), rs.getString("HO_TEN"),
+                        toTrangThai(rs.getString("TRANG_THAI_CU")), toTrangThai(rs.getString("TRANG_THAI_MOI")),
+                        rs.getString("GHI_CHU")),
+                maSc);
+    }
+
+    private static TrangThaiSuCo toTrangThai(String ma) {
+        return ma == null ? null : TrangThaiSuCo.valueOf(ma);
+    }
+}

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Quản lý sự cố')}"></head>
+<body>
+<th:block th:replace="~{layout :: menu('suco')}"></th:block>
+
+<main class="noi-dung">
+  <div class="container-xxl">
+    <th:block th:replace="~{layout :: thongbao}"></th:block>
+
+    <div class="thanh-trang">
+      <div th:replace="~{layout :: tieuDe('bi-life-preserver','Sự cố CNTT','Bấm vào ô số liệu để lọc theo trạng thái')}"></div>
+      <div class="hanh-dong">
+        <input type="search" class="form-control o-tim" data-loc="#bangSuCo"
+               placeholder="Tìm tiêu đề, người báo, phòng..." aria-label="Tìm sự cố">
+      </div>
+    </div>
+
+    <!-- Ô số liệu kiêm nút lọc nhanh: thay cho ô chọn trạng thái trước đây -->
+    <div class="row row-cols-2 row-cols-md-4 g-2 g-md-3 mb-3">
+      <div class="col">
+        <a class="o-thong-ke" th:classappend="${trangThaiLoc == null} ? 'dang-chon'" th:href="@{/admin}">
+          <span class="nhan"><span class="cham tong"></span> Tất cả</span>
+          <span class="so" th:text="${(dem['MOI'] ?: 0) + (dem['DANG_XU_LY'] ?: 0) + (dem['HOAN_THANH'] ?: 0)}">0</span>
+        </a>
+      </div>
+      <div class="col">
+        <a class="o-thong-ke" th:classappend="${trangThaiLoc == 'MOI'} ? 'dang-chon'" th:href="@{/admin(trangThai='MOI')}">
+          <span class="nhan"><span class="cham moi"></span> Mới</span>
+          <span class="so" th:text="${dem['MOI'] ?: 0}">0</span>
+        </a>
+      </div>
+      <div class="col">
+        <a class="o-thong-ke" th:classappend="${trangThaiLoc == 'DANG_XU_LY'} ? 'dang-chon'" th:href="@{/admin(trangThai='DANG_XU_LY')}">
+          <span class="nhan"><span class="cham dang"></span> Đang xử lý</span>
+          <span class="so" th:text="${dem['DANG_XU_LY'] ?: 0}">0</span>
+        </a>
+      </div>
+      <div class="col">
+        <a class="o-thong-ke" th:classappend="${trangThaiLoc == 'HOAN_THANH'} ? 'dang-chon'" th:href="@{/admin(trangThai='HOAN_THANH')}">
+          <span class="nhan"><span class="cham xong"></span> Hoàn thành</span>
+          <span class="so" th:text="${dem['HOAN_THANH'] ?: 0}">0</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Bảng sự cố: máy tính xem dạng bảng, điện thoại tự xếp thành từng thẻ (lớp .bang-gon) -->
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle bang-gon" id="bangSuCo">
+          <thead>
+            <tr>
+              <th>Mã</th><th>Sự cố / Người báo</th><th>Thiết bị, phòng</th><th>Danh mục</th>
+              <th>Ưu tiên</th><th>Trạng thái</th><th>Ngày báo</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="sc : ${dsSuCo}">
+              <td data-label="Mã" class="an-mobile" th:text="'#' + ${sc.maSc}"></td>
+              <td class="o-chinh">
+                <a th:href="@{/admin/{id}(id=${sc.maSc})}" th:text="${sc.tieuDe}"></a>
+                <span class="o-phu">
+                  <span class="d-md-none" th:text="'#' + ${sc.maSc} + ' · '"></span>
+                  <i class="bi bi-person"></i> <span th:text="${sc.tenNguoiBao}"></span>
+                </span>
+              </td>
+              <td data-label="Vị trí">
+                <span th:text="${sc.tenTb} ?: '-'">-</span>
+                <span class="o-phu" th:if="${sc.tenPhong}" th:text="${sc.tenPhong}"></span>
+              </td>
+              <td data-label="Danh mục" th:text="${sc.tenDm}"></td>
+              <td data-label="Ưu tiên"><span th:replace="~{layout :: uuTien(${sc.mucUuTien})}"></span></td>
+              <td data-label="Trạng thái"><span th:replace="~{layout :: trangThai(${sc.trangThai})}"></span></td>
+              <td data-label="Ngày báo" th:text="${#temporals.format(sc.ngayTao, 'dd/MM/yyyy HH:mm')}"></td>
+              <td>
+                <span class="nhom-nut">
+                  <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/{id}(id=${sc.maSc})}">
+                    <i class="bi bi-wrench-adjustable"></i> Xử lý
+                  </a>
+                </span>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(dsSuCo)}">
+              <td colspan="8" class="trong-rong"><i class="bi bi-inbox"></i>Không có sự cố nào</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Chi tiết sự cố')}"></head>
+<body>
+<th:block th:replace="~{layout :: menu('suco')}"></th:block>
+
+<main class="noi-dung">
+  <div class="container-xxl">
+    <th:block th:replace="~{layout :: thongbao}"></th:block>
+
+    <a th:href="@{/admin}" class="quay-lai"><i class="bi bi-arrow-left"></i> Quay lại danh sách sự cố</a>
+
+    <div class="thanh-trang">
+      <div class="tieu-de-trang">
+        <i class="bi bi-card-text"></i>
+        <div>
+          <h5 th:text="${suCo.tieuDe}"></h5>
+          <span class="phu">
+            Sự cố #<span th:text="${suCo.maSc}"></span> ·
+            <span th:text="${suCo.tenDm}"></span> ·
+            báo lúc <span th:text="${#temporals.format(suCo.ngayTao, 'dd/MM/yyyy HH:mm')}"></span>
+          </span>
+        </div>
+      </div>
+      <div class="hanh-dong">
+        <span th:replace="~{layout :: uuTien(${suCo.mucUuTien})}"></span>
+        <span th:replace="~{layout :: trangThai(${suCo.trangThai})}"></span>
+      </div>
+    </div>
+
+    <div class="row g-3 g-xl-4">
+      <!-- Cột trái: thông tin sự cố (chỉ đọc), phản hồi của người báo, lịch sử xử lý -->
+      <div class="col-xl-7">
+        <div class="card mb-3 mb-xl-4">
+          <div class="card-header"><i class="bi bi-info-circle"></i>Thông tin sự cố</div>
+          <div class="card-body">
+            <p class="xuong-dong" th:if="${suCo.moTa}" th:text="${suCo.moTa}"></p>
+            <p class="text-muted" th:unless="${suCo.moTa}">(Người báo không nhập mô tả)</p>
+            <dl class="ds-thong-tin">
+              <div>
+                <dt>Người báo</dt>
+                <dd th:text="${suCo.tenNguoiBao}"></dd>
+              </div>
+              <div>
+                <dt>Thiết bị / Phòng</dt>
+                <dd>
+                  <span th:text="${suCo.tenTb} ?: '-'"></span>
+                  <span class="o-phu" th:if="${suCo.tenPhong}" th:text="${suCo.tenPhong}"></span>
+                </dd>
+              </div>
+              <div>
+                <dt>Admin xử lý</dt>
+                <dd th:text="${suCo.tenAdmin} ?: 'Chưa ai nhận'"></dd>
+              </div>
+              <div>
+                <dt>Ngày hoàn thành</dt>
+                <dd th:text="${suCo.ngayHoanThanh != null} ? ${#temporals.format(suCo.ngayHoanThanh, 'dd/MM/yyyy HH:mm')} : '-'"></dd>
+              </div>
+              <div th:if="${suCo.anhDinhKem}">
+                <dt>Ảnh đính kèm</dt>
+                <dd>
+                  <a th:href="@{${suCo.anhDinhKem}}" target="_blank">
+                    <img class="anh-to" th:src="@{${suCo.anhDinhKem}}" alt="Ảnh sự cố">
+                  </a>
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+
+        <!-- Phản hồi của người báo (chỉ đọc; người dùng tự gửi ở trang /user khi sự cố đã HOAN_THANH) -->
+        <div class="card mb-3 mb-xl-4" th:if="${phanHoi != null}">
+          <div class="card-header"><i class="bi bi-star"></i>Phản hồi của người báo</div>
+          <div class="card-body">
+            <dl class="ds-thong-tin">
+              <div>
+                <dt>Mức hài lòng</dt>
+                <dd><span class="badge text-bg-primary" th:text="${phanHoi.mucHaiLong} + ' / 5'"></span></dd>
+              </div>
+              <div>
+                <dt>Nhận xét</dt>
+                <dd class="xuong-dong" th:text="${phanHoi.noiDung} ?: '-'"></dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+
+        <!-- Lịch sử xử lý từ bảng LICH_SU_XU_LY (do trigger ghi) -->
+        <div class="card">
+          <div class="card-header"><i class="bi bi-clock-history"></i>Lịch sử xử lý</div>
+          <div class="table-responsive">
+            <table class="table table-sm table-hover bang-gon">
+              <thead><tr><th>Thời gian</th><th>Người cập nhật</th><th>Từ</th><th>Sang</th><th>Ghi chú</th></tr></thead>
+              <tbody>
+                <tr th:each="ls : ${dsLichSu}">
+                  <td data-label="Thời gian" th:text="${#temporals.format(ls.thoiGian, 'dd/MM/yyyy HH:mm')}"></td>
+                  <td data-label="Người" th:text="${ls.tenNguoiCapNhat} ?: '-'"></td>
+                  <td data-label="Từ">
+                    <th:block th:if="${ls.trangThaiCu != null}">
+                      <span th:replace="~{layout :: trangThai(${ls.trangThaiCu})}"></span>
+                    </th:block>
+                    <span th:if="${ls.trangThaiCu == null}">-</span>
+                  </td>
+                  <td data-label="Sang"><span th:replace="~{layout :: trangThai(${ls.trangThaiMoi})}"></span></td>
+                  <td data-label="Ghi chú" th:text="${ls.ghiChu} ?: '-'"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(dsLichSu)}">
+                  <td colspan="5" class="trong-rong"><i class="bi bi-inbox"></i>Chưa có lịch sử</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cột phải: form cập nhật. Khi lưu, MA_ADMIN_XU_LY được gán = admin đang đăng nhập (xem AdminController) -->
+      <div class="col-xl-5">
+        <div class="card">
+          <div class="card-header"><i class="bi bi-wrench-adjustable"></i>Cập nhật xử lý</div>
+          <div class="card-body">
+            <form th:action="@{/admin/{id}(id=${suCo.maSc})}" method="post">
+              <div class="mb-3">
+                <label class="form-label" for="trangThai">Trạng thái</label>
+                <select class="form-select" id="trangThai" name="trangThai">
+                  <option value="MOI" th:selected="${suCo.trangThai.name() == 'MOI'}">Mới</option>
+                  <option value="DANG_XU_LY" th:selected="${suCo.trangThai.name() == 'DANG_XU_LY'}">Đang xử lý</option>
+                  <option value="HOAN_THANH" th:selected="${suCo.trangThai.name() == 'HOAN_THANH'}">Hoàn thành</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="nguyenNhan">Nguyên nhân</label>
+                <textarea class="form-control" id="nguyenNhan" name="nguyenNhan" rows="3" maxlength="1000"
+                          th:text="${suCo.nguyenNhan}"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="cachKhacPhuc">Cách khắc phục</label>
+                <textarea class="form-control" id="cachKhacPhuc" name="cachKhacPhuc" rows="3" maxlength="1000"
+                          th:text="${suCo.cachKhacPhuc}"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="maBaiKn">Bài kinh nghiệm liên quan</label>
+                <select class="form-select" id="maBaiKn" name="maBaiKn">
+                  <option value="">-- Không chọn --</option>
+                  <option th:each="b : ${dsBaiKn}" th:value="${b.maBai}"
+                          th:text="'[' + ${b.tenDm} + '] ' + ${b.tieuDe}"
+                          th:selected="${b.maBai == suCo.maBaiKn}"></option>
+                </select>
+                <div class="form-text">
+                  Chưa có bài phù hợp? <a th:href="@{/admin/kinh-nghiem}">Thêm bài kinh nghiệm mới</a>
+                  (nhập xong, quay lại đây để chọn).
+                </div>
+              </div>
+
+              <div class="goi-y mb-3">
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="luuKho" name="luuKho" value="true">
+                  <label class="form-check-label fw-semibold" for="luuKho">
+                    Lưu vào kho kinh nghiệm
+                  </label>
+                </div>
+                <label class="form-label" for="maDmKho">Lĩnh vực của bài mới</label>
+                <select class="form-select form-select-sm mb-2" id="maDmKho" name="maDmKho">
+                  <option th:each="dm : ${dsDanhMuc}" th:value="${dm.maDm}" th:text="${dm.tenDm}"
+                          th:selected="${dm.maDm == suCo.maDm}"></option>
+                </select>
+                Chỉ áp dụng khi chưa chọn bài có sẵn ở trên. Bài mới lấy tiêu đề, mô tả của sự cố cùng
+                nguyên nhân và cách khắc phục vừa nhập.
+              </div>
+
+              <button class="btn btn-primary w-100" type="submit"><i class="bi bi-check2"></i> Lưu cập nhật</button>
+            </form>
+          </div>
+          <!-- Xóa sự cố (kèm lịch sử xử lý) -->
+          <div class="card-footer bg-transparent text-end">
+            <form th:action="@{/admin/{id}/xoa(id=${suCo.maSc})}" method="post"
+                  onsubmit="return confirm('Xóa sự cố này cùng lịch sử xử lý?');">
+              <button class="btn btn-outline-danger btn-sm" type="submit"><i class="bi bi-trash"></i> Xóa sự cố</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trao đổi qua lại với người báo: không giới hạn số lần, mọi trạng thái sự cố -->
+    <div class="card mt-3 mt-xl-4">
+      <div class="card-header"><i class="bi bi-chat-left-text"></i>Trao đổi với người báo</div>
+      <div class="card-body">
+        <form th:action="@{/admin/{id}/binh-luan(id=${suCo.maSc})}" method="post" enctype="multipart/form-data"
+              class="mb-3 pb-3 border-bottom">
+          <div class="mb-2">
+            <textarea class="form-control" name="noiDung" rows="2" maxlength="1000"
+                      placeholder="Nhập nội dung trao đổi..."></textarea>
+          </div>
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <input type="file" class="form-control form-control-sm" style="max-width: 260px" name="tep">
+            <button class="btn btn-primary btn-sm ms-auto" type="submit"><i class="bi bi-send"></i> Gửi</button>
+          </div>
+        </form>
+        <div th:replace="~{layout :: dsBinhLuan(${dsBinhLuan})}"></div>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

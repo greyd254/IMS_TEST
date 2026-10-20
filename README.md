@@ -1,6 +1,8 @@
 # Quản lý sự cố CNTT và kho kinh nghiệm xử lý - Trường ĐH Giao thông Vận tải
 
-Bài tập lớn Oracle + Java: CSDL Oracle (thư mục `sql/`) và web Spring Boot MVC đơn giản (thư mục `web/`).
+Bài tập lớn Oracle + Java: CSDL Oracle (thư mục `sql/`) và web Spring Boot MVC đơn giản (thư mục `web-oracle/`,
+bản đã nộp cho môn Oracle). Thư mục `web-java/` là bản sao của cùng ứng dụng, chỉnh lại cho đồ án Java riêng
+(class thường thay cho `record`, có thêm kế thừa/đa hình/trừu tượng/enum/exception riêng) - xem mục 7.
 Sơ đồ bảng và quan hệ: xem [SO_DO_QUAN_HE.md](SO_DO_QUAN_HE.md) (ảnh ER `docs/so_do_ER_SUCO_APP.png`, vẽ tự động từ CSDL bằng `tools/VeSoDoER.java`).
 
 ## Môi trường
@@ -73,28 +75,28 @@ Báo cáo Word: `docs/BaoCao_Oracle_QuanLySuCo.docx`. Log các lần chạy th�
 
 Điều kiện: Oracle đang chạy (service `FREEPDB1`, cổng 1521) và đã dựng CSDL ở mục 1.
 
-**Cách 1: Maven** (cần cài Maven 3.9.x và `JAVA_HOME` trỏ tới JDK; sau khi cài phải mở terminal mới). `pom.xml` nằm trong `web/`, không phải thư mục gốc:
+**Cách 1: Maven** (cần cài Maven 3.9.x và `JAVA_HOME` trỏ tới JDK; sau khi cài phải mở terminal mới). `pom.xml` nằm trong `web-oracle/`, không phải thư mục gốc:
 
 ```
-cd web
+cd web-oracle
 mvn spring-boot:run
 ```
 
-**Cách 2: chạy file jar đã build** (không cần Maven). Đứng trong `web/`:
+**Cách 2: chạy file jar đã build** (không cần Maven). Đứng trong `web-oracle/`:
 
 ```
 java -jar target\suco-web-1.0.0.jar
 ```
 
-Nếu đứng ở thư mục gốc thì dùng `java -jar web\target\suco-web-1.0.0.jar`. Nếu cổng 8080 đã bị chiếm thì tắt tiến trình cũ (`Get-NetTCPConnection -LocalPort 8080`) trước.
+Nếu đứng ở thư mục gốc thì dùng `java -jar web-oracle\target\suco-web-1.0.0.jar`. Nếu cổng 8080 đã bị chiếm thì tắt tiến trình cũ (`Get-NetTCPConnection -LocalPort 8080`) trước.
 
 **Chia sẻ tạm qua internet (tùy chọn):** cài `cloudflared`, rồi `cloudflared tunnel --url http://localhost:8080`. Link `https://….trycloudflare.com` nằm trong log, đổi mỗi lần chạy. Web có tài khoản demo mật khẩu yếu nên chỉ chia sẻ cho người tin cậy và tắt tunnel (Ctrl+C) khi xong.
 
-Mở http://localhost:8080. Cấu hình kết nối trong `web/src/main/resources/application.properties` (user `SUCO_APP`, mật khẩu `SuCo_App_123`). Đóng gói: `mvn package` (ra `web/target/suco-web-1.0.0.jar`).
+Mở http://localhost:8080. Cấu hình kết nối trong `web-oracle/src/main/resources/application.properties` (user `SUCO_APP`, mật khẩu `SuCo_App_123`). Đóng gói: `mvn package` (ra `web-oracle/target/suco-web-1.0.0.jar`).
 
 ## 3. Tài khoản demo
 
-Mật khẩu được băm PBKDF2-HMAC-SHA256 + salt ngẫu nhiên (`web/…/util/MatKhau.java`) trước khi lưu vào `NGUOI_DUNG.MAT_KHAU`. CSDL dựng từ bản cũ: chạy thêm `sql/09_bam_mat_khau.sql`.
+Mật khẩu được băm PBKDF2-HMAC-SHA256 + salt ngẫu nhiên (`web-oracle/…/util/MatKhau.java`) trước khi lưu vào `NGUOI_DUNG.MAT_KHAU`. CSDL dựng từ bản cũ: chạy thêm `sql/09_bam_mat_khau.sql`.
 
 | Vai trò | Email | Mật khẩu |
 |---|---|---|
@@ -129,7 +131,7 @@ Trình duyệt --HTTP--> AuthInterceptor (kiểm tra session/vai trò)
                           v
                       Controller  --gọi--> Repository (SQL viết tay, JdbcTemplate) --JDBC--> Oracle FREEPDB1
                           |                                                                 (bảng, view, trigger)
-                          v  Model (record) đưa vào Model của Spring
+                          v  Model (record ở web-oracle, class thường ở web-java) đưa vào Model của Spring
                     View Thymeleaf (templates/*.html, layout Bootstrap 5)
                           |
                           v
@@ -141,12 +143,32 @@ Ví dụ luồng "admin đổi trạng thái": `POST /admin/{id}` -> `AdminContr
 ## 6. Cấu trúc thư mục
 
 ```
-sql/     00_run_all.sql, 01..11, 99_drop_all.sql; ketqua/ (log chạy thật của phần quản trị, kịch bản thử trong ketqua/kichban/)
-web/     pom.xml, src/main/java/vn/utc/suco/{model,repository,controller,config,util},
-         src/main/resources/{application.properties, templates/*.html, static/css/app.css, static/js/app.js},
-         uploads/ (ảnh đính kèm người dùng tải lên, map ra URL /uploads/**)
-docs/    BaoCao_Oracle_QuanLySuCo.docx (báo cáo Word), so_do_ER_SUCO_APP.png (sơ đồ ER)
-tools/   BamMatKhau.java (in hash mật khẩu), VeSoDoER.java (vẽ ER), RunSql.java, baocao/ (dựng báo cáo Word)
+sql/        00_run_all.sql, 01..11, 99_drop_all.sql; ketqua/ (log chạy thật của phần quản trị, kịch bản thử trong ketqua/kichban/)
+web-oracle/ pom.xml, src/main/java/vn/utc/suco/{model,repository,controller,config,util},
+            src/main/resources/{application.properties, templates/*.html, static/css/app.css, static/js/app.js},
+            uploads/ (ảnh đính kèm người dùng tải lên, map ra URL /uploads/**)
+web-java/   bản sao của web-oracle/ cho đồ án Java riêng - xem mục 7
+docs/       BaoCao_Oracle_QuanLySuCo.docx (báo cáo Word), so_do_ER_SUCO_APP.png (sơ đồ ER)
+tools/      BamMatKhau.java (in hash mật khẩu), VeSoDoER.java (vẽ ER), RunSql.java, baocao/ (dựng báo cáo Word)
 ```
 
 Tiến độ và các việc còn lại: xem [TIEN_DO.md](TIEN_DO.md).
+
+## 7. Bản `web-java/` cho đồ án Java
+
+Cùng một ứng dụng với `web-oracle/` (cùng CSDL `SUCO_APP`, cùng giao diện, artifactId `suco-web-java`), nhưng
+phần Java được viết lại cho rõ các tính chất cơ bản của Java/OOP vì `record` khó giải thích với người mới học:
+
+- **Lớp thường thay cho `record`**: 11 model trong `vn.utc.suco.model` đều là `class` với field `private`,
+  constructor, getter/setter, `equals`/`hashCode`/`toString` viết tay (không dùng `record`).
+- **Kế thừa**: `ThongKeCot extends ThongKeDong` (thêm % độ dài thanh); `LuuAnhSuCo`/`LuuTepTraoDoi extends BoLuuTru`.
+- **Trừu tượng + đa hình**: `BoLuuTru` là `abstract class` lo việc lưu file xuống đĩa chung cho mọi nơi gọi,
+  2 lớp con tự quyết định loại file được nhận (`LuuAnhSuCo` chỉ ảnh, `LuuTepTraoDoi` thêm PDF/Word/TXT/ZIP).
+- **Interface + đa hình**: `CoNhan` (`getNhan()`/`getLopBadge()`) do 5 enum trạng thái/vai trò cùng implement;
+  fragment hiển thị badge trong Thymeleaf gọi `t.nhan`/`t.lopBadge` mà không cần biết đang cầm enum nào.
+- **Enum**: `VaiTro`, `TrangThaiNguoiDung`, `TrangThaiSuCo`, `MucUuTien`, `TinhTrangThietBi` thay cho chuỗi
+  `"ADMIN"`, `"HOAT_DONG"`... trước đây.
+- **Exception riêng**: `FileKhongHopLeException extends RuntimeException`, ném ra khi tải lên file sai loại.
+
+Build/chạy giống `web-oracle/` (đổi `cd web-oracle` thành `cd web-java`, jar ra `suco-web-java-1.0.0.jar`).
+Chạy song song với `web-oracle/` thì đổi cổng: `mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8082`.

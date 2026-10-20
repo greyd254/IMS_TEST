@@ -10,7 +10,7 @@ Cập nhật: 26/09/2026. Đề: "Đề số 30 - Đề mở" (`De Thi Oracle Li
 | 2 (2,5) CSDL | User `SUCO_APP`, tablespace `TS_SUCO`, 8 bảng, 2 trigger, 2 view, ~80 bản ghi | `sql/01..05`, `sql/11` |
 | 3 (1) Truy vấn | 17 truy vấn (yêu cầu tối thiểu 10) | `sql/05_queries.sql` |
 | 4 (5) Quản trị Oracle | Instance (NOMOUNT/MOUNT/READ ONLY/restricted), PDB, tablespace + datafile, ARCHIVELOG, RMAN khôi phục datafile mất, profile, user, role, expdp/impdp | `sql/06`, `07`, `08`; nhật ký thật ở `sql/ketqua/` |
-| 5 (1) Web | Spring Boot: đăng nhập, báo sự cố, xử lý sự cố, kho kinh nghiệm, quản lý thiết bị/phòng/danh mục (thêm/sửa/xóa), quản lý người dùng (xóa mềm), **phản hồi sau xử lý, "sự cố hay gặp"** | `web/` |
+| 5 (1) Web | Spring Boot: đăng nhập, báo sự cố, xử lý sự cố, kho kinh nghiệm, quản lý thiết bị/phòng/danh mục (thêm/sửa/xóa), quản lý người dùng (xóa mềm), **phản hồi sau xử lý, "sự cố hay gặp"** | `web-oracle/` |
 | Báo cáo Word | 43 trang, Times New Roman 13, mục lục, số trang | `docs/BaoCao_Oracle_QuanLySuCo.docx` |
 
 ## Việc còn lại (làm tiếp)
@@ -23,10 +23,10 @@ Cập nhật: 26/09/2026. Đề: "Đề số 30 - Đề mở" (`De Thi Oracle Li
 
 ## Cách chạy lại
 
-- **Web**: `cd web` rồi `mvn spring-boot:run`, hoặc chạy sẵn: `java -jar web\target\suco-web-1.0.0.jar`, mở http://localhost:8080.
+- **Web**: `cd web-oracle` rồi `mvn spring-boot:run`, hoặc chạy sẵn: `java -jar web-oracle\target\suco-web-1.0.0.jar`, mở http://localhost:8080.
   Máy **chưa cài Maven** (đã dùng bản portable trong thư mục tạm, có thể mất). Nếu cần build lại: cài Maven hoặc dùng Maven có sẵn trong IntelliJ.
   Tài khoản demo: admin `hung.nv@utc.edu.vn` / `admin123`; user `anh.pd@st.utc.edu.vn` / `123456`.
-  Mật khẩu trong CSDL được **băm PBKDF2** (không còn plain text). CSDL đã dựng từ trước: chạy thêm `sql/09_bam_mat_khau.sql` bằng SUCO_APP. In hash mới: `javac -d out web/src/main/java/vn/utc/suco/util/MatKhau.java tools/BamMatKhau.java` rồi `java -cp out BamMatKhau <mật khẩu>`.
+  Mật khẩu trong CSDL được **băm PBKDF2** (không còn plain text). CSDL đã dựng từ trước: chạy thêm `sql/09_bam_mat_khau.sql` bằng SUCO_APP. In hash mới: `javac -d out web-oracle/src/main/java/vn/utc/suco/util/MatKhau.java tools/BamMatKhau.java` rồi `java -cp out BamMatKhau <mật khẩu>`.
 - **Dựng lại CSDL từ đầu**: `sql/99_drop_all.sql` rồi `sql/00_run_all.sql` (cần mật khẩu SYSTEM). Cần SQL*Plus: `C:\app\GreyD\product\26ai\dbhomeFree\bin` (đặt `ORACLE_HOME`, `ORACLE_SID=FREE`; SYSDBA bằng `sqlplus / as sysdba`). File có tiếng Việt: chạy `chcp 65001` và `set NLS_LANG=.AL32UTF8` trước.
 - **Vẽ lại sơ đồ ER** (sau khi sửa cấu trúc bảng): xem `SO_DO_QUAN_HE.md`.
 - **Dựng lại báo cáo Word** (khi cần cập nhật số liệu): trong `tools/baocao/` chạy `npm install docx` một lần; `java -cp <ojdbc17.jar> XuatDuLieu.java <đường dẫn 05_queries.sql> dulieu.json`; `node build.js`; rồi `cap_nhat_muc_luc.ps1`. Lưu ý: chạy lại `build.js` sẽ **ghi đè** file Word, mất phần bạn đã chỉnh tay (bìa, ảnh). Chỉ dùng khi chưa chỉnh, hoặc lưu bản đã chỉnh sang tên khác trước.
@@ -84,5 +84,14 @@ Chỉ đụng tới `web/src/main/resources` (template + CSS + 1 file JS nhỏ) 
 - Vẽ 2 khóa ngoại tự tham chiếu của `NGUOI_DUNG` (`MA_NGUOI_TAO`, `MA_NGUOI_XOA`) thành hai vòng nhỏ dưới đáy bảng, nằm hai bên đường `MA_NGUOI_CAP_NHAT`.
 - Phân biệt quan hệ 1-1: cột khóa ngoại có UNIQUE (`PHAN_HOI.MA_SC`) vẽ đầu con là `O|` (không hoặc một) thay vì chân chim; nhãn khóa trong bảng hiện `FK,UK`.
 - Chạy lại: `java -cp %USERPROFILE%\.m2\repository\com\oracle\database\jdbc\ojdbc17\23.26.3.0.0\ojdbc17-23.26.3.0.0.jar tools\VeSoDoER.java` (mặc định ghi đè `docs/so_do_ER_SUCO_APP.png`). Nếu sau này thêm bảng/khóa ngoại mới mà chưa khai báo đường vẽ, chương trình in `CANH BAO: chua co duong noi cho ...` — phải thêm nhánh vẽ trong `VeSoDoER.java`.
+
+**Tách `web/` thành `web-oracle/` + `web-java/` (20/10/2026):** theo góp ý "record khó giải thích với người mới", đổi tên
+`web/` thành `web-oracle/` (giữ nguyên 100%, vẫn là bản đã nộp cho môn Oracle) và thêm `web-java/` — bản sao cùng chức
+năng, cùng CSDL, nhưng viết lại phần Java cho đồ án Java riêng của nhóm:
+- 11 `record` trong `model/` → `class` thường (field `private`, constructor, getter/setter, `equals`/`hashCode`/`toString` viết tay).
+- Thêm enum `VaiTro`, `TrangThaiNguoiDung`, `TrangThaiSuCo`, `MucUuTien`, `TinhTrangThietBi` (trước đây là chuỗi `"ADMIN"`, `"HOAT_DONG"`...); cả 5 cùng implement interface mới `CoNhan` (`getNhan()`/`getLopBadge()`) để fragment Thymeleaf hiển thị badge mà không cần biết đang cầm enum nào (đa hình).
+- `LuuAnh.java` (có 2 method lưu file gần giống nhau) tách thành `abstract class BoLuuTru` + 2 lớp con `LuuAnhSuCo`/`LuuTepTraoDoi` (kế thừa + trừu tượng + đa hình thật, không phải ví dụ giả); `ThongKeCot extends ThongKeDong` (kế thừa thêm % cột).
+- Thêm exception riêng `FileKhongHopLeException extends RuntimeException` thay cho `IllegalArgumentException` dùng chung khi tải file sai loại.
+- **Bẫy đã gặp khi test thật** (đăng nhập bằng 2 tài khoản tạo tạm qua `tools/RunSql.java`, xóa ngay sau khi xong): Thymeleaf/SpringEL **không** tự so sánh được enum với chuỗi theo kiểu `${obj.enumField == 'CHUOI'}` trong bản Spring Boot 4.1 này (dù một số tài liệu Thymeleaf cũ nói có) — `th:selected` của 3 dropdown (vai trò, trạng thái sự cố, tình trạng thiết bị) và bộ lọc đếm `dsSuCo.?[trangThai == '...']` ở `/user` đều im lặng sai (không báo lỗi, chỉ không chọn/không lọc đúng) cho tới khi sửa thành `${obj.enumField.name() == 'CHUOI'}`. Ngoài ra `Map<String,String>` tra theo field enum (`dsVaiTro[nd.vaiTro]`, `dsTinhTrang[tb.tinhTrang]`) cũng vỡ vì khóa Map vẫn là String — đổi sang gọi trực tiếp `nd.vaiTro.nhan`/`.lopBadge` qua interface `CoNhan`. Nhớ test lại bằng tài khoản thật (không chỉ nhìn code) nếu sau này đổi field String khác sang enum.
 
 Còn lại duy nhất: **báo cáo Word `docs/BaoCao_Oracle_QuanLySuCo.docx`** vẫn là bản đã nộp 26/09, chưa có `PHAN_HOI`, các chức năng web thêm sau và giao diện mới. Nếu cập nhật thì nên lưu sang tên khác để giữ nguyên bản đã nộp.

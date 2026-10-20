@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Quản lý người dùng')}"></head>
+<body>
+<th:block th:replace="~{layout :: menu('nguoi-dung')}"></th:block>
+
+<main class="noi-dung">
+  <div class="container-xxl">
+    <th:block th:replace="~{layout :: thongbao}"></th:block>
+
+    <div class="thanh-trang">
+      <div th:replace="~{layout :: tieuDe('bi-people','Người dùng',null)}"></div>
+      <div class="hanh-dong">
+        <input type="search" class="form-control o-tim" data-loc="#bangNguoiDung"
+               placeholder="Tìm họ tên, email, đơn vị..." aria-label="Tìm người dùng">
+        <button class="btn btn-primary text-nowrap" type="button" data-bs-toggle="collapse"
+                data-bs-target="#formThem" aria-expanded="false" aria-controls="formThem">
+          <i class="bi bi-person-plus"></i> Thêm người dùng
+        </button>
+      </div>
+    </div>
+
+    <div class="collapse mb-3" id="formThem" th:classappend="${loi} ? 'show'">
+      <div class="card">
+        <div class="card-header"><i class="bi bi-person-plus"></i>Thêm người dùng mới</div>
+        <div class="card-body">
+          <form th:action="@{/admin/nguoi-dung}" method="post" class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label" for="hoTen">Họ tên <span class="text-danger">*</span></label>
+              <input class="form-control" id="hoTen" name="hoTen" maxlength="100" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="email">Email <span class="text-danger">*</span></label>
+              <input class="form-control" type="email" id="email" name="email" maxlength="100" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="matKhau">Mật khẩu <span class="text-danger">*</span></label>
+              <input class="form-control" id="matKhau" name="matKhau" maxlength="50" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="donVi">Đơn vị</label>
+              <input class="form-control" id="donVi" name="donVi" maxlength="100">
+            </div>
+            <div class="col-md-4 col-6">
+              <label class="form-label" for="sdt">Số điện thoại</label>
+              <input class="form-control" id="sdt" name="sdt" maxlength="20">
+            </div>
+            <div class="col-md-4 col-6">
+              <label class="form-label" for="vaiTro">Vai trò</label>
+              <select class="form-select" id="vaiTro" name="vaiTro">
+                <option th:each="e : ${dsVaiTro}" th:value="${e.key}" th:text="${e.value}"></option>
+              </select>
+            </div>
+            <div class="col-12 d-flex gap-2">
+              <button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg"></i> Thêm người dùng</button>
+              <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#formThem">Đóng</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle bang-gon" id="bangNguoiDung">
+          <thead>
+            <tr><th>Mã</th><th>Họ tên / Email</th><th>SĐT</th><th>Đơn vị</th><th>Vai trò</th><th>Trạng thái</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr th:each="nd : ${dsNguoiDung}">
+              <td data-label="Mã" class="an-mobile" th:text="'#' + ${nd.maNd}"></td>
+              <td class="o-chinh">
+                <span th:text="${nd.hoTen}"></span>
+                <span class="o-phu">
+                  <span class="d-md-none" th:text="'#' + ${nd.maNd} + ' · '"></span>
+                  <span th:text="${nd.email}"></span>
+                </span>
+              </td>
+              <td data-label="SĐT" th:text="${nd.sdt} ?: '-'"></td>
+              <td data-label="Đơn vị" th:text="${nd.donVi} ?: '-'"></td>
+              <td data-label="Vai trò">
+                <span class="badge" th:text="${nd.vaiTro.nhan}" th:classappend="${nd.vaiTro.lopBadge}"></span>
+              </td>
+              <td data-label="Trạng thái">
+                <span class="badge" th:classappend="${nd.dangHoatDong()} ? 'text-bg-success' : 'text-bg-secondary'"
+                      th:text="${nd.dangHoatDong()} ? 'Hoạt động' : 'Đã khóa'"></span>
+              </td>
+              <td>
+                <span class="nhom-nut">
+                  <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/nguoi-dung/{id}/sua(id=${nd.maNd})}">
+                    <i class="bi bi-pencil-square"></i> Sửa
+                  </a>
+                  <form th:if="${nd.dangHoatDong()}" th:action="@{/admin/nguoi-dung/{id}/xoa(id=${nd.maNd})}" method="post"
+                        onsubmit="return confirm('Vô hiệu hóa người dùng này? (không xóa dữ liệu, có thể kích hoạt lại)');">
+                    <button class="btn btn-sm btn-outline-danger" type="submit">
+                      <i class="bi bi-slash-circle"></i> Vô hiệu hóa
+                    </button>
+                  </form>
+                  <form th:unless="${nd.dangHoatDong()}" th:action="@{/admin/nguoi-dung/{id}/kich-hoat(id=${nd.maNd})}" method="post">
+                    <button class="btn btn-sm btn-outline-success" type="submit">
+                      <i class="bi bi-check-circle"></i> Kích hoạt
+                    </button>
+                  </form>
+                </span>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(dsNguoiDung)}">
+              <td colspan="7" class="trong-rong"><i class="bi bi-inbox"></i>Chưa có người dùng</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

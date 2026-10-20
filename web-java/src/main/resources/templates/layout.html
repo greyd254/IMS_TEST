@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<!-- Layout chung: các trang gọi các fragment bên dưới bằng th:replace="~{layout :: ten_fragment}" -->
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(tieuDe)">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${tieuDe} + ' - Quản lý sự cố CNTT'">Quản lý sự cố CNTT</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link th:href="@{/css/app.css}" rel="stylesheet">
+  <!-- Cần cho menu kéo ra (offcanvas) và khối thu gọn (collapse) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+  <!-- Ô tìm nhanh trong bảng / danh sách -->
+  <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body>
+
+<!--/*
+  Menu chính. Tham số muc = mục đang mở, để tô sáng đúng dòng:
+    'suco' | 'thiet-bi' | 'phong' | 'danh-muc' | 'nguoi-dung' | 'kinh-nghiem'
+  Điện thoại: thanh trên + ngăn kéo (offcanvas). Máy tính (>=768px): cột cố định bên trái.
+*/-->
+<th:block th:fragment="menu(muc)">
+
+  <header class="thanh-tren d-md-none">
+    <button class="btn nut-menu" type="button" data-bs-toggle="offcanvas" data-bs-target="#scMenu"
+            aria-controls="scMenu" aria-label="Mở menu">
+      <i class="bi bi-list"></i>
+    </button>
+    <a class="thuong-hieu" th:href="${session.nguoiDung.laAdmin()} ? @{/admin} : @{/user}">
+      <span class="ten">Sự cố CNTT</span>
+    </a>
+    <span class="avatar-chu" th:text="${#strings.toUpperCase(#strings.substring(session.nguoiDung.hoTen, 0, 1))}">?</span>
+  </header>
+
+  <nav class="menu-ben offcanvas offcanvas-start" tabindex="-1" id="scMenu" aria-label="Menu chính">
+    <div class="offcanvas-header">
+      <span class="thuong-hieu">
+        <i class="bi bi-headset"></i>
+        <span><span class="ten">Sự cố CNTT</span><small>ĐH Giao thông Vận tải</small></span>
+      </span>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Đóng"></button>
+    </div>
+
+    <div class="offcanvas-body">
+      <a class="thuong-hieu d-none d-md-flex mb-2" th:href="${session.nguoiDung.laAdmin()} ? @{/admin} : @{/user}">
+        <i class="bi bi-headset"></i>
+        <span><span class="ten">Sự cố CNTT</span><small>ĐH Giao thông Vận tải</small></span>
+      </a>
+
+      <!-- Người dùng thường: báo sự cố + tra kho kinh nghiệm -->
+      <th:block th:unless="${session.nguoiDung.laAdmin()}">
+        <ul class="menu-ds">
+          <li>
+            <a th:href="@{/user}" th:classappend="${muc == 'suco'} ? 'dang-chon'">
+              <i class="bi bi-clipboard-plus"></i> Sự cố của tôi
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/kinh-nghiem}" th:classappend="${muc == 'kinh-nghiem'} ? 'dang-chon'">
+              <i class="bi bi-journal-text"></i> Kho kinh nghiệm
+            </a>
+          </li>
+        </ul>
+      </th:block>
+
+      <!-- Admin (IT): chia 2 nhóm cho đỡ rối -->
+      <th:block th:if="${session.nguoiDung.laAdmin()}">
+        <div class="menu-nhom">Xử lý hằng ngày</div>
+        <ul class="menu-ds">
+          <li>
+            <a th:href="@{/admin/thong-ke}" th:classappend="${muc == 'thong-ke'} ? 'dang-chon'">
+              <i class="bi bi-bar-chart-line"></i> Thống kê
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/admin}" th:classappend="${muc == 'suco'} ? 'dang-chon'">
+              <i class="bi bi-life-preserver"></i> Sự cố
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/admin/kinh-nghiem}" th:classappend="${muc == 'kinh-nghiem'} ? 'dang-chon'">
+              <i class="bi bi-journal-text"></i> Kho kinh nghiệm
+            </a>
+          </li>
+        </ul>
+        <div class="menu-nhom">Dữ liệu nền</div>
+        <ul class="menu-ds">
+          <li>
+            <a th:href="@{/admin/thiet-bi}" th:classappend="${muc == 'thiet-bi'} ? 'dang-chon'">
+              <i class="bi bi-pc-display"></i> Thiết bị
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/admin/phong}" th:classappend="${muc == 'phong'} ? 'dang-chon'">
+              <i class="bi bi-door-open"></i> Phòng
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/admin/danh-muc}" th:classappend="${muc == 'danh-muc'} ? 'dang-chon'">
+              <i class="bi bi-tags"></i> Danh mục
+            </a>
+          </li>
+          <li>
+            <a th:href="@{/admin/nguoi-dung}" th:classappend="${muc == 'nguoi-dung'} ? 'dang-chon'">
+              <i class="bi bi-people"></i> Người dùng
+            </a>
+          </li>
+        </ul>
+      </th:block>
+
+      <div class="the-nguoi-dung">
+        <div class="dong">
+          <span class="avatar-chu" th:text="${#strings.toUpperCase(#strings.substring(session.nguoiDung.hoTen, 0, 1))}">?</span>
+          <span class="text-truncate">
+            <span class="ten d-block text-truncate" th:text="${session.nguoiDung.hoTen}">Tên</span>
+            <span class="vai-tro" th:text="${session.nguoiDung.laAdmin()} ? 'Quản trị (IT)' : 'Người dùng'">USER</span>
+          </span>
+        </div>
+        <a class="btn btn-outline-light btn-sm w-100" th:href="@{/logout}">
+          <i class="bi bi-box-arrow-right"></i> Đăng xuất
+        </a>
+      </div>
+    </div>
+  </nav>
+</th:block>
+
+<!-- Thông báo thành công / lỗi (truyền qua flash attribute sau khi redirect).
+     Đặt bên trong .container của trang. -->
+<th:block th:fragment="thongbao">
+  <div class="alert alert-success d-flex align-items-center gap-2 alert-dismissible fade show" th:if="${thongBao}">
+    <i class="bi bi-check-circle-fill"></i> <span th:text="${thongBao}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+  </div>
+  <div class="alert alert-danger d-flex align-items-center gap-2 alert-dismissible fade show" th:if="${loi}">
+    <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${loi}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+  </div>
+</th:block>
+
+<!-- Tiêu đề trang: icon (tên class bootstrap-icons, vd 'bi-people') + chữ + dòng mô tả nhỏ -->
+<div th:fragment="tieuDe(icon, ten, phu)" class="tieu-de-trang">
+  <i th:class="'bi ' + ${icon}"></i>
+  <div>
+    <h5 th:text="${ten}"></h5>
+    <span class="phu" th:if="${phu}" th:text="${phu}"></span>
+  </div>
+</div>
+
+<!--
+  Nhãn trạng thái sự cố / mức ưu tiên: t là enum (TrangThaiSuCo hoặc MucUuTien), cả hai đều implement
+  CoNhan nên fragment chỉ cần gọi getNhan()/getLopBadge() mà không cần biết đang cầm loại enum nào (đa hình).
+-->
+<span th:fragment="trangThai(t)" class="badge" th:classappend="${t.lopBadge}" th:text="${t.nhan}">Mới</span>
+
+<span th:fragment="uuTien(t)" class="badge" th:classappend="${t.lopBadge}" th:text="${t.nhan}">Thấp</span>
+
+<!--/*
+  Danh sách cột ngang cho trang /admin/thong-ke.
+  ds = List<ThongKeCot> (nhan, soLuong, phanTram đã tính sẵn ở tầng Java).
+  kieu = 'trangthai' | 'tinhtrang' | null -> tô màu thanh theo đúng 3 nhãn cố định của loại đó, còn lại giữ màu xanh mặc định.
+*/-->
+<div th:fragment="bieuDo(ds, kieu)" class="khoi-bieu-do">
+  <div class="dong" th:each="d : ${ds}">
+    <div class="hang-tren">
+      <span class="nhan" th:text="${d.nhan}"></span>
+      <span class="so" th:text="${d.soLuong}"></span>
+    </div>
+    <div class="thanh-nen">
+      <div class="thanh-day" th:style="'width:' + ${d.phanTram} + '%'"
+           th:classappend="${kieu == 'trangthai'} ? (${d.nhan == 'Mới'} ? 'mo' : (${d.nhan == 'Đang xử lý'} ? 'canh-bao' : 'tot'))
+                            : (${kieu == 'tinhtrang'} ? (${d.nhan == 'Hoạt động'} ? 'tot' : (${d.nhan == 'Đang sửa'} ? 'canh-bao' : 'xau')) : '')"></div>
+    </div>
+  </div>
+  <p class="trong-rong mb-0" th:if="${#lists.isEmpty(ds)}"><i class="bi bi-inbox"></i>Chưa có dữ liệu</p>
+</div>
+
+<!--/*
+  Danh sách trao đổi trên 1 sự cố (user-chi-tiet.html, admin-chi-tiet.html). ds = List<BinhLuan>,
+  đã sắp mới nhất lên trước ở tầng repo (ORDER BY THOI_GIAN DESC). Form gửi tin nhắn nằm riêng ở
+  từng trang (đường dẫn POST khác nhau giữa /user và /admin) nên không đưa vào đây.
+*/-->
+<div th:fragment="dsBinhLuan(ds)" class="khoi-binh-luan">
+  <div class="binh-luan" th:each="bl : ${ds}">
+    <span class="avt" th:classappend="${bl.cuaAdmin()} ? 'admin'"
+          th:text="${#strings.toUpperCase(#strings.substring(bl.tenNguoiGui, 0, 1))}">?</span>
+    <div class="noi">
+      <div class="dau">
+        <span class="ten" th:text="${bl.tenNguoiGui}"></span>
+        <span class="badge" th:classappend="${bl.cuaAdmin()} ? 'text-bg-danger' : 'text-bg-secondary'"
+              th:text="${bl.cuaAdmin()} ? 'IT' : 'Người báo'"></span>
+        <span class="luc" th:text="${#temporals.format(bl.thoiGian, 'dd/MM/yyyy HH:mm')}"></span>
+      </div>
+      <p class="noi-dung-bl" th:if="${bl.noiDung}" th:text="${bl.noiDung}"></p>
+      <div class="tep-dinh-kem" th:if="${bl.tepDinhKem}">
+        <a th:if="${bl.tepDinhKem.matches('(?i).*\.(jpg|jpeg|png|gif|webp)$')}"
+           th:href="@{${bl.tepDinhKem}}" target="_blank">
+          <img class="anh-to" th:src="@{${bl.tepDinhKem}}" alt="File đính kèm">
+        </a>
+        <a th:unless="${bl.tepDinhKem.matches('(?i).*\.(jpg|jpeg|png|gif|webp)$')}"
+           th:href="@{${bl.tepDinhKem}}" target="_blank">
+          <i class="bi bi-paperclip"></i> Xem file đính kèm
+        </a>
+      </div>
+    </div>
+  </div>
+  <p class="trong-rong mb-0" th:if="${#lists.isEmpty(ds)}"><i class="bi bi-chat"></i>Chưa có trao đổi nào</p>
+</div>
+
+</body>
+</html>

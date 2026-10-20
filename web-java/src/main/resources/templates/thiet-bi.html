@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Quản lý thiết bị')}"></head>
+<body>
+<th:block th:replace="~{layout :: menu('thiet-bi')}"></th:block>
+
+<main class="noi-dung">
+  <div class="container-xxl">
+    <th:block th:replace="~{layout :: thongbao}"></th:block>
+
+    <div class="thanh-trang">
+      <div th:replace="~{layout :: tieuDe('bi-pc-display','Thiết bị',null)}"></div>
+      <div class="hanh-dong">
+        <input type="search" class="form-control o-tim" data-loc="#bangThietBi"
+               placeholder="Tìm tên, loại, phòng..." aria-label="Tìm thiết bị">
+        <button class="btn btn-primary text-nowrap" type="button" data-bs-toggle="collapse"
+                data-bs-target="#formThem" aria-expanded="false" aria-controls="formThem">
+          <i class="bi bi-plus-lg"></i> Thêm thiết bị
+        </button>
+      </div>
+    </div>
+
+    <!-- Form thêm thiết bị: thu gọn sẵn cho đỡ chật, tự mở lại nếu lần gửi trước bị lỗi -->
+    <div class="collapse mb-3" id="formThem" th:classappend="${loi} ? 'show'">
+      <div class="card">
+        <div class="card-header"><i class="bi bi-plus-circle"></i>Thêm thiết bị mới</div>
+        <div class="card-body">
+          <form th:action="@{/admin/thiet-bi}" method="post" class="row g-3">
+            <div class="col-md-5">
+              <label class="form-label" for="tenTb">Tên thiết bị <span class="text-danger">*</span></label>
+              <input class="form-control" id="tenTb" name="tenTb" maxlength="150" required>
+            </div>
+            <div class="col-md-3 col-6">
+              <label class="form-label" for="loaiTb">Loại</label>
+              <select class="form-select" id="loaiTb" name="loaiTb">
+                <option th:each="e : ${dsLoai}" th:value="${e.key}" th:text="${e.value}"></option>
+              </select>
+            </div>
+            <div class="col-md-4 col-6">
+              <label class="form-label" for="maPhong">Phòng <span class="text-danger">*</span></label>
+              <select class="form-select" id="maPhong" name="maPhong" required>
+                <option th:each="p : ${dsPhong}" th:value="${p.maPhong}" th:text="${p.tenPhong}"></option>
+              </select>
+            </div>
+            <div class="col-md-3 col-6">
+              <label class="form-label" for="tinhTrang">Tình trạng</label>
+              <select class="form-select" id="tinhTrang" name="tinhTrang">
+                <option th:each="e : ${dsTinhTrang}" th:value="${e.key}" th:text="${e.value}"></option>
+              </select>
+            </div>
+            <div class="col-md-5">
+              <label class="form-label" for="nhaCungCap">Nhà cung cấp</label>
+              <input class="form-control" id="nhaCungCap" name="nhaCungCap" maxlength="150">
+            </div>
+            <div class="col-md-4 col-6">
+              <label class="form-label" for="ngayLapDat">Ngày lắp đặt</label>
+              <input class="form-control" type="date" id="ngayLapDat" name="ngayLapDat">
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="hdsd">Hướng dẫn sử dụng</label>
+              <input class="form-control" id="hdsd" name="hdsd" maxlength="2000">
+            </div>
+            <div class="col-12 d-flex gap-2">
+              <button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg"></i> Thêm thiết bị</button>
+              <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse"
+                      data-bs-target="#formThem">Đóng</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle bang-gon" id="bangThietBi">
+          <thead>
+            <tr>
+              <th>Mã</th><th>Tên thiết bị / Loại</th><th>Phòng</th><th>Tình trạng</th>
+              <th>Nhà cung cấp</th><th>Ngày lắp đặt</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="tb : ${dsThietBi}">
+              <td data-label="Mã" class="an-mobile" th:text="'#' + ${tb.maTb}"></td>
+              <td class="o-chinh">
+                <span th:text="${tb.tenTb}"></span>
+                <span class="o-phu">
+                  <span class="d-md-none" th:text="'#' + ${tb.maTb} + ' · '"></span>
+                  <span th:text="${dsLoai[tb.loaiTb]}"></span>
+                </span>
+              </td>
+              <td data-label="Phòng" th:text="${tb.tenPhong}"></td>
+              <td data-label="Tình trạng">
+                <span class="badge" th:text="${tb.tinhTrang.nhan}" th:classappend="${tb.tinhTrang.lopBadge}"></span>
+              </td>
+              <td data-label="Nhà cung cấp" th:text="${tb.nhaCungCap} ?: '-'"></td>
+              <td data-label="Ngày lắp đặt" th:text="${tb.ngayLapDat} ?: '-'"></td>
+              <td>
+                <span class="nhom-nut">
+                  <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/thiet-bi/{id}/sua(id=${tb.maTb})}">
+                    <i class="bi bi-pencil-square"></i> Sửa
+                  </a>
+                  <form th:action="@{/admin/thiet-bi/{id}/xoa(id=${tb.maTb})}" method="post"
+                        onsubmit="return confirm('Xóa thiết bị này?');">
+                    <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i> Xóa</button>
+                  </form>
+                </span>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(dsThietBi)}">
+              <td colspan="7" class="trong-rong"><i class="bi bi-inbox"></i>Chưa có thiết bị</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Báo sự cố')}"></head>
+<body>
+<th:block th:replace="~{layout :: menu('suco')}"></th:block>
+
+<main class="noi-dung">
+  <div class="container-xxl">
+    <th:block th:replace="~{layout :: thongbao}"></th:block>
+
+    <div class="thanh-trang">
+      <div th:replace="~{layout :: tieuDe('bi-clipboard-plus','Sự cố của tôi','Báo sự cố mới và theo dõi tiến độ xử lý')}"></div>
+    </div>
+
+    <!-- Số sự cố của chính người dùng theo từng trạng thái (đếm ngay trên danh sách đã lấy) -->
+    <div class="row row-cols-3 g-2 g-md-3 mb-3">
+      <div class="col">
+        <div class="o-thong-ke">
+          <span class="nhan"><span class="cham moi"></span> Mới</span>
+          <span class="so" th:text="${#lists.size(dsSuCo.?[trangThai.name() == 'MOI'])}">0</span>
+        </div>
+      </div>
+      <div class="col">
+        <div class="o-thong-ke">
+          <span class="nhan"><span class="cham dang"></span> Đang xử lý</span>
+          <span class="so" th:text="${#lists.size(dsSuCo.?[trangThai.name() == 'DANG_XU_LY'])}">0</span>
+        </div>
+      </div>
+      <div class="col">
+        <div class="o-thong-ke">
+          <span class="nhan"><span class="cham xong"></span> Hoàn thành</span>
+          <span class="so" th:text="${#lists.size(dsSuCo.?[trangThai.name() == 'HOAN_THANH'])}">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 g-xl-4 mb-4">
+      <!-- Form báo sự cố: thiết bị, danh mục lấy từ CSDL; mức ưu tiên là danh sách cố định theo CHECK của bảng -->
+      <div class="col-xl-7">
+        <div class="card h-100">
+          <div class="card-header"><i class="bi bi-exclamation-circle"></i>Báo sự cố mới</div>
+          <div class="card-body">
+            <form th:action="@{/user/bao-cao}" method="post" enctype="multipart/form-data" class="row g-3">
+              <div class="col-12">
+                <label class="form-label" for="tieuDe">Tiêu đề <span class="text-danger">*</span></label>
+                <input class="form-control" id="tieuDe" name="tieuDe" maxlength="200" required
+                       placeholder="Ví dụ: Máy chiếu phòng 301 không lên hình">
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="moTa">Mô tả chi tiết</label>
+                <textarea class="form-control" id="moTa" name="moTa" rows="3" maxlength="1000"
+                          placeholder="Hiện tượng, thời điểm xảy ra, đã thử cách nào..."></textarea>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="maTb">Thiết bị</label>
+                <select class="form-select" id="maTb" name="maTb">
+                  <option value="">-- Không liên quan thiết bị --</option>
+                  <option th:each="tb : ${dsThietBi}" th:value="${tb.maTb}"
+                          th:text="${tb.tenTb} + ' - ' + ${tb.tenPhong}"></option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="maDm">Danh mục <span class="text-danger">*</span></label>
+                <select class="form-select" id="maDm" name="maDm" required>
+                  <option th:each="dm : ${dsDanhMuc}" th:value="${dm.maDm}" th:text="${dm.tenDm}"></option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="mucUuTien">Mức ưu tiên</label>
+                <select class="form-select" id="mucUuTien" name="mucUuTien" required>
+                  <option value="THAP">Thấp</option>
+                  <option value="TRUNG_BINH" selected>Trung bình</option>
+                  <option value="CAO">Cao</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="anh">Ảnh đính kèm</label>
+                <input class="form-control" type="file" id="anh" name="anh"
+                       accept="image/jpeg,image/png,image/gif,image/webp">
+                <div class="form-text">Không bắt buộc, tối đa 5MB.</div>
+              </div>
+              <div class="col-12">
+                <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Gửi báo cáo</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-5">
+        <!-- Thống kê từ view V_SU_CO_THUONG_GAP: biết trước lỗi hay gặp để chọn đúng danh mục -->
+        <div class="card mb-3" th:if="${not #lists.isEmpty(dsHayGap)}">
+          <div class="card-header"><i class="bi bi-graph-up"></i>Sự cố hay gặp</div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between align-items-center gap-2"
+                th:each="hg : ${dsHayGap}">
+              <span th:text="${hg.tenDm}"></span>
+              <span class="badge text-bg-secondary rounded-pill text-nowrap" th:text="${hg.soLanBao} + ' lần'"></span>
+            </li>
+          </ul>
+        </div>
+        <div class="goi-y">
+          <i class="bi bi-lightbulb"></i>
+          Trước khi báo, thử tra <a th:href="@{/kinh-nghiem}">Kho kinh nghiệm</a> xem lỗi này đã có cách tự xử lý chưa.
+          Ghi rõ phòng và thiết bị sẽ giúp bộ phận IT đến đúng nơi nhanh hơn.
+        </div>
+      </div>
+    </div>
+
+    <div class="thanh-trang">
+      <div th:replace="~{layout :: tieuDe('bi-list-check','Sự cố tôi đã báo',null)}"></div>
+      <div class="hanh-dong">
+        <input type="search" class="form-control o-tim" data-loc="#bangSuCoCuaToi"
+               placeholder="Tìm trong sự cố của tôi..." aria-label="Tìm sự cố của tôi">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle bang-gon" id="bangSuCoCuaToi">
+          <thead>
+            <tr>
+              <th>Mã</th><th>Sự cố</th><th>Thiết bị, phòng</th><th>Danh mục</th>
+              <th>Ưu tiên</th><th>Trạng thái</th><th>Ngày báo</th><th>Ảnh</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="sc : ${dsSuCo}">
+              <td data-label="Mã" class="an-mobile" th:text="'#' + ${sc.maSc}"></td>
+              <td class="o-chinh">
+                <a th:href="@{/user/{id}(id=${sc.maSc})}" th:text="${sc.tieuDe}"></a>
+                <span class="o-phu d-md-none" th:text="'#' + ${sc.maSc}"></span>
+              </td>
+              <td data-label="Vị trí">
+                <span th:text="${sc.tenTb} ?: '-'">-</span>
+                <span class="o-phu" th:if="${sc.tenPhong}" th:text="${sc.tenPhong}"></span>
+              </td>
+              <td data-label="Danh mục" th:text="${sc.tenDm}"></td>
+              <td data-label="Ưu tiên"><span th:replace="~{layout :: uuTien(${sc.mucUuTien})}"></span></td>
+              <td data-label="Trạng thái"><span th:replace="~{layout :: trangThai(${sc.trangThai})}"></span></td>
+              <td data-label="Ngày báo" th:text="${#temporals.format(sc.ngayTao, 'dd/MM/yyyy HH:mm')}"></td>
+              <td data-label="Ảnh">
+                <a th:if="${sc.anhDinhKem}" th:href="@{${sc.anhDinhKem}}" target="_blank">
+                  <img class="anh-nho" th:src="@{${sc.anhDinhKem}}" alt="Ảnh sự cố">
+                </a>
+                <span th:unless="${sc.anhDinhKem}">-</span>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(dsSuCo)}">
+              <td colspan="8" class="trong-rong"><i class="bi bi-inbox"></i>Bạn chưa báo sự cố nào</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Sửa bài kinh nghiệm')}"></head>
+<body>
+<th:block th:replace="~{layout :: menu('kinh-nghiem')}"></th:block>
+
+<main class="noi-dung">
+  <div class="container-xxl hep">
+    <th:block th:replace="~{layout :: thongbao}"></th:block>
+
+    <a th:href="@{/admin/kinh-nghiem}" class="quay-lai"><i class="bi bi-arrow-left"></i> Quay lại kho kinh nghiệm</a>
+
+    <div class="card">
+      <div class="card-header">
+        <i class="bi bi-pencil-square"></i>Sửa bài kinh nghiệm #<span th:text="${bai.maBai}"></span>
+      </div>
+      <div class="card-body">
+        <form th:action="@{/admin/kinh-nghiem/{id}(id=${bai.maBai})}" method="post" class="row g-3">
+          <div class="col-md-8">
+            <label class="form-label" for="tieuDe">Tiêu đề <span class="text-danger">*</span></label>
+            <input class="form-control" id="tieuDe" name="tieuDe" maxlength="200" required th:value="${bai.tieuDe}">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="maDm">Danh mục <span class="text-danger">*</span></label>
+            <select class="form-select" id="maDm" name="maDm" required>
+              <option th:each="dm : ${dsDanhMuc}" th:value="${dm.maDm}" th:text="${dm.tenDm}"
+                      th:selected="${dm.maDm == bai.maDm}"></option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="trieuChung">Triệu chứng</label>
+            <textarea class="form-control" id="trieuChung" name="trieuChung" rows="3" maxlength="1000"
+                      th:text="${bai.trieuChung}"></textarea>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="nguyenNhan">Nguyên nhân</label>
+            <textarea class="form-control" id="nguyenNhan" name="nguyenNhan" rows="3" maxlength="1000"
+                      th:text="${bai.nguyenNhan}"></textarea>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="giaiPhap">Giải pháp <span class="text-danger">*</span></label>
+            <textarea class="form-control" id="giaiPhap" name="giaiPhap" rows="4" maxlength="1000" required
+                      th:text="${bai.giaiPhap}"></textarea>
+          </div>
+          <div class="col-12 d-flex gap-2">
+            <button class="btn btn-primary" type="submit"><i class="bi bi-check2"></i> Lưu</button>
+            <a class="btn btn-outline-secondary" th:href="@{/admin/kinh-nghiem}">Hủy</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>
