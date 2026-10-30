@@ -11,8 +11,7 @@
     <div class="thanh-trang">
       <div th:replace="~{layout :: tieuDe('bi-door-open','Phòng',null)}"></div>
       <div class="hanh-dong">
-        <input type="search" class="form-control o-tim" data-loc="#bangPhong"
-               placeholder="Tìm tên phòng, tòa nhà..." aria-label="Tìm phòng">
+        <form th:replace="~{layout :: oTim('/admin/phong', ${q}, 'Tìm tên phòng, tòa nhà, loại...', null)}"></form>
         <button class="btn btn-primary text-nowrap" type="button" data-bs-toggle="collapse"
                 data-bs-target="#formThem" aria-expanded="false" aria-controls="formThem">
           <i class="bi bi-plus-lg"></i> Thêm phòng
@@ -59,7 +58,7 @@
         <table class="table table-hover align-middle bang-gon" id="bangPhong">
           <thead><tr><th>Mã</th><th>Tên phòng</th><th>Tòa nhà</th><th>Tầng</th><th>Loại</th><th></th></tr></thead>
           <tbody>
-            <tr th:each="p : ${dsPhong}">
+            <tr th:each="p : ${trang.ds}">
               <td data-label="Mã" class="an-mobile" th:text="'#' + ${p.maPhong}"></td>
               <td class="o-chinh">
                 <span th:text="${p.tenPhong}"></span>
@@ -80,12 +79,13 @@
                 </span>
               </td>
             </tr>
-            <tr th:if="${#lists.isEmpty(dsPhong)}">
+            <tr th:if="${#lists.isEmpty(trang.ds)}">
               <td colspan="6" class="trong-rong"><i class="bi bi-inbox"></i>Chưa có phòng</td>
             </tr>
           </tbody>
         </table>
       </div>
+      <div th:replace="~{layout :: phanTrang(${trang})}"></div>
     </div>
   </div>
 </main>

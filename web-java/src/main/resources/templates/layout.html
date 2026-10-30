@@ -148,6 +148,43 @@
   </div>
 </div>
 
+<!--/*
+  Chân bảng có phân trang: "Dòng 11-20 / 35" + thanh số trang. t là đối tượng Trang (model/Trang.java);
+  link mỗi trang lấy từ t.url(n) nên giữ nguyên bộ lọc (?q=, ?trangThai=) đang dùng.
+  Chỉ có 1 trang thì ẩn thanh số trang, vẫn hiện tổng số dòng.
+*/-->
+<div th:fragment="phanTrang(t)" class="card-footer bg-transparent d-flex flex-wrap align-items-center gap-2">
+  <span class="small text-muted me-auto" th:if="${t.tong > 0}"
+        th:text="'Dòng ' + ${t.tuDong} + '-' + ${t.denDong} + ' / ' + ${t.tong}"></span>
+  <nav th:if="${t.soTrang > 1}" aria-label="Phân trang">
+    <ul class="pagination pagination-sm mb-0">
+      <li class="page-item" th:classappend="${t.so == 1} ? 'disabled'">
+        <a class="page-link" th:href="@{${t.url(t.so - 1)}}" aria-label="Trang trước"><i class="bi bi-chevron-left"></i></a>
+      </li>
+      <li class="page-item" th:each="n : ${t.cacSo}" th:classappend="${n == t.so} ? 'active'">
+        <a class="page-link" th:href="@{${t.url(n)}}" th:text="${n}"
+           th:attr="aria-current=${n == t.so} ? 'page' : null"></a>
+      </li>
+      <li class="page-item" th:classappend="${t.so == t.soTrang} ? 'disabled'">
+        <a class="page-link" th:href="@{${t.url(t.so + 1)}}" aria-label="Trang sau"><i class="bi bi-chevron-right"></i></a>
+      </li>
+    </ul>
+  </nav>
+</div>
+
+<!--/*
+  Ô tìm gửi lên server (?q=), dùng cho các danh sách có phân trang: tìm trên toàn bộ bảng chứ không chỉ trang
+  đang xem như ô tìm nhanh bằng JS (data-loc). Nhấn Enter để tìm; xóa trắng rồi Enter để bỏ lọc.
+  trangThai: bộ lọc trạng thái đang chọn ở trang /admin (null ở các trang khác), giữ lại khi tìm.
+*/-->
+<form th:fragment="oTim(duongDan, q, goiY, trangThai)" th:action="@{${duongDan}}" method="get" class="d-flex gap-2"
+      role="search">
+  <input type="hidden" name="trangThai" th:if="${trangThai}" th:value="${trangThai}">
+  <input type="search" class="form-control o-tim" name="q" th:value="${q}" th:placeholder="${goiY}"
+         th:attr="aria-label=${goiY}">
+  <button class="btn btn-outline-secondary" type="submit" aria-label="Tìm"><i class="bi bi-search"></i></button>
+</form>
+
 <!--
   Nhãn trạng thái sự cố / mức ưu tiên: t là enum (TrangThaiSuCo hoặc MucUuTien), cả hai đều implement
   CoNhan nên fragment chỉ cần gọi getNhan()/getLopBadge() mà không cần biết đang cầm loại enum nào (đa hình).

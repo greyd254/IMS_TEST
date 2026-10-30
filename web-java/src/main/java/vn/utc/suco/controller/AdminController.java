@@ -2,6 +2,7 @@ package vn.utc.suco.controller;
 
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.Set;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,8 +12,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 import vn.utc.suco.model.NguoiDung;
 import vn.utc.suco.model.SuCo;
+import vn.utc.suco.model.Trang;
 import vn.utc.suco.repository.BinhLuanRepo;
 import vn.utc.suco.repository.DanhMucRepo;
 import vn.utc.suco.repository.KinhNghiemRepo;
@@ -20,6 +23,7 @@ import vn.utc.suco.repository.PhanHoiRepo;
 import vn.utc.suco.repository.SuCoRepo;
 import vn.utc.suco.util.FileKhongHopLeException;
 import vn.utc.suco.util.LuuTepTraoDoi;
+import vn.utc.suco.util.TimKiem;
 
 /** Màn hình admin (chỉ vai trò ADMIN, đã được AuthInterceptor chặn cho USER). */
 @Controller
@@ -43,12 +47,19 @@ public class AdminController {
         this.luuTep = luuTep;
     }
 
-    /** Danh sách tất cả sự cố, lọc theo trạng thái (tham số ?trangThai=...). */
+    /** Danh sách sự cố có phân trang, lọc theo trạng thái (?trangThai=...) và từ khóa (?q=...). */
     @GetMapping("/admin")
-    public String danhSach(@RequestParam(required = false) String trangThai, Model model) {
+    public String danhSach(@RequestParam(required = false) String trangThai, @RequestParam(required = false) String q,
+                           @RequestParam(required = false) Integer trang, Model model) {
         String loc = (trangThai != null && TRANG_THAI.contains(trangThai)) ? trangThai : null;
-        model.addAttribute("dsSuCo", suCoRepo.timTatCa(loc));
+        String tuKhoa = TimKiem.chuanHoa(q);
+        long tong = suCoRepo.dem(loc, tuKhoa);
+        int so = Trang.gioiHan(trang, tong);
+        model.addAttribute("trang", new Trang<>(suCoRepo.timTrang(loc, tuKhoa, so), so, tong,
+                UriComponentsBuilder.fromPath("/admin").queryParamIfPresent("trangThai", Optional.ofNullable(loc))
+                        .queryParamIfPresent("q", Optional.ofNullable(tuKhoa))));
         model.addAttribute("trangThaiLoc", loc);
+        model.addAttribute("q", tuKhoa);
         model.addAttribute("dem", suCoRepo.demTheoTrangThai());   // số liệu cho các ô lọc nhanh
         return "admin";
     }
@@ -98,7 +109,8 @@ public class AdminController {
     }
 
     /**
-     * Lưu cập nhật. Trigger Oracle sẽ tự ghi lịch sử và ngày hoàn thành.
+     * Lưu cập nhật. Mỗi lần lưu có thay đổi đều thành một dòng lịch sử (xem SuCoRepo.capNhat),
+     * ngày hoàn thành do trigger Oracle tự gán.
      * Nếu tick "luuKho" và không chọn bài có sẵn, nguyên nhân + cách khắc phục được tạo thành bài mới trong kho
      * kinh nghiệm (thuộc danh mục maDmKho) và gắn vào sự cố.
      */
@@ -109,6 +121,7 @@ public class AdminController {
                           @RequestParam(required = false) Long maBaiKn,
                           @RequestParam(required = false) Boolean luuKho,
                           @RequestParam(required = false) Long maDmKho,
+                          @RequestParam(required = false) String ghiChu,
                           HttpSession session, RedirectAttributes ra) {
         if (!TRANG_THAI.contains(trangThai)) {
             ra.addFlashAttribute("loi", "Trạng thái không hợp lệ");
@@ -129,7 +142,9 @@ public class AdminController {
             maBaiGan = kinhNghiemRepo.taoMoi(suCo.getTieuDe(), maDmKho, suCo.getMoTa(), nguyenNhan.trim(),
                     cachKhacPhuc.trim(), admin.getMaNd());
         }
-        suCoRepo.capNhat(maSc, trangThai, nguyenNhan, cachKhacPhuc, maBaiGan, admin.getMaNd());
+        if (!suCoRepo.capNhat(maSc, trangThai, nguyenNhan, cachKhacPhuc, maBaiGan, admin.getMaNd(), ghiChu)) {
+            return "redirect:/admin";
+        }
         ra.addFlashAttribute("thongBao", "Đã lưu cập nhật sự cố");
         return "redirect:/admin/" + maSc;
     }

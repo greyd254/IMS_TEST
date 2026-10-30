@@ -47,7 +47,8 @@
           </div>
           <div class="col-md-5">
             <label class="form-label" for="ngayLapDat">Ngày lắp đặt</label>
-            <input class="form-control" type="date" id="ngayLapDat" name="ngayLapDat" th:value="${tb.ngayLapDat}">
+            <input class="form-control" type="date" id="ngayLapDat" name="ngayLapDat" th:value="${tb.ngayLapDat}"
+                   th:min="${ngayMin}" th:max="${homNay}">
           </div>
           <div class="col-12">
             <label class="form-label" for="hdsd">Hướng dẫn sử dụng</label>

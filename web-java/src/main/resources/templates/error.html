@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<!--/* Spring Boot tự dùng template tên "error" thay cho trang Whitelabel khi có lỗi chưa được bắt (404, 500...) */-->
+<head th:replace="~{layout :: head('Có lỗi xảy ra')}"></head>
+<body>
+<main class="container py-5" style="max-width: 560px">
+  <div class="card text-center">
+    <div class="card-body p-4">
+      <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem"></i>
+      <h5 class="mt-3" th:text="${status == 404} ? 'Không tìm thấy trang' : 'Có lỗi xảy ra'">Có lỗi xảy ra</h5>
+      <p class="text-muted mb-4" th:text="${status == 404}
+          ? 'Đường dẫn không tồn tại hoặc dữ liệu đã bị xóa.'
+          : 'Hệ thống không xử lý được yêu cầu vừa rồi. Vui lòng quay lại và kiểm tra dữ liệu đã nhập.'"></p>
+      <div class="d-flex gap-2 justify-content-center">
+        <a class="btn btn-outline-secondary" href="javascript:history.back()"><i class="bi bi-arrow-left"></i> Quay lại</a>
+        <a class="btn btn-primary" th:href="@{/}"><i class="bi bi-house"></i> Trang chủ</a>
+      </div>
+      <div class="small text-muted mt-3" th:if="${status}" th:text="'Mã lỗi ' + ${status}"></div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

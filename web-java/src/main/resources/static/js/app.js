@@ -60,3 +60,24 @@
 
   document.querySelectorAll('[data-loc]').forEach(khoiTao);
 })();
+
+/*
+ * Ô "nhập lại" phải khớp với ô khác: <input data-khop="#matKhau">.
+ * Dùng setCustomValidity nên trình duyệt chặn gửi form và hiện thông báo như các ô required khác.
+ * (Chỉ để báo sớm cho người dùng, controller vẫn kiểm tra lại.)
+ */
+(function () {
+  'use strict';
+
+  document.querySelectorAll('[data-khop]').forEach(function (o) {
+    var goc = document.querySelector(o.getAttribute('data-khop'));
+    if (!goc) {
+      return;
+    }
+    function kiemTra() {
+      o.setCustomValidity(o.value === goc.value ? '' : 'Mật khẩu nhập lại không khớp');
+    }
+    o.addEventListener('input', kiemTra);
+    goc.addEventListener('input', kiemTra);
+  });
+})();

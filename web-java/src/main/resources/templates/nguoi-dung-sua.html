@@ -26,7 +26,13 @@
           </div>
           <div class="col-md-6">
             <label class="form-label" for="matKhau">Mật khẩu mới</label>
-            <input class="form-control" id="matKhau" name="matKhau" maxlength="50" placeholder="Để trống nếu không đổi">
+            <input class="form-control" type="password" id="matKhau" name="matKhau" maxlength="50"
+                   placeholder="Để trống nếu không đổi" autocomplete="new-password">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="xacNhanMatKhau">Nhập lại mật khẩu mới</label>
+            <input class="form-control" type="password" id="xacNhanMatKhau" name="xacNhanMatKhau" maxlength="50"
+                   autocomplete="new-password" data-khop="#matKhau">
           </div>
           <div class="col-md-6">
             <label class="form-label" for="donVi">Đơn vị</label>
@@ -34,7 +40,9 @@
           </div>
           <div class="col-md-6 col-6">
             <label class="form-label" for="sdt">Số điện thoại</label>
-            <input class="form-control" id="sdt" name="sdt" maxlength="20" th:value="${nd.sdt}">
+            <input class="form-control" id="sdt" name="sdt" maxlength="20" th:value="${nd.sdt}"
+                   type="tel" inputmode="numeric" pattern="0[0-9]{9}"
+                   title="10 chữ số, bắt đầu bằng 0 (VD 0912345678)">
           </div>
           <div class="col-md-6 col-6">
             <label class="form-label" for="vaiTro">Vai trò</label>

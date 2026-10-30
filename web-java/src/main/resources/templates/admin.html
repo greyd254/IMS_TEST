@@ -11,8 +11,7 @@
     <div class="thanh-trang">
       <div th:replace="~{layout :: tieuDe('bi-life-preserver','Sự cố CNTT','Bấm vào ô số liệu để lọc theo trạng thái')}"></div>
       <div class="hanh-dong">
-        <input type="search" class="form-control o-tim" data-loc="#bangSuCo"
-               placeholder="Tìm tiêu đề, người báo, phòng..." aria-label="Tìm sự cố">
+        <form th:replace="~{layout :: oTim('/admin', ${q}, 'Tìm tiêu đề, người báo, phòng...', ${trangThaiLoc})}"></form>
       </div>
     </div>
 
@@ -55,7 +54,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr th:each="sc : ${dsSuCo}">
+            <tr th:each="sc : ${trang.ds}">
               <td data-label="Mã" class="an-mobile" th:text="'#' + ${sc.maSc}"></td>
               <td class="o-chinh">
                 <a th:href="@{/admin/{id}(id=${sc.maSc})}" th:text="${sc.tieuDe}"></a>
@@ -80,12 +79,14 @@
                 </span>
               </td>
             </tr>
-            <tr th:if="${#lists.isEmpty(dsSuCo)}">
-              <td colspan="8" class="trong-rong"><i class="bi bi-inbox"></i>Không có sự cố nào</td>
+            <tr th:if="${#lists.isEmpty(trang.ds)}">
+              <td colspan="8" class="trong-rong"><i class="bi bi-inbox"></i>
+                <span th:text="${q} ? 'Không có sự cố nào khớp từ khóa' : 'Không có sự cố nào'"></span></td>
             </tr>
           </tbody>
         </table>
       </div>
+      <div th:replace="~{layout :: phanTrang(${trang})}"></div>
     </div>
   </div>
 </main>

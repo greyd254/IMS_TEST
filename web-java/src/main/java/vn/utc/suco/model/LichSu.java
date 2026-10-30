@@ -2,7 +2,7 @@ package vn.utc.suco.model;
 
 import java.time.LocalDateTime;
 
-/** Một dòng lịch sử đổi trạng thái (bảng LICH_SU_XU_LY, do trigger Oracle ghi). */
+/** Một dòng lịch sử xử lý (bảng LICH_SU_XU_LY): đổi trạng thái do trigger Oracle ghi, các lần cập nhật khác do web ghi. */
 public class LichSu {
     private LocalDateTime thoiGian;
     private String tenNguoiCapNhat;

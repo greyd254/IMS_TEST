@@ -11,8 +11,7 @@
     <div class="thanh-trang">
       <div th:replace="~{layout :: tieuDe('bi-pc-display','Thiết bị',null)}"></div>
       <div class="hanh-dong">
-        <input type="search" class="form-control o-tim" data-loc="#bangThietBi"
-               placeholder="Tìm tên, loại, phòng..." aria-label="Tìm thiết bị">
+        <form th:replace="~{layout :: oTim('/admin/thiet-bi', ${q}, 'Tìm tên, loại, phòng, nhà cung cấp...', null)}"></form>
         <button class="btn btn-primary text-nowrap" type="button" data-bs-toggle="collapse"
                 data-bs-target="#formThem" aria-expanded="false" aria-controls="formThem">
           <i class="bi bi-plus-lg"></i> Thêm thiết bị
@@ -54,7 +53,7 @@
             </div>
             <div class="col-md-4 col-6">
               <label class="form-label" for="ngayLapDat">Ngày lắp đặt</label>
-              <input class="form-control" type="date" id="ngayLapDat" name="ngayLapDat">
+              <input class="form-control" type="date" id="ngayLapDat" name="ngayLapDat" th:min="${ngayMin}" th:max="${homNay}">
             </div>
             <div class="col-12">
               <label class="form-label" for="hdsd">Hướng dẫn sử dụng</label>
@@ -80,7 +79,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr th:each="tb : ${dsThietBi}">
+            <tr th:each="tb : ${trang.ds}">
               <td data-label="Mã" class="an-mobile" th:text="'#' + ${tb.maTb}"></td>
               <td class="o-chinh">
                 <span th:text="${tb.tenTb}"></span>
@@ -107,12 +106,14 @@
                 </span>
               </td>
             </tr>
-            <tr th:if="${#lists.isEmpty(dsThietBi)}">
-              <td colspan="7" class="trong-rong"><i class="bi bi-inbox"></i>Chưa có thiết bị</td>
+            <tr th:if="${#lists.isEmpty(trang.ds)}">
+              <td colspan="7" class="trong-rong"><i class="bi bi-inbox"></i>
+                <span th:text="${q} ? 'Không có thiết bị nào khớp từ khóa' : 'Chưa có thiết bị'"></span></td>
             </tr>
           </tbody>
         </table>
       </div>
+      <div th:replace="~{layout :: phanTrang(${trang})}"></div>
     </div>
   </div>
 </main>

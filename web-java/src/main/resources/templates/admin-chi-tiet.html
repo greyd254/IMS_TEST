@@ -85,7 +85,7 @@
           </div>
         </div>
 
-        <!-- Lịch sử xử lý từ bảng LICH_SU_XU_LY (do trigger ghi) -->
+        <!-- Lịch sử xử lý từ bảng LICH_SU_XU_LY (trigger ghi khi đổi trạng thái, SuCoRepo.capNhat ghi các lần còn lại) -->
         <div class="card">
           <div class="card-header"><i class="bi bi-clock-history"></i>Lịch sử xử lý</div>
           <div class="table-responsive">
@@ -136,6 +136,13 @@
                 <label class="form-label" for="cachKhacPhuc">Cách khắc phục</label>
                 <textarea class="form-control" id="cachKhacPhuc" name="cachKhacPhuc" rows="3" maxlength="1000"
                           th:text="${suCo.cachKhacPhuc}"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="ghiChu">Ghi chú lần cập nhật này</label>
+                <textarea class="form-control" id="ghiChu" name="ghiChu" rows="2" maxlength="300"
+                          placeholder="VD: Đã thay cáp mạng, đang chờ kiểm tra lại"></textarea>
+                <div class="form-text">Mỗi lần lưu được ghi thành một dòng trong lịch sử xử lý (kèm nguyên nhân,
+                  cách khắc phục nếu có sửa), nên các lần cập nhật trước không bị mất.</div>
               </div>
               <div class="mb-3">
                 <label class="form-label" for="maBaiKn">Bài kinh nghiệm liên quan</label>
