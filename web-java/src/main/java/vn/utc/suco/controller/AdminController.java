@@ -134,7 +134,7 @@ public class AdminController {
         return "redirect:/admin/" + maSc;
     }
 
-    /** Xóa sự cố (kèm lịch sử xử lý của nó). */
+    /** Xóa sự cố (kèm lịch sử xử lý, phản hồi và trao đổi của nó). */
     @PostMapping("/admin/{maSc}/xoa")
     public String xoa(@PathVariable Long maSc, RedirectAttributes ra) {
         suCoRepo.xoa(maSc);

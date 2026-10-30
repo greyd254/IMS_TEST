@@ -170,10 +170,10 @@
               <button class="btn btn-primary w-100" type="submit"><i class="bi bi-check2"></i> Lưu cập nhật</button>
             </form>
           </div>
-          <!-- Xóa sự cố (kèm lịch sử xử lý) -->
+          <!-- Xóa sự cố (kèm lịch sử xử lý, phản hồi và trao đổi) -->
           <div class="card-footer bg-transparent text-end">
             <form th:action="@{/admin/{id}/xoa(id=${suCo.maSc})}" method="post"
-                  onsubmit="return confirm('Xóa sự cố này cùng lịch sử xử lý?');">
+                  onsubmit="return confirm('Xóa sự cố này cùng lịch sử xử lý, phản hồi và trao đổi?');">
               <button class="btn btn-outline-danger btn-sm" type="submit"><i class="bi bi-trash"></i> Xóa sự cố</button>
             </form>
           </div>

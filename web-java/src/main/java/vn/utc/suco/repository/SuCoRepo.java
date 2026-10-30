@@ -90,11 +90,14 @@ public class SuCoRepo {
     }
 
     /**
-     * Xóa sự cố. Phải xóa LICH_SU_XU_LY (bảng con, có khóa ngoại tới SU_CO) trước rồi mới xóa SU_CO.
-     * @Transactional để 2 lệnh DELETE cùng thành công hoặc cùng hoàn tác (Oracle COMMIT/ROLLBACK).
+     * Xóa sự cố. Phải xóa hết các bảng con có khóa ngoại tới SU_CO (không có ON DELETE CASCADE) trước:
+     * BINH_LUAN_SU_CO, PHAN_HOI, LICH_SU_XU_LY, rồi mới xóa SU_CO; thiếu bảng nào Oracle báo ORA-02292.
+     * @Transactional để các lệnh DELETE cùng thành công hoặc cùng hoàn tác (Oracle COMMIT/ROLLBACK).
      */
     @Transactional
     public void xoa(Long maSc) {
+        jdbc.update("DELETE FROM BINH_LUAN_SU_CO WHERE MA_SC = ?", maSc);
+        jdbc.update("DELETE FROM PHAN_HOI WHERE MA_SC = ?", maSc);
         jdbc.update("DELETE FROM LICH_SU_XU_LY WHERE MA_SC = ?", maSc);
         jdbc.update("DELETE FROM SU_CO WHERE MA_SC = ?", maSc);
     }
