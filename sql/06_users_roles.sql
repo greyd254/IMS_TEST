@@ -8,7 +8,8 @@ SET LINESIZE 200
 SHOW CON_NAME
 
 -- ---------------------------------------------------------------------
--- 1. ROLE_APP_USER: chỉ đọc bảng danh mục / bài kinh nghiệm; đọc và thêm SU_CO
+-- 1. ROLE_APP_USER: chỉ đọc bảng danh mục / bài kinh nghiệm; đọc và thêm SU_CO,
+--    PHAN_HOI (đánh giá sau khi hoàn thành), BINH_LUAN_SU_CO (trao đổi với IT)
 -- ---------------------------------------------------------------------
 GRANT SELECT ON SUCO_APP.DANH_MUC_SU_CO   TO ROLE_APP_USER;
 GRANT SELECT ON SUCO_APP.BAI_KINH_NGHIEM  TO ROLE_APP_USER;
@@ -16,6 +17,8 @@ GRANT SELECT ON SUCO_APP.PHONG            TO ROLE_APP_USER;
 GRANT SELECT ON SUCO_APP.THIET_BI         TO ROLE_APP_USER;
 GRANT SELECT ON SUCO_APP.V_SU_CO_CHI_TIET TO ROLE_APP_USER;
 GRANT SELECT, INSERT ON SUCO_APP.SU_CO    TO ROLE_APP_USER;
+GRANT SELECT, INSERT ON SUCO_APP.PHAN_HOI TO ROLE_APP_USER;
+GRANT SELECT, INSERT ON SUCO_APP.BINH_LUAN_SU_CO TO ROLE_APP_USER;
 
 -- ---------------------------------------------------------------------
 -- 2. ROLE_APP_ADMIN: toàn quyền SELECT/INSERT/UPDATE/DELETE trên mọi bảng
@@ -27,6 +30,8 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON SUCO_APP.DANH_MUC_SU_CO  TO ROLE_APP_ADM
 GRANT SELECT, INSERT, UPDATE, DELETE ON SUCO_APP.BAI_KINH_NGHIEM TO ROLE_APP_ADMIN;
 GRANT SELECT, INSERT, UPDATE, DELETE ON SUCO_APP.SU_CO           TO ROLE_APP_ADMIN;
 GRANT SELECT, INSERT, UPDATE, DELETE ON SUCO_APP.LICH_SU_XU_LY   TO ROLE_APP_ADMIN;
+GRANT SELECT, INSERT, UPDATE, DELETE ON SUCO_APP.PHAN_HOI        TO ROLE_APP_ADMIN;
+GRANT SELECT, INSERT, UPDATE, DELETE ON SUCO_APP.BINH_LUAN_SU_CO TO ROLE_APP_ADMIN;
 GRANT SELECT ON SUCO_APP.V_SU_CO_CHI_TIET TO ROLE_APP_ADMIN;
 
 -- ---------------------------------------------------------------------
@@ -57,6 +62,8 @@ SELECT grantee, table_name, privilege FROM dba_tab_privs
 --      SELECT COUNT(*) FROM SUCO_APP.SU_CO;                      -- OK
 --      UPDATE SUCO_APP.SU_CO SET TRANG_THAI='MOI' WHERE 1=0;     -- ORA-01031: insufficient privileges
 --      SELECT COUNT(*) FROM SUCO_APP.NGUOI_DUNG;                 -- ORA-00942 (không có quyền)
+--      SELECT COUNT(*) FROM SUCO_APP.BINH_LUAN_SU_CO;            -- OK (đọc/gửi tin nhắn trao đổi)
+--      DELETE FROM SUCO_APP.PHAN_HOI WHERE 1=0;                  -- ORA-41900 missing DELETE privilege (chỉ được thêm, không được xóa)
 --    CONNECT U_QUANTRI/Quantri_123@localhost:1521/FREEPDB1
 --      SELECT COUNT(*) FROM SUCO_APP.NGUOI_DUNG;                 -- OK
 -- ---------------------------------------------------------------------

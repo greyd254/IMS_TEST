@@ -1,7 +1,7 @@
 -- =====================================================================
 -- 04_data.sql
 -- CHẠY BẰNG: SUCO_APP, kết nối vào FREEPDB1 (sau khi đã chạy 02 và 03)
--- MỤC ĐÍCH : dữ liệu mẫu tiếng Việt cho 7 bảng.
+-- MỤC ĐÍCH : dữ liệu mẫu tiếng Việt cho 9 bảng.
 -- LƯU Ý    : KHÔNG ghi cột MA_xxx (IDENTITY tự sinh 1,2,3... theo thứ tự INSERT),
 --            nên các FK bên dưới tham chiếu theo số thứ tự dòng đã chèn.
 --            => chỉ chạy file này trên bảng RỖNG (muốn chạy lại thì chạy 99_drop_all
@@ -80,24 +80,26 @@ INSERT INTO BAI_KINH_NGHIEM (TIEU_DE, MA_DM, TRIEU_CHUNG, NGUYEN_NHAN, GIAI_PHAP
 -- 6. SU_CO (15 dòng: 3 trạng thái, đủ danh mục, ngày tạo từ tháng 4 đến tháng 9/2026)
 --    Cột: TIEU_DE, MO_TA, MA_NGUOI_BAO, MA_ADMIN_XU_LY, MA_TB, MA_DM, MUC_UU_TIEN, TRANG_THAI,
 --         NGUYEN_NHAN, CACH_KHAC_PHUC, MA_BAI_KN, NGAY_TAO, NGAY_HOAN_THANH
+--    Ghi rõ danh sách cột: bảng còn cột ANH_DINH_KEM (để NULL), nếu viết "INSERT INTO SU_CO VALUES (...)"
+--    thì thiếu 1 giá trị -> ORA-00947 và cả 15 dòng không vào được (kéo theo lịch sử, phản hồi, trao đổi).
 -- 6.1 Sự cố đã HOAN_THANH (chèn trực tiếp, nên phải tự điền NGAY_HOAN_THANH vì trigger chỉ chạy khi UPDATE)
-INSERT INTO SU_CO VALUES (DEFAULT, 'WiFi tầng 3 nhà H1 chập chờn', 'Sinh viên học ở H1-305 không vào được mạng, WiFi lúc có lúc không.', 8, 1, 11, 3, 'CAO', 'HOAN_THANH', 'Access Point bị treo do quá tải.', 'Khởi động lại Access Point và nâng cấp firmware.', 5, TIMESTAMP '2026-04-12 13:30:00', TIMESTAMP '2026-04-13 10:00:00');
-INSERT INTO SU_CO VALUES (DEFAULT, 'Máy chiếu H1-305 không nhận HDMI', 'Giảng viên cắm laptop nhưng máy chiếu báo No Signal.', 7, 2, 8, 2, 'CAO', 'HOAN_THANH', 'Cáp HDMI âm tường bị lỏng đầu nối.', 'Cắm lại đầu nối và thay cáp HDMI mới.', 3, TIMESTAMP '2026-05-08 08:30:00', TIMESTAMP '2026-05-08 11:00:00');
-INSERT INTO SU_CO VALUES (DEFAULT, 'Máy tính PC-A2101-12 chạy rất chậm', 'Mở phần mềm lập trình mất hơn 5 phút.', 3, 1, 2, 1, 'THAP', 'HOAN_THANH', 'Ổ cứng HDD bị bad sector.', 'Thay ổ SSD 256GB và cài lại hệ điều hành.', 2, TIMESTAMP '2026-05-20 09:00:00', TIMESTAMP '2026-05-22 15:00:00');
-INSERT INTO SU_CO VALUES (DEFAULT, 'Không đăng nhập được email trường', 'Báo sai mật khẩu dù nhập đúng.', 4, 2, NULL, 5, 'TRUNG_BINH', 'HOAN_THANH', 'Tài khoản bị khóa do nhập sai nhiều lần.', 'Mở khóa và đặt lại mật khẩu.', 7, TIMESTAMP '2026-06-03 08:10:00', TIMESTAMP '2026-06-03 09:45:00');
-INSERT INTO SU_CO VALUES (DEFAULT, 'Switch tầng 2 nhà A2 mất kết nối phòng máy 5', 'Cả phòng 30 máy không có mạng, đang chuẩn bị thi thực hành.', 5, 1, 4, 3, 'CAO', 'HOAN_THANH', 'Cáp uplink bị lỏng sau khi vệ sinh phòng.', 'Cắm chặt cáp uplink và khởi động lại switch.', 6, TIMESTAMP '2026-06-18 07:45:00', TIMESTAMP '2026-06-19 08:30:00');
-INSERT INTO SU_CO VALUES (DEFAULT, 'Máy in Phòng Đào tạo in bị mờ', 'Bản in ra chữ nhạt, khó đọc.', 6, 2, 9, 6, 'THAP', 'HOAN_THANH', 'Hộp mực gần hết.', 'Thay hộp mực mới.', 8, TIMESTAMP '2026-07-07 10:00:00', TIMESTAMP '2026-07-10 14:20:00');
-INSERT INTO SU_CO VALUES (DEFAULT, 'Không cài được AutoCAD do lỗi license', 'Cài xong mở phần mềm báo Cannot connect to license server.', 9, 1, 12, 4, 'TRUNG_BINH', 'HOAN_THANH', 'Máy chưa khai báo đúng địa chỉ máy chủ license.', 'Khai báo lại địa chỉ máy chủ license của trường.', 9, TIMESTAMP '2026-08-04 09:30:00', TIMESTAMP '2026-08-06 16:00:00');
-INSERT INTO SU_CO VALUES (DEFAULT, 'Tài khoản cổng thông tin sinh viên bị khóa', 'Không đăng nhập được để đăng ký học phần.', 4, 1, NULL, 5, 'TRUNG_BINH', 'HOAN_THANH', 'Tài khoản bị khóa do quá số lần đăng nhập sai.', 'Mở khóa tài khoản và hướng dẫn đổi mật khẩu.', 7, TIMESTAMP '2026-08-25 08:00:00', TIMESTAMP '2026-08-25 10:30:00');
+INSERT INTO SU_CO (TIEU_DE, MO_TA, MA_NGUOI_BAO, MA_ADMIN_XU_LY, MA_TB, MA_DM, MUC_UU_TIEN, TRANG_THAI, NGUYEN_NHAN, CACH_KHAC_PHUC, MA_BAI_KN, NGAY_TAO, NGAY_HOAN_THANH) VALUES ('WiFi tầng 3 nhà H1 chập chờn', 'Sinh viên học ở H1-305 không vào được mạng, WiFi lúc có lúc không.', 8, 1, 11, 3, 'CAO', 'HOAN_THANH', 'Access Point bị treo do quá tải.', 'Khởi động lại Access Point và nâng cấp firmware.', 5, TIMESTAMP '2026-04-12 13:30:00', TIMESTAMP '2026-04-13 10:00:00');
+INSERT INTO SU_CO (TIEU_DE, MO_TA, MA_NGUOI_BAO, MA_ADMIN_XU_LY, MA_TB, MA_DM, MUC_UU_TIEN, TRANG_THAI, NGUYEN_NHAN, CACH_KHAC_PHUC, MA_BAI_KN, NGAY_TAO, NGAY_HOAN_THANH) VALUES ('Máy chiếu H1-305 không nhận HDMI', 'Giảng viên cắm laptop nhưng máy chiếu báo No Signal.', 7, 2, 8, 2, 'CAO', 'HOAN_THANH', 'Cáp HDMI âm tường bị lỏng đầu nối.', 'Cắm lại đầu nối và thay cáp HDMI mới.', 3, TIMESTAMP '2026-05-08 08:30:00', TIMESTAMP '2026-05-08 11:00:00');
+INSERT INTO SU_CO (TIEU_DE, MO_TA, MA_NGUOI_BAO, MA_ADMIN_XU_LY, MA_TB, MA_DM, MUC_UU_TIEN, TRANG_THAI, NGUYEN_NHAN, CACH_KHAC_PHUC, MA_BAI_KN, NGAY_TAO, NGAY_HOAN_THANH) VALUES ('Máy tính PC-A2101-12 chạy rất chậm', 'Mở phần mềm lập trình mất hơn 5 phút.', 3, 1, 2, 1, 'THAP', 'HOAN_THANH', 'Ổ cứng HDD bị bad sector.', 'Thay ổ SSD 256GB và cài lại hệ điều hành.', 2, TIMESTAMP '2026-05-20 09:00:00', TIMESTAMP '2026-05-22 15:00:00');
+INSERT INTO SU_CO (TIEU_DE, MO_TA, MA_NGUOI_BAO, MA_ADMIN_XU_LY, MA_TB, MA_DM, MUC_UU_TIEN, TRANG_THAI, NGUYEN_NHAN, CACH_KHAC_PHUC, MA_BAI_KN, NGAY_TAO, NGAY_HOAN_THANH) VALUES ('Không đăng nhập được email trường', 'Báo sai mật khẩu dù nhập đúng.', 4, 2, NULL, 5, 'TRUNG_BINH', 'HOAN_THANH', 'Tài khoản bị khóa do nhập sai nhiều lần.', 'Mở khóa và đặt lại mật khẩu.', 7, TIMESTAMP '2026-06-03 08:10:00', TIMESTAMP '2026-06-03 09:45:00');
+INSERT INTO SU_CO (TIEU_DE, MO_TA, MA_NGUOI_BAO, MA_ADMIN_XU_LY, MA_TB, MA_DM, MUC_UU_TIEN, TRANG_THAI, NGUYEN_NHAN, CACH_KHAC_PHUC, MA_BAI_KN, NGAY_TAO, NGAY_HOAN_THANH) VALUES ('Switch tầng 2 nhà A2 mất kết nối phòng máy 5', 'Cả phòng 30 máy không có mạng, đang chuẩn bị thi thực hành.', 5, 1, 4, 3, 'CAO', 'HOAN_THANH', 'Cáp uplink bị lỏng sau khi vệ sinh phòng.', 'Cắm chặt cáp uplink và khởi động lại switch.', 6, TIMESTAMP '2026-06-18 07:45:00', TIMESTAMP '2026-06-19 08:30:00');
+INSERT INTO SU_CO (TIEU_DE, MO_TA, MA_NGUOI_BAO, MA_ADMIN_XU_LY, MA_TB, MA_DM, MUC_UU_TIEN, TRANG_THAI, NGUYEN_NHAN, CACH_KHAC_PHUC, MA_BAI_KN, NGAY_TAO, NGAY_HOAN_THANH) VALUES ('Máy in Phòng Đào tạo in bị mờ', 'Bản in ra chữ nhạt, khó đọc.', 6, 2, 9, 6, 'THAP', 'HOAN_THANH', 'Hộp mực gần hết.', 'Thay hộp mực mới.', 8, TIMESTAMP '2026-07-07 10:00:00', TIMESTAMP '2026-07-10 14:20:00');
+INSERT INTO SU_CO (TIEU_DE, MO_TA, MA_NGUOI_BAO, MA_ADMIN_XU_LY, MA_TB, MA_DM, MUC_UU_TIEN, TRANG_THAI, NGUYEN_NHAN, CACH_KHAC_PHUC, MA_BAI_KN, NGAY_TAO, NGAY_HOAN_THANH) VALUES ('Không cài được AutoCAD do lỗi license', 'Cài xong mở phần mềm báo Cannot connect to license server.', 9, 1, 12, 4, 'TRUNG_BINH', 'HOAN_THANH', 'Máy chưa khai báo đúng địa chỉ máy chủ license.', 'Khai báo lại địa chỉ máy chủ license của trường.', 9, TIMESTAMP '2026-08-04 09:30:00', TIMESTAMP '2026-08-06 16:00:00');
+INSERT INTO SU_CO (TIEU_DE, MO_TA, MA_NGUOI_BAO, MA_ADMIN_XU_LY, MA_TB, MA_DM, MUC_UU_TIEN, TRANG_THAI, NGUYEN_NHAN, CACH_KHAC_PHUC, MA_BAI_KN, NGAY_TAO, NGAY_HOAN_THANH) VALUES ('Tài khoản cổng thông tin sinh viên bị khóa', 'Không đăng nhập được để đăng ký học phần.', 4, 1, NULL, 5, 'TRUNG_BINH', 'HOAN_THANH', 'Tài khoản bị khóa do quá số lần đăng nhập sai.', 'Mở khóa tài khoản và hướng dẫn đổi mật khẩu.', 7, TIMESTAMP '2026-08-25 08:00:00', TIMESTAMP '2026-08-25 10:30:00');
 -- 6.2 Sự cố DANG_XU_LY
-INSERT INTO SU_CO VALUES (DEFAULT, 'Máy tính PC-A2101-05 không khởi động', 'Bấm nút nguồn máy không lên, không có đèn.', 3, 1, 1, 1, 'CAO', 'DANG_XU_LY', 'Nghi hỏng bộ nguồn.', NULL, 1, TIMESTAMP '2026-09-10 08:15:00', NULL);
-INSERT INTO SU_CO VALUES (DEFAULT, 'Máy tính PC-A2102-03 báo lỗi RAM', 'Máy kêu bíp liên tục khi bật.', 3, 2, 3, 1, 'TRUNG_BINH', 'DANG_XU_LY', 'Thanh RAM lỏng hoặc hỏng.', NULL, NULL, TIMESTAMP '2026-09-05 14:00:00', NULL);
-INSERT INTO SU_CO VALUES (DEFAULT, 'Máy chiếu H1-201 hình mờ, ám vàng', 'Hình ảnh chiếu lên màn bị ám vàng, khó nhìn.', 7, 2, 7, 2, 'TRUNG_BINH', 'DANG_XU_LY', 'Nghi bóng đèn sắp hết tuổi thọ.', NULL, 4, TIMESTAMP '2026-09-15 07:50:00', NULL);
+INSERT INTO SU_CO (TIEU_DE, MO_TA, MA_NGUOI_BAO, MA_ADMIN_XU_LY, MA_TB, MA_DM, MUC_UU_TIEN, TRANG_THAI, NGUYEN_NHAN, CACH_KHAC_PHUC, MA_BAI_KN, NGAY_TAO, NGAY_HOAN_THANH) VALUES ('Máy tính PC-A2101-05 không khởi động', 'Bấm nút nguồn máy không lên, không có đèn.', 3, 1, 1, 1, 'CAO', 'DANG_XU_LY', 'Nghi hỏng bộ nguồn.', NULL, 1, TIMESTAMP '2026-09-10 08:15:00', NULL);
+INSERT INTO SU_CO (TIEU_DE, MO_TA, MA_NGUOI_BAO, MA_ADMIN_XU_LY, MA_TB, MA_DM, MUC_UU_TIEN, TRANG_THAI, NGUYEN_NHAN, CACH_KHAC_PHUC, MA_BAI_KN, NGAY_TAO, NGAY_HOAN_THANH) VALUES ('Máy tính PC-A2102-03 báo lỗi RAM', 'Máy kêu bíp liên tục khi bật.', 3, 2, 3, 1, 'TRUNG_BINH', 'DANG_XU_LY', 'Thanh RAM lỏng hoặc hỏng.', NULL, NULL, TIMESTAMP '2026-09-05 14:00:00', NULL);
+INSERT INTO SU_CO (TIEU_DE, MO_TA, MA_NGUOI_BAO, MA_ADMIN_XU_LY, MA_TB, MA_DM, MUC_UU_TIEN, TRANG_THAI, NGUYEN_NHAN, CACH_KHAC_PHUC, MA_BAI_KN, NGAY_TAO, NGAY_HOAN_THANH) VALUES ('Máy chiếu H1-201 hình mờ, ám vàng', 'Hình ảnh chiếu lên màn bị ám vàng, khó nhìn.', 7, 2, 7, 2, 'TRUNG_BINH', 'DANG_XU_LY', 'Nghi bóng đèn sắp hết tuổi thọ.', NULL, 4, TIMESTAMP '2026-09-15 07:50:00', NULL);
 -- 6.3 Sự cố MOI (chưa có admin xử lý)
-INSERT INTO SU_CO VALUES (DEFAULT, 'Máy chiếu A6-301 không lên hình', 'Bật máy chiếu nhưng đèn báo đỏ, không có hình.', 5, NULL, 5, 2, 'CAO', 'MOI', NULL, NULL, NULL, TIMESTAMP '2026-09-22 07:30:00', NULL);
-INSERT INTO SU_CO VALUES (DEFAULT, 'Máy in Phòng Đào tạo báo kẹt giấy', 'Máy in báo kẹt giấy liên tục dù đã lấy giấy ra.', 6, NULL, 9, 6, 'TRUNG_BINH', 'MOI', NULL, NULL, NULL, TIMESTAMP '2026-09-20 15:10:00', NULL);
-INSERT INTO SU_CO VALUES (DEFAULT, 'Máy tính phòng Kế hoạch - Tài chính không vào được mạng nội bộ', 'Không truy cập được phần mềm kế toán dùng chung.', 10, NULL, 10, 3, 'CAO', 'MOI', NULL, NULL, NULL, TIMESTAMP '2026-09-24 09:05:00', NULL);
-INSERT INTO SU_CO VALUES (DEFAULT, 'Máy chiếu A6-402 bị rung hình', 'Hình chiếu rung nhẹ khi giảng viên chiếu slide.', 8, NULL, 6, 2, 'THAP', 'MOI', NULL, NULL, NULL, TIMESTAMP '2026-09-23 13:40:00', NULL);
+INSERT INTO SU_CO (TIEU_DE, MO_TA, MA_NGUOI_BAO, MA_ADMIN_XU_LY, MA_TB, MA_DM, MUC_UU_TIEN, TRANG_THAI, NGUYEN_NHAN, CACH_KHAC_PHUC, MA_BAI_KN, NGAY_TAO, NGAY_HOAN_THANH) VALUES ('Máy chiếu A6-301 không lên hình', 'Bật máy chiếu nhưng đèn báo đỏ, không có hình.', 5, NULL, 5, 2, 'CAO', 'MOI', NULL, NULL, NULL, TIMESTAMP '2026-09-22 07:30:00', NULL);
+INSERT INTO SU_CO (TIEU_DE, MO_TA, MA_NGUOI_BAO, MA_ADMIN_XU_LY, MA_TB, MA_DM, MUC_UU_TIEN, TRANG_THAI, NGUYEN_NHAN, CACH_KHAC_PHUC, MA_BAI_KN, NGAY_TAO, NGAY_HOAN_THANH) VALUES ('Máy in Phòng Đào tạo báo kẹt giấy', 'Máy in báo kẹt giấy liên tục dù đã lấy giấy ra.', 6, NULL, 9, 6, 'TRUNG_BINH', 'MOI', NULL, NULL, NULL, TIMESTAMP '2026-09-20 15:10:00', NULL);
+INSERT INTO SU_CO (TIEU_DE, MO_TA, MA_NGUOI_BAO, MA_ADMIN_XU_LY, MA_TB, MA_DM, MUC_UU_TIEN, TRANG_THAI, NGUYEN_NHAN, CACH_KHAC_PHUC, MA_BAI_KN, NGAY_TAO, NGAY_HOAN_THANH) VALUES ('Máy tính phòng Kế hoạch - Tài chính không vào được mạng nội bộ', 'Không truy cập được phần mềm kế toán dùng chung.', 10, NULL, 10, 3, 'CAO', 'MOI', NULL, NULL, NULL, TIMESTAMP '2026-09-24 09:05:00', NULL);
+INSERT INTO SU_CO (TIEU_DE, MO_TA, MA_NGUOI_BAO, MA_ADMIN_XU_LY, MA_TB, MA_DM, MUC_UU_TIEN, TRANG_THAI, NGUYEN_NHAN, CACH_KHAC_PHUC, MA_BAI_KN, NGAY_TAO, NGAY_HOAN_THANH) VALUES ('Máy chiếu A6-402 bị rung hình', 'Hình chiếu rung nhẹ khi giảng viên chiếu slide.', 8, NULL, 6, 2, 'THAP', 'MOI', NULL, NULL, NULL, TIMESTAMP '2026-09-23 13:40:00', NULL);
 
 -- 7. LICH_SU_XU_LY (13 dòng, khớp với các sự cố ở trên)
 --    Cột: MA_SC, MA_NGUOI_CAP_NHAT, TRANG_THAI_CU, TRANG_THAI_MOI, GHI_CHU, THOI_GIAN
@@ -137,6 +139,15 @@ INSERT INTO PHAN_HOI (MA_SC, MA_NGUOI_PHAN_HOI, MUC_HAI_LONG, NOI_DUNG) VALUES (
 INSERT INTO PHAN_HOI (MA_SC, MA_NGUOI_PHAN_HOI, MUC_HAI_LONG, NOI_DUNG) VALUES (3, 3, 5, 'Máy chạy mượt hẳn sau khi thay ổ SSD.');
 INSERT INTO PHAN_HOI (MA_SC, MA_NGUOI_PHAN_HOI, MUC_HAI_LONG, NOI_DUNG) VALUES (4, 4, 3, 'Đã xử lý được nhưng mất hơi lâu mới mở lại được tài khoản.');
 
+-- 9. BINH_LUAN_SU_CO (6 dòng): trao đổi qua lại giữa người báo và admin trên sự cố chưa xong
+--    Cột: MA_SC, MA_NGUOI_GUI, NOI_DUNG, THOI_GIAN (TEP_DINH_KEM để NULL vì chưa có file thật trong uploads/)
+INSERT INTO BINH_LUAN_SU_CO (MA_SC, MA_NGUOI_GUI, NOI_DUNG, THOI_GIAN) VALUES (9,  3, 'Máy này em cần dùng cho buổi thực hành thứ 6, khi nào sửa xong ạ?', TIMESTAMP '2026-09-11 10:00:00');
+INSERT INTO BINH_LUAN_SU_CO (MA_SC, MA_NGUOI_GUI, NOI_DUNG, THOI_GIAN) VALUES (9,  1, 'Đã đặt bộ nguồn thay thế, dự kiến thứ 5 có hàng. Tạm thời em dùng máy PC-A2101-12 nhé.', TIMESTAMP '2026-09-11 14:30:00');
+INSERT INTO BINH_LUAN_SU_CO (MA_SC, MA_NGUOI_GUI, NOI_DUNG, THOI_GIAN) VALUES (11, 7, 'Tuần sau lớp tôi có buổi bảo vệ đồ án ở H1-201, mong IT xử lý sớm.', TIMESTAMP '2026-09-16 08:00:00');
+INSERT INTO BINH_LUAN_SU_CO (MA_SC, MA_NGUOI_GUI, NOI_DUNG, THOI_GIAN) VALUES (11, 2, 'Bóng đèn đang về, nếu chưa kịp IT sẽ mượn máy chiếu di động cho thầy.', TIMESTAMP '2026-09-16 09:20:00');
+INSERT INTO BINH_LUAN_SU_CO (MA_SC, MA_NGUOI_GUI, NOI_DUNG, THOI_GIAN) VALUES (11, 7, 'Cảm ơn, vậy tôi chờ thông báo.', TIMESTAMP '2026-09-16 09:45:00');
+INSERT INTO BINH_LUAN_SU_CO (MA_SC, MA_NGUOI_GUI, NOI_DUNG, THOI_GIAN) VALUES (12, 5, 'Đèn báo đỏ nhấp nháy 3 lần rồi tắt, tôi đã thử rút điện cắm lại nhưng không được.', TIMESTAMP '2026-09-22 08:00:00');
+
 COMMIT;
 
 -- Kiểm tra số dòng của từng bảng
@@ -146,4 +157,6 @@ SELECT 'THIET_BI', COUNT(*) FROM THIET_BI UNION ALL
 SELECT 'DANH_MUC_SU_CO', COUNT(*) FROM DANH_MUC_SU_CO UNION ALL
 SELECT 'BAI_KINH_NGHIEM', COUNT(*) FROM BAI_KINH_NGHIEM UNION ALL
 SELECT 'SU_CO', COUNT(*) FROM SU_CO UNION ALL
-SELECT 'LICH_SU_XU_LY', COUNT(*) FROM LICH_SU_XU_LY;
+SELECT 'LICH_SU_XU_LY', COUNT(*) FROM LICH_SU_XU_LY UNION ALL
+SELECT 'PHAN_HOI', COUNT(*) FROM PHAN_HOI UNION ALL
+SELECT 'BINH_LUAN_SU_CO', COUNT(*) FROM BINH_LUAN_SU_CO;
