@@ -218,8 +218,13 @@
   Danh sách trao đổi trên 1 sự cố (user-chi-tiet.html, admin-chi-tiet.html). ds = List<BinhLuan>,
   đã sắp mới nhất lên trước ở tầng repo (ORDER BY THOI_GIAN DESC). Form gửi tin nhắn nằm riêng ở
   từng trang (đường dẫn POST khác nhau giữa /user và /admin) nên không đưa vào đây.
+
+  urlApi = URL GET cùng đường dẫn với form POST gửi tin (vd /user/5/binh-luan), dùng để polling AJAX lấy
+  tin nhắn mới (app.js đọc data-url/data-max rồi gọi lại vài giây 1 lần, nối thêm vào đầu danh sách mà
+  không tải lại trang) — xem khối "Polling AJAX cho Trao đổi" trong app.js.
 */-->
-<div th:fragment="dsBinhLuan(ds)" class="khoi-binh-luan">
+<div th:fragment="dsBinhLuan(ds, urlApi)" class="khoi-binh-luan" data-binh-luan
+     th:data-url="${urlApi}" th:data-max="${#lists.isEmpty(ds)} ? 0 : ${ds[0].maBl}">
   <div class="binh-luan" th:each="bl : ${ds}">
     <span class="avt" th:classappend="${bl.vaiTroNguoiGui == 'ADMIN'} ? 'admin'"
           th:text="${#strings.toUpperCase(#strings.substring(bl.tenNguoiGui, 0, 1))}">?</span>

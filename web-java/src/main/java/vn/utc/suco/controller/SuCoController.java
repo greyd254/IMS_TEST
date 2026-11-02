@@ -2,6 +2,8 @@ package vn.utc.suco.controller;
 
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Controller;
@@ -10,8 +12,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import vn.utc.suco.model.BinhLuan;
 import vn.utc.suco.model.NguoiDung;
 import vn.utc.suco.model.SuCo;
 import vn.utc.suco.repository.BinhLuanRepo;
@@ -100,6 +104,19 @@ public class SuCoController {
         binhLuanRepo.taoMoi(maSc, nd.getMaNd(), noiDung == null || noiDung.isBlank() ? null : noiDung.trim(),
                 duongDanTep);
         return "redirect:/user/" + maSc;
+    }
+
+    /** Polling AJAX: trang chi tiết gọi lại vài giây 1 lần để lấy tin nhắn mới mà không cần tải lại trang. */
+    @GetMapping("/user/{maSc}/binh-luan")
+    @ResponseBody
+    public List<Map<String, Object>> binhLuanMoi(@PathVariable Long maSc,
+                                                  @RequestParam(defaultValue = "0") Long sauMa, HttpSession session) {
+        NguoiDung nd = (NguoiDung) session.getAttribute("nguoiDung");
+        boolean laCuaMinh = suCoRepo.timTheoMa(maSc).filter(sc -> sc.getMaNguoiBao().equals(nd.getMaNd())).isPresent();
+        if (!laCuaMinh) {
+            return List.of();
+        }
+        return binhLuanRepo.timMoiHon(maSc, sauMa).stream().map(BinhLuan::dangJson).toList();
     }
 
     /**

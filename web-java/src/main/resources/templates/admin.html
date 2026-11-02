@@ -24,13 +24,13 @@
       <div class="col">
         <a class="o-thong-ke" th:classappend="${trangThaiLoc == null} ? 'dang-chon'" th:href="@{/admin}">
           <span class="nhan"><span class="cham tong"></span> Tất cả</span>
-          <span class="so" th:text="${(dem['MOI'] ?: 0) + (dem['DANG_XU_LY'] ?: 0) + (dem['HOAN_THANH'] ?: 0)}">0</span>
+          <span class="so" data-dem="tong" th:text="${(dem['MOI'] ?: 0) + (dem['DANG_XU_LY'] ?: 0) + (dem['HOAN_THANH'] ?: 0)}">0</span>
         </a>
       </div>
       <div class="col">
         <a class="o-thong-ke" th:classappend="${trangThaiLoc == 'MOI'} ? 'dang-chon'" th:href="@{/admin(trangThai='MOI')}">
           <span class="nhan"><span class="cham moi"></span> Mới</span>
-          <span class="so" th:text="${dem['MOI'] ?: 0}">0</span>
+          <span class="so" data-dem="MOI" th:text="${dem['MOI'] ?: 0}">0</span>
         </a>
       </div>
       <div class="col">
@@ -50,7 +50,10 @@
     <!-- Bảng sự cố: máy tính xem dạng bảng, điện thoại tự xếp thành từng thẻ (lớp .bang-gon) -->
     <div class="card">
       <div class="table-responsive">
-        <table class="table table-hover align-middle bang-gon" id="bangSuCo">
+        <table class="table table-hover align-middle bang-gon" id="bangSuCo"
+               th:data-su-co-url="@{/admin/moi(trangThai=${trangThaiLoc})}"
+               th:data-su-co-max="${#lists.isEmpty(trang.ds)} ? 0 : ${trang.ds[0].maSc}"
+               th:data-su-co-bat="${(trangThaiLoc == null or trangThaiLoc == 'MOI') and trang.so == 1 and q == null}">
           <thead>
             <tr>
               <th>Mã</th><th>Sự cố / Người báo</th><th>Thiết bị, phòng</th><th>Danh mục</th>

@@ -203,7 +203,7 @@
             <button class="btn btn-primary btn-sm ms-auto" type="submit"><i class="bi bi-send"></i> Gửi</button>
           </div>
         </form>
-        <div th:replace="~{layout :: dsBinhLuan(${dsBinhLuan})}"></div>
+        <div th:replace="~{layout :: dsBinhLuan(${dsBinhLuan}, @{/admin/{id}/binh-luan(id=${suCo.maSc})})}"></div>
       </div>
     </div>
   </div>

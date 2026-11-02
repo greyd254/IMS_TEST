@@ -81,3 +81,155 @@
     });
   });
 })();
+
+/* Thoát HTML entity (dùng chung cho các khối polling AJAX dưới đây, vì nội dung chèn vào trang là do người
+   dùng gõ - không thoát đúng cách sẽ hở lỗi XSS lưu trữ qua tiêu đề sự cố / nội dung trao đổi). */
+function thoat(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+/*
+ * Polling AJAX cho khối "Trao đổi" (user-chi-tiet.html, admin-chi-tiet.html): gọi lại GET cùng đường dẫn
+ * với form gửi tin (vd /user/5/binh-luan?sauMa=12) mỗi 4 giây, chỉ lấy tin có MA_BL lớn hơn tin mới nhất
+ * đang có trên trang rồi nối thêm vào đầu danh sách — không tải lại cả trang khi có người trả lời.
+ * Dừng polling khi tab không hiển thị (đổi tab khác) để đỡ tốn request.
+ */
+(function () {
+  'use strict';
+
+  var CHU_KY_MS = 4000;
+
+  function htmlMotTin(bl) {
+    var noi = bl.noiDung
+      ? '<p class="noi-dung-bl">' + thoat(bl.noiDung).replace(/\n/g, '<br>') + '</p>'
+      : '';
+    var tep = '';
+    if (bl.tepDinhKem) {
+      var href = thoat(bl.tepDinhKem);
+      tep = '<div class="tep-dinh-kem">' + (bl.laAnh
+        ? '<a href="' + href + '" target="_blank"><img class="anh-to" src="' + href + '" alt="File đính kèm"></a>'
+        : '<a href="' + href + '" target="_blank"><i class="bi bi-paperclip"></i> Xem file đính kèm</a>') + '</div>';
+    }
+    return '<div class="binh-luan">'
+      + '<span class="avt' + (bl.laAdmin ? ' admin' : '') + '">' + thoat(bl.tenNguoiGui).charAt(0).toUpperCase() + '</span>'
+      + '<div class="noi">'
+      + '<div class="dau">'
+      + '<span class="ten">' + thoat(bl.tenNguoiGui) + '</span>'
+      + '<span class="badge ' + (bl.laAdmin ? 'text-bg-danger' : 'text-bg-secondary') + '">' + (bl.laAdmin ? 'IT' : 'Người báo') + '</span>'
+      + '<span class="luc">' + thoat(bl.thoiGian) + '</span>'
+      + '</div>' + noi + tep + '</div></div>';
+  }
+
+  function hoiVongMoi(khung) {
+    var url = khung.getAttribute('data-url');
+    var max = khung.getAttribute('data-max') || '0';
+    fetch(url + (url.indexOf('?') === -1 ? '?' : '&') + 'sauMa=' + max)
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (ds) {
+        if (!ds || !ds.length) {
+          return;
+        }
+        var trongRong = khung.querySelector('.trong-rong');
+        if (trongRong) {
+          trongRong.remove();
+        }
+        // ds đã sắp mới nhất lên trước (giống tầng repo) nên nối chuỗi theo đúng thứ tự rồi chèn vào đầu là đủ
+        khung.insertAdjacentHTML('afterbegin', ds.map(htmlMotTin).join(''));
+        khung.setAttribute('data-max', String(ds[0].maBl));
+      })
+      .catch(function () { /* mất mạng tạm thời: bỏ qua, chu kỳ sau thử lại */ });
+  }
+
+  var dsKhung = document.querySelectorAll('[data-binh-luan]');
+  if (!dsKhung.length) {
+    return;
+  }
+  var dangBat = true;
+  document.addEventListener('visibilitychange', function () {
+    dangBat = !document.hidden;
+  });
+  setInterval(function () {
+    if (dangBat) {
+      dsKhung.forEach(hoiVongMoi);
+    }
+  }, CHU_KY_MS);
+})();
+
+/*
+ * Polling AJAX cho trang /admin (danh sách sự cố): tự hiện sự cố mới báo lên đầu bảng mà không cần F5.
+ * Chỉ bật trên bảng có data-su-co-bat="true" - admin.html tự tính (đang xem "Tất cả"/"Mới", trang 1,
+ * không có từ khóa tìm kiếm) để không làm sai lệch 1 trang đang lọc/phân trang khác.
+ */
+(function () {
+  'use strict';
+
+  var CHU_KY_MS = 5000;
+
+  function htmlMotDong(sc) {
+    var url = thoat('/admin/' + sc.maSc);
+    return '<tr>'
+      + '<td data-label="Mã" class="an-mobile">#' + sc.maSc + '</td>'
+      + '<td class="o-chinh"><a href="' + url + '">' + thoat(sc.tieuDe) + '</a>'
+      + '<span class="o-phu"><span class="d-md-none">#' + sc.maSc + ' · </span>'
+      + '<i class="bi bi-person"></i> ' + thoat(sc.tenNguoiBao) + '</span></td>'
+      + '<td data-label="Vị trí">' + thoat(sc.tenTb || '-')
+      + (sc.tenPhong ? '<span class="o-phu">' + thoat(sc.tenPhong) + '</span>' : '') + '</td>'
+      + '<td data-label="Danh mục">' + thoat(sc.tenDm) + '</td>'
+      + '<td data-label="Ưu tiên"><span class="badge ' + sc.mucUuTienBadge + '">' + thoat(sc.mucUuTienNhan) + '</span></td>'
+      + '<td data-label="Trạng thái"><span class="badge text-bg-secondary">Mới</span></td>'
+      + '<td data-label="Ngày báo">' + thoat(sc.ngayTao) + '</td>'
+      + '<td><span class="nhom-nut"><a class="btn btn-sm btn-outline-primary" href="' + url + '">'
+      + '<i class="bi bi-wrench-adjustable"></i> Xử lý</a></span></td></tr>';
+  }
+
+  function capNhatDem(soLuong) {
+    document.querySelectorAll('[data-dem="tong"], [data-dem="MOI"]').forEach(function (o) {
+      o.textContent = String((parseInt(o.textContent, 10) || 0) + soLuong);
+    });
+  }
+
+  function hoiVongMoi(bang) {
+    var url = bang.getAttribute('data-su-co-url');
+    var max = bang.getAttribute('data-su-co-max') || '0';
+    fetch(url + (url.indexOf('?') === -1 ? '?' : '&') + 'sauMa=' + max)
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (ds) {
+        if (!ds || !ds.length) {
+          return;
+        }
+        var than = bang.querySelector('tbody');
+        var trongRong = than.querySelector('.trong-rong');
+        if (trongRong) {
+          trongRong.closest('tr').remove();
+        }
+        // ds đã sắp mới nhất lên trước (giống bảng) nên nối chuỗi theo đúng thứ tự rồi chèn vào đầu là đủ
+        than.insertAdjacentHTML('afterbegin', ds.map(htmlMotDong).join(''));
+        bang.setAttribute('data-su-co-max', String(ds[0].maSc));
+        capNhatDem(ds.length);
+        // Nếu admin đang gõ ô tìm nhanh (web-oracle, lọc ngay trên trang), lọc lại để tính cả dòng vừa thêm
+        var oTim = document.querySelector('.o-tim[data-loc]');
+        if (oTim) {
+          oTim.dispatchEvent(new Event('input'));
+        }
+      })
+      .catch(function () { /* mất mạng tạm thời: bỏ qua, chu kỳ sau thử lại */ });
+  }
+
+  var dsBang = Array.prototype.filter.call(document.querySelectorAll('[data-su-co-url]'), function (b) {
+    return b.getAttribute('data-su-co-bat') === 'true';
+  });
+  if (!dsBang.length) {
+    return;
+  }
+  var dangBat = true;
+  document.addEventListener('visibilitychange', function () {
+    dangBat = !document.hidden;
+  });
+  setInterval(function () {
+    if (dangBat) {
+      dsBang.forEach(hoiVongMoi);
+    }
+  }, CHU_KY_MS);
+})();

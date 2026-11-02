@@ -4,7 +4,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
@@ -13,8 +16,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import vn.utc.suco.model.BinhLuan;
 import vn.utc.suco.model.NguoiDung;
 import vn.utc.suco.model.SuCo;
 import vn.utc.suco.repository.BinhLuanRepo;
@@ -56,6 +61,41 @@ public class AdminController {
         model.addAttribute("trangThaiLoc", loc);
         model.addAttribute("dem", suCoRepo.demTheoTrangThai());   // số liệu cho các ô lọc nhanh
         return "admin";
+    }
+
+    /**
+     * Polling AJAX cho trang danh sách: /admin tự hiện sự cố mới báo lên đầu bảng mà không cần F5.
+     * Chỉ trả về gì đó khi đang xem "Tất cả" hoặc "Mới" (sự cố mới báo luôn có trạng thái MOI nên không
+     * thể xuất hiện ở 2 bộ lọc còn lại) - app.js chỉ gọi endpoint này ở 2 chế độ xem đó (xem data-su-co-bat).
+     */
+    @GetMapping("/admin/moi")
+    @ResponseBody
+    public List<Map<String, Object>> suCoMoi(@RequestParam(required = false) String trangThai,
+                                              @RequestParam(defaultValue = "0") Long sauMa) {
+        String loc = (trangThai != null && TRANG_THAI.contains(trangThai)) ? trangThai : null;
+        if (loc != null && !loc.equals("MOI")) {
+            return List.of();
+        }
+        return suCoRepo.timMoiHon(loc, sauMa).stream().map(AdminController::jsonSuCo).toList();
+    }
+
+    private static final Map<String, String> NHAN_UU_TIEN = Map.of("THAP", "Thấp", "TRUNG_BINH", "Trung bình", "CAO", "Cao");
+    private static final Map<String, String> BADGE_UU_TIEN =
+            Map.of("THAP", "text-bg-info", "TRUNG_BINH", "text-bg-primary", "CAO", "text-bg-danger");
+    private static final DateTimeFormatter DINH_DANG_LUC = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+    private static Map<String, Object> jsonSuCo(SuCo sc) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("maSc", sc.maSc());
+        m.put("tieuDe", sc.tieuDe());
+        m.put("tenNguoiBao", sc.tenNguoiBao());
+        m.put("tenTb", sc.tenTb());
+        m.put("tenPhong", sc.tenPhong());
+        m.put("tenDm", sc.tenDm());
+        m.put("mucUuTienNhan", NHAN_UU_TIEN.get(sc.mucUuTien()));
+        m.put("mucUuTienBadge", BADGE_UU_TIEN.get(sc.mucUuTien()));
+        m.put("ngayTao", sc.ngayTao().format(DINH_DANG_LUC));
+        return m;
     }
 
     /** Xuất các sự cố đang được lọc (mọi trang, không chỉ trang đang xem) ra file Excel. */
@@ -113,6 +153,17 @@ public class AdminController {
         binhLuanRepo.taoMoi(maSc, admin.maNd(), noiDung == null || noiDung.isBlank() ? null : noiDung.trim(),
                 duongDanTep);
         return "redirect:/admin/" + maSc;
+    }
+
+    /** Polling AJAX: trang chi tiết gọi lại vài giây 1 lần để lấy tin nhắn mới mà không cần tải lại trang. */
+    @GetMapping("/admin/{maSc}/binh-luan")
+    @ResponseBody
+    public List<Map<String, Object>> binhLuanMoi(@PathVariable Long maSc,
+                                                  @RequestParam(defaultValue = "0") Long sauMa) {
+        if (suCoRepo.timTheoMa(maSc).isEmpty()) {
+            return List.of();
+        }
+        return binhLuanRepo.timMoiHon(maSc, sauMa).stream().map(BinhLuan::dangJson).toList();
     }
 
     /**

@@ -1,0 +1,538 @@
+# Ôn tập môn Công nghệ Oracle (BTL "Quản lý sự cố CNTT")
+
+Tài liệu tóm tắt phần **Oracle** của bài tập lớn, dùng để báo cáo/vấn đáp riêng cho môn Oracle — tách khỏi
+`ON_TAP_WEB_JAVA.md` (ôn tập riêng cho môn Java, dùng bản `web-java/`). Hai môn dùng **chung 1 project** chỉ vì
+tiện (cùng CSDL, web gần giống nhau), **không phải do 2 giáo viên yêu cầu làm chung**, nên tài liệu nào chỉ nói
+đúng phần của môn đó: ở đây gần như không nhắc tới OOP/Spring/Java, trừ 1-2 câu ngắn ở mục 8 để giải thích web
+lấy dữ liệu từ đâu.
+
+Theo đề thi ("Đề số 30 - Đề mở", học phần Công nghệ Oracle, 10 điểm — xem `TIEN_DO.md`), điểm chia theo 5 phần:
+
+| Phần đề | Điểm | Nội dung | Ở đâu trong tài liệu này |
+|---|---|---|---|
+| 1. Giới thiệu, thực thể, quan hệ | 0,5 | Mô tả đề bài, ER | Mục 1, 2 |
+| 2. CSDL | 2,5 | User, tablespace, bảng, ràng buộc, trigger, view, dữ liệu | Mục 2, 3, 4 |
+| 3. Truy vấn | 1 | Tối thiểu 10 câu (đã làm 17) | Mục 5 |
+| **4. Quản trị Oracle** | **5** | Instance/PDB, tablespace/datafile, ARCHIVELOG, RMAN, profile/user/role, Data Pump | **Mục 6** (phần nặng điểm nhất) |
+| 5. Web | 1 | Demo CRUD qua trình duyệt | Mục 8 (ngắn) |
+
+---
+
+## 1. Tổng quan đề bài và thiết kế
+
+**Chủ đề:** quản lý sự cố CNTT trong một đơn vị (báo sự cố → admin xử lý → lưu kinh nghiệm xử lý). Thực thể
+chính: người dùng, phòng, thiết bị, danh mục sự cố, sự cố, bài kinh nghiệm, lịch sử xử lý, phản hồi, bình luận.
+
+**Công cụ / phiên bản:** Oracle Database 23ai Free, PDB tên `FREEPDB1`, thao tác qua SQL*Plus. Schema (user)
+chủ: `SUCO_APP`, tablespace riêng `TS_SUCO`.
+
+**Sơ đồ ER:** xem `SO_DO_QUAN_HE.md` (ảnh `docs/so_do_ER_SUCO_APP.png`, vẽ tự động từ từ điển dữ liệu Oracle
+bằng `tools/VeSoDoER.java`) — có sẵn cả bản Mermaid dạng văn bản để dán vào báo cáo hoặc công cụ vẽ khác.
+
+**Thứ tự script trong `sql/`:**
+
+| File | Chạy bằng | Nội dung |
+|---|---|---|
+| `01_tablespace_user.sql` | SYSTEM | Tablespace `TS_SUCO`, user `SUCO_APP`, 2 role rỗng `ROLE_APP_USER`/`ROLE_APP_ADMIN` |
+| `02_tables.sql` | SUCO_APP | 9 bảng + ràng buộc + 7 index |
+| `03_triggers.sql` | SUCO_APP | 2 trigger trên `SU_CO` |
+| `04_data.sql` | SUCO_APP | ~90 dòng dữ liệu mẫu |
+| `05_queries.sql` | SUCO_APP | 2 view + 17 truy vấn mẫu |
+| `06_users_roles.sql` | SYSTEM | Cấp quyền bảng cho 2 role, tạo 2 user demo `U_NHANVIEN`/`U_QUANTRI` |
+| `07_admin_demo.sql` | SYSDBA (chạy tay từng khối) | Kịch bản quản trị: instance/PDB, tablespace/datafile, RMAN, Data Pump |
+| `08_quan_tri_user.sql` | SYSTEM | Profile, user `U_DEMO`, khóa tài khoản tự động, quyền hệ thống/đối tượng, role nhiều cấp |
+| `00_run_all.sql` / `99_drop_all.sql` | — | Dựng lại từ đầu / xóa sạch |
+| `09`–`13` | SUCO_APP | Các bản *vá* (migration) áp dụng cho CSDL đã dựng từ trước — nội dung đã gộp sẵn vào `02`/`05`, chỉ cần chạy riêng nếu không dựng lại từ đầu |
+
+---
+
+## 2. Thiết kế bảng (`02_tables.sql`)
+
+9 bảng, tạo theo đúng thứ tự cha → con vì FK tham chiếu bảng đã tồn tại:
+
+1. **`NGUOI_DUNG`** — người dùng (user thường + admin IT). Có 2 FK **tự tham chiếu** chính nó
+   (`MA_NGUOI_TAO`, `MA_NGUOI_XOA` → `NGUOI_DUNG.MA_ND`), dùng để ghi "admin nào tạo/vô hiệu hóa tài khoản này".
+   Xóa là **xóa mềm**: không `DELETE`, chỉ `UPDATE TRANG_THAI = 'KHONG_HOAT_DONG'` + ghi `NGAY_XOA`/`MA_NGUOI_XOA`,
+   để giữ lại sự cố/bài kinh nghiệm đã gắn với người đó và có thể khôi phục.
+2. **`PHONG`** — phòng máy/phòng học/văn phòng. `TANG` cho phép `NULL` (văn phòng 1 tầng không cần ghi).
+3. **`THIET_BI`** — FK tới `PHONG`.
+4. **`DANH_MUC_SU_CO`** — danh mục dùng chung cho cả sự cố và bài kinh nghiệm.
+5. **`BAI_KINH_NGHIEM`** — FK tới `DANH_MUC_SU_CO`, `NGUOI_DUNG`.
+6. **`SU_CO`** — bảng trung tâm, 5 FK (người báo, admin xử lý, thiết bị, danh mục, bài kinh nghiệm). 3 FK cho
+   phép `NULL` vì nghiệp vụ cho phép: sự cố mới chưa ai nhận (`MA_ADMIN_XU_LY`), sự cố không gắn thiết bị cụ thể
+   như "quên mật khẩu" (`MA_TB`), chưa gắn bài kinh nghiệm nào (`MA_BAI_KN`).
+7. **`LICH_SU_XU_LY`** — nhật ký đổi trạng thái, do trigger ghi (mục 3).
+8. **`PHAN_HOI`** — đánh giá của người báo sau khi `SU_CO` đã `HOAN_THANH`; `UNIQUE(MA_SC)` ép **mỗi sự cố chỉ 1
+   phản hồi** (quan hệ 1-1 giữa `SU_CO` và `PHAN_HOI`, không phải 1-nhiều).
+9. **`BINH_LUAN_SU_CO`** — tin nhắn trao đổi qua lại giữa người báo và admin (không giới hạn số lần, khác
+   `PHAN_HOI`). `THOI_GIAN` dùng `TIMESTAMP` (có giờ:phút:giây) để sắp đúng thứ tự trong 1 ngày, còn các bảng
+   khác chỉ cần `DATE` (ngày) là đủ cho nghiệp vụ.
+
+### 2.1. Vì sao `VARCHAR2(n CHAR)` mà không phải `VARCHAR2(n)` (= `VARCHAR2(n BYTE)`)?
+Mặc định `VARCHAR2(n)` tính độ dài theo **byte**. Với `AL32UTF8`, một ký tự tiếng Việt có dấu chiếm 2-3 byte,
+nên `VARCHAR2(100)` có thể chỉ chứa được ~33-50 ký tự có dấu dù viết số 100. `VARCHAR2(100 CHAR)` ép Oracle
+đếm theo **ký tự**, nên luôn chứa đủ 100 ký tự bất kể có dấu hay không.
+
+### 2.2. Ràng buộc (constraint) dùng trong bài
+- **PK**: mọi bảng dùng khóa nhân tạo `NUMBER GENERATED BY DEFAULT AS IDENTITY` (tự tăng, kiểu identity của
+  Oracle 12c+, thay cho cách cũ là tạo `SEQUENCE` + trigger `BEFORE INSERT` gán giá trị).
+- **FK**: 14 khóa ngoại, toàn bộ trỏ tới PK của bảng khác (hoặc chính bảng đó, với `NGUOI_DUNG`).
+- **UNIQUE**: `UQ_NGUOI_DUNG_EMAIL` (không trùng email), `UQ_DANH_MUC_TEN` (không trùng tên danh mục),
+  `UQ_PHAN_HOI_SU_CO` (mỗi sự cố 1 phản hồi).
+- **CHECK**: dùng làm "enum" trong Oracle — ví dụ `CK_SU_CO_TRANG_THAI CHECK (TRANG_THAI IN ('MOI',
+  'DANG_XU_LY', 'HOAN_THANH'))`, tương tự cho vai trò, trạng thái người dùng, loại phòng, loại/tình trạng thiết
+  bị, mức ưu tiên. Có 1 CHECK so sánh giữa 2 cột: `CK_SU_CO_NGAY_HT CHECK (NGAY_HOAN_THANH >= NGAY_TAO)`, và 1
+  CHECK dùng `OR` giữa 2 cột: `CK_BINH_LUAN_CO_NOI_DUNG CHECK (NOI_DUNG IS NOT NULL OR TEP_DINH_KEM IS NOT
+  NULL)` (tin nhắn phải có chữ hoặc có file, không được cả hai đều trống).
+- **NOT NULL**: khai trực tiếp trong định nghĩa cột (không viết `CONSTRAINT ... CHECK (x IS NOT NULL)`).
+
+### 2.3. Index (`CREATE INDEX`, cuối file 02)
+Oracle **tự tạo index** cho PK và UNIQUE, nhưng **không tự tạo** cho FK. Bài tạo thêm 7 index thủ công trên các
+cột FK/cột lọc hay dùng (`SU_CO.MA_NGUOI_BAO`, `SU_CO.TRANG_THAI`, `LICH_SU_XU_LY.MA_SC`,
+`PHAN_HOI.MA_NGUOI_PHAN_HOI`, `NGUOI_DUNG.MA_NGUOI_TAO`, `BINH_LUAN_SU_CO.MA_SC`, `BINH_LUAN_SU_CO.MA_NGUOI_GUI`)
+— lý do: những cột này luôn xuất hiện trong `WHERE`/`JOIN` của các truy vấn và của chính các trigger/FK, không
+đánh index thì mỗi lần `DELETE`/`UPDATE` ở bảng cha, Oracle phải quét toàn bộ (full table scan) bảng con để
+kiểm tra còn dòng tham chiếu hay không.
+
+### 2.4. Function-based unique index chống trùng tên (`13_chong_trung_ten.sql`, tùy chọn)
+```sql
+CREATE UNIQUE INDEX UQ_PHONG_TEN ON PHONG (UPPER(TRIM(TOA_NHA)), TANG, UPPER(TRIM(TEN_PHONG)));
+CREATE UNIQUE INDEX UQ_THIET_BI_TEN ON THIET_BI (MA_PHONG, LOAI_TB, UPPER(TRIM(TEN_TB)));
+```
+- Đây là **index trên biểu thức** (function-based index), không phải trên cột thô: Oracle lưu chỉ mục theo kết
+  quả của `UPPER(TRIM(...))`, nên 2 dòng khác nhau về hoa/thường hoặc khoảng trắng hai đầu vẫn bị coi là trùng.
+- UNIQUE INDEX nhiều cột: Oracle chỉ bỏ qua kiểm tra trùng khi **toàn bộ** các cột trong index đều `NULL`;
+  ở đây `TOA_NHA`, `TEN_PHONG` luôn `NOT NULL` nên mọi dòng đều được kiểm tra dù `TANG` có thể `NULL`.
+- Đây là lớp bảo vệ **cuối cùng** ở CSDL (web đã tự kiểm tra trùng trước khi `INSERT`/`UPDATE`); cần cho
+  trường hợp 2 người lưu cùng lúc, hoặc có người `INSERT` thẳng bằng SQL.
+- Tạo index này sẽ báo lỗi **ORA-01452** nếu dữ liệu hiện có đã có dòng trùng — phải dọn dữ liệu trước.
+
+---
+
+## 3. Trigger (`03_triggers.sql`)
+
+```sql
+CREATE OR REPLACE TRIGGER TRG_SU_CO_LICH_SU
+AFTER UPDATE OF TRANG_THAI ON SU_CO
+FOR EACH ROW
+WHEN (OLD.TRANG_THAI <> NEW.TRANG_THAI)
+BEGIN
+  INSERT INTO LICH_SU_XU_LY (MA_SC, MA_NGUOI_CAP_NHAT, TRANG_THAI_CU, TRANG_THAI_MOI, GHI_CHU)
+  VALUES (:NEW.MA_SC, :NEW.MA_ADMIN_XU_LY, :OLD.TRANG_THAI, :NEW.TRANG_THAI, 'Cập nhật trạng thái xử lý sự cố');
+END;
+/
+
+CREATE OR REPLACE TRIGGER TRG_SU_CO_HOAN_THANH
+BEFORE UPDATE OF TRANG_THAI ON SU_CO
+FOR EACH ROW
+BEGIN
+  IF :NEW.TRANG_THAI = 'HOAN_THANH' AND :OLD.TRANG_THAI <> 'HOAN_THANH' THEN
+    :NEW.NGAY_HOAN_THANH := SYSDATE;
+  ELSIF :NEW.TRANG_THAI <> 'HOAN_THANH' THEN
+    :NEW.NGAY_HOAN_THANH := NULL;
+  END IF;
+END;
+/
+```
+
+- **`TRG_SU_CO_LICH_SU`**: `AFTER UPDATE OF TRANG_THAI` — chỉ bị "khởi động" (fire) khi câu `UPDATE` có đụng tới
+  cột `TRANG_THAI` (không fire khi chỉ sửa `NGUYEN_NHAN`); mệnh đề `WHEN` lọc thêm, chỉ ghi lịch sử khi giá trị
+  **thực sự đổi** (`UPDATE ... SET TRANG_THAI = TRANG_THAI` sẽ không bị tính). `FOR EACH ROW` vì cần `:OLD`/`:NEW`
+  của từng dòng — nếu là trigger mức câu lệnh (không `FOR EACH ROW`) sẽ không có 2 bí danh này.
+- **`TRG_SU_CO_HOAN_THANH`**: `BEFORE UPDATE` (không `FOR EACH ROW` thì không sửa được `:NEW`) để **sửa giá trị
+  sắp được ghi xuống** — tự gán ngày hoàn thành khi chuyển sang `HOAN_THANH`, và **xóa** ngày đó nếu admin mở lại
+  sự cố (chuyển khỏi `HOAN_THANH` sang trạng thái khác), để số liệu thống kê thời gian xử lý không bị sai.
+- Người cập nhật (`MA_NGUOI_CAP_NHAT`) lấy từ `:NEW.MA_ADMIN_XU_LY` — cột này do **tầng web gán** (admin đang
+  đăng nhập) ngay trong câu `UPDATE SU_CO ...`, trigger chỉ đọc lại giá trị đó, không tự biết ai đang đăng nhập.
+- Trigger **không tự ghi lịch sử khi chỉ sửa nguyên nhân/cách khắc phục mà không đổi trạng thái** — đây là một
+  hạn chế đã biết trước (phần web của bài, bên `web-java/`, có vá lại bằng cách tự `INSERT`/`UPDATE`
+  `LICH_SU_XU_LY` thêm ở tầng ứng dụng khi cần; bản `web-oracle/` nộp báo cáo giữ đúng theo trigger này).
+
+---
+
+## 4. View (`05_queries.sql`)
+
+```sql
+CREATE OR REPLACE VIEW V_SU_CO_CHI_TIET AS
+SELECT sc.MA_SC, sc.TIEU_DE, sc.MO_TA, sc.MA_NGUOI_BAO, nb.HO_TEN AS TEN_NGUOI_BAO,
+       sc.MA_ADMIN_XU_LY, ad.HO_TEN AS TEN_ADMIN, sc.MA_TB, tb.TEN_TB, p.TEN_PHONG, p.TOA_NHA,
+       sc.MA_DM, dm.TEN_DM, sc.MUC_UU_TIEN, sc.TRANG_THAI, sc.NGUYEN_NHAN, sc.CACH_KHAC_PHUC,
+       sc.MA_BAI_KN, sc.ANH_DINH_KEM, sc.NGAY_TAO, sc.NGAY_HOAN_THANH
+  FROM SU_CO sc
+  JOIN NGUOI_DUNG nb ON nb.MA_ND = sc.MA_NGUOI_BAO
+  LEFT JOIN NGUOI_DUNG ad ON ad.MA_ND = sc.MA_ADMIN_XU_LY
+  LEFT JOIN THIET_BI tb ON tb.MA_TB = sc.MA_TB
+  LEFT JOIN PHONG p ON p.MA_PHONG = tb.MA_PHONG
+  JOIN DANH_MUC_SU_CO dm ON dm.MA_DM = sc.MA_DM;
+```
+- Ghép `SU_CO` với 4 bảng liên quan để web (và truy vấn) khỏi phải viết lại `JOIN` 5 bảng mỗi lần. `JOIN`
+  thường cho người báo và danh mục (luôn có, cột `NOT NULL`); `LEFT JOIN` cho admin và thiết bị vì 2 FK này cho
+  phép `NULL` — dùng `JOIN` thường ở đây sẽ làm **mất** các sự cố chưa có admin nhận hoặc không gắn thiết bị.
+
+```sql
+CREATE OR REPLACE VIEW V_SU_CO_THUONG_GAP AS
+SELECT dm.MA_DM, dm.TEN_DM, COUNT(sc.MA_SC) AS SO_LAN_BAO
+  FROM DANH_MUC_SU_CO dm
+  LEFT JOIN SU_CO sc ON sc.MA_DM = dm.MA_DM
+ GROUP BY dm.MA_DM, dm.TEN_DM;
+```
+- Đếm số sự cố theo từng danh mục. `LEFT JOIN` (không phải `JOIN`) để danh mục **chưa có sự cố nào** vẫn xuất
+  hiện với `SO_LAN_BAO = 0`, thay vì bị loại khỏi kết quả. Cố tình làm **view tính bằng `COUNT`** thay vì thêm
+  một cột "số lần gặp" lưu cứng trên `DANH_MUC_SU_CO`, vì giá trị này **suy ra được** từ dữ liệu đã có — lưu
+  thêm cột sẽ phải tự viết trigger đồng bộ mỗi khi thêm/xóa `SU_CO`, dễ bị lệch nếu quên.
+- Cả 2 view chỉ `SELECT` (không có `WITH CHECK OPTION`/`INSTEAD OF`), nên không `INSERT`/`UPDATE` được qua view.
+
+---
+
+## 5. Truy vấn mẫu (`05_queries.sql`, 17 câu — đề chỉ yêu cầu tối thiểu 10)
+
+| # | Kỹ thuật | Nội dung |
+|---|---|---|
+| Q1 | `WHERE` nhiều điều kiện, `ORDER BY` | Sự cố mức CAO chưa hoàn thành, mới nhất trước |
+| Q2 | `LIKE` + `LOWER` | Tiêu đề chứa "máy chiếu", không phân biệt hoa/thường |
+| Q3 | `JOIN` 2 bảng | Thiết bị hỏng/đang sửa kèm phòng, tòa nhà |
+| Q4 | `JOIN` qua **view** | Sự cố hoàn thành, đọc thẳng từ `V_SU_CO_CHI_TIET` (tương đương JOIN 5 bảng) |
+| Q5 | Subquery + `IN` | Người đã báo ít nhất 1 sự cố mức CAO |
+| Q6 | Subquery + `EXISTS` | Admin đã xử lý ít nhất 1 sự cố |
+| Q7 | Subquery + `NOT EXISTS` | Danh mục chưa có bài kinh nghiệm nào |
+| Q8 | Subquery trong `WHERE` (so với giá trị gộp) | Sự cố có thời gian xử lý > trung bình |
+| Q9 | Subquery trong `FROM` (inline view) + `FETCH FIRST` | Top 3 thiết bị nhiều sự cố nhất |
+| Q10 | `GROUP BY` + `HAVING` | Phòng có ≥ 2 sự cố |
+| Q11 | `GROUP BY` theo hàm (`TO_CHAR` ngày → tháng) | Số sự cố theo tháng |
+| Q12 | `COUNT/AVG/MAX/MIN/SUM` cùng lúc | Thời gian xử lý theo danh mục |
+| Q13 | `GROUP BY` + `FETCH FIRST 1 ROWS WITH TIES` | Admin xử lý nhiều sự cố nhất (có thể hòa) |
+| Q14 | `LEFT JOIN` + `GROUP BY` | Số sự cố của **mọi** người dùng, kể cả người chưa báo gì (= 0) |
+| Q15 | `GROUP BY` nhiều cột | Số sự cố theo (trạng thái, mức ưu tiên) |
+| Q16 | Đọc từ view + `FETCH FIRST ... WITH TIES` | Top 3 danh mục hay gặp nhất |
+| Q17 | `JOIN` 3 bảng + hàm gộp | Điểm hài lòng trung bình theo admin (từ `PHAN_HOI`) |
+
+Vài điểm hay bị hỏi:
+- **`FETCH FIRST n ROWS ONLY` vs `FETCH FIRST n ROWS WITH TIES`**: `ONLY` luôn đúng *n* dòng; `WITH TIES` lấy
+  thêm các dòng **đồng hạng** với dòng thứ *n* theo đúng `ORDER BY` (vd Q13: 2 admin cùng xử lý nhiều sự cố nhất
+  thì cả 2 đều được lấy, không chỉ 1). `WITH TIES` **bắt buộc phải có `ORDER BY`**, nếu không Oracle báo lỗi.
+- **`LEFT JOIN` để không mất dòng "0"**: Q14 và view `V_SU_CO_THUONG_GAP` đều phải `LEFT JOIN` thay vì `JOIN`,
+  vì mục đích là liệt kê **mọi** người dùng/danh mục kể cả chưa có dòng nào ở bảng bên phải — `JOIN` (inner)
+  sẽ loại các dòng không khớp, làm sai yêu cầu "kể cả 0".
+- **`NGAY_HOAN_THANH - NGAY_TAO`**: 2 cột kiểu `DATE` trừ nhau ra **số ngày** (kiểu số, có phần lẻ nếu khác giờ);
+  nhân 24 sẽ ra giờ — đây cũng là cách `ThongKeRepo` bên Java tính thời gian xử lý trung bình.
+
+---
+
+## 6. Quản trị Oracle (`06`, `07`, `08` — phần nặng điểm nhất, 5/10)
+
+### 6.1. Instance, Database, PDB (Pluggable Database)
+- Kiến trúc multitenant từ Oracle 12c: **1 instance** (tiến trình + vùng nhớ, tên `FREE`) quản lý **1 CDB**
+  (Container Database, `CDB$ROOT`) chứa **nhiều PDB** (ở đây chỉ dùng `FREEPDB1`). Mỗi PDB giống một "CSDL con"
+  độc lập về schema/user, nhưng dùng chung instance và một số cấu trúc vật lý với CDB.
+- Lệnh hay dùng:
+  - `SELECT instance_name, status, database_status, startup_time FROM v$instance;` — trạng thái instance.
+  - `SELECT con_id, name, open_mode, restricted FROM v$pdbs;` — danh sách PDB và chế độ mở (`READ WRITE`,
+    `READ ONLY`, `MOUNTED`).
+  - `SHUTDOWN IMMEDIATE` / `STARTUP` — tắt/khởi động cả instance (ảnh hưởng **mọi** PDB). Có 3 trạng thái khi
+    khởi động: `NOMOUNT` (đọc `init` parameter, chưa gắn database) → `MOUNT` (đọc control file, database đã gắn
+    nhưng chưa mở cho user) → `OPEN` (mở hoàn toàn).
+  - `ALTER PLUGGABLE DATABASE FREEPDB1 CLOSE IMMEDIATE;` / `... OPEN;` — đóng/mở **riêng** 1 PDB, không ảnh
+    hưởng PDB khác hay CDB root.
+  - `ALTER PLUGGABLE DATABASE FREEPDB1 OPEN READ ONLY;` — mở chỉ đọc (phục vụ sao lưu/kiểm tra, không `INSERT`/
+    `UPDATE` được); phải đóng rồi mở lại `READ WRITE` để ghi tiếp.
+  - `ALTER SYSTEM ENABLE RESTRICTED SESSION;` / `DISABLE ...` — chế độ bảo trì: chỉ user có quyền `RESTRICTED
+    SESSION` (vd DBA) đăng nhập được, dùng khi cần làm việc một mình trên CSDL (nâng cấp, sửa lỗi) mà không
+    muốn người khác kết nối vào giữa lúc đang xử lý.
+
+### 6.2. Tablespace và Datafile
+- **Tablespace** là đơn vị logic để nhóm dữ liệu (ví dụ `TS_SUCO` chứa toàn bộ bảng của `SUCO_APP`); dữ liệu
+  thật được lưu trong 1 hoặc nhiều **datafile** (file vật lý `.dbf`) gắn với tablespace đó.
+- Tạo: `CREATE TABLESPACE TS_SUCO DATAFILE '...' SIZE 100M AUTOEXTEND ON NEXT 10M MAXSIZE 500M;` — tự mở rộng
+  thêm 10M mỗi lần đầy, tối đa 500M (tránh chiếm hết đĩa nếu có lỗi khiến dữ liệu phình bất thường).
+- **SMALLFILE vs BIGFILE**: PDB `FREEPDB1` có tablespace mặc định kiểu `BIGFILE` (chỉ 1 datafile/tablespace,
+  nhưng datafile đó có thể rất lớn). Muốn 1 tablespace có **nhiều** datafile (`ALTER TABLESPACE ... ADD
+  DATAFILE`) thì phải tạo tường minh `CREATE SMALLFILE TABLESPACE ...`, nếu không sẽ gặp lỗi **ORA-32771**.
+- Thao tác khác: `RESIZE` (đổi dung lượng datafile, chỉ giảm được nếu phần cuối file chưa dùng dữ liệu),
+  `AUTOEXTEND ON/OFF`, `RENAME TO` (đổi tên tablespace), đưa `OFFLINE NORMAL`/`ONLINE` (tạm ẩn/khôi phục mà
+  không mất dữ liệu, dùng khi cần di chuyển/sửa file), và **di chuyển datafile**:
+  - Online (`ALTER DATABASE MOVE DATAFILE ... TO ...` khi tablespace vẫn `ONLINE`) — **không dùng được trên
+    Oracle Free** (báo `ORA-00439: feature not enabled`), chỉ có ở bản Enterprise.
+  - Offline: đưa `OFFLINE NORMAL` → copy file bằng lệnh hệ điều hành (`HOST copy ...`) → `RENAME DATAFILE` để
+    Oracle cập nhật đường dẫn trong control file → `ONLINE` lại → xóa file cũ.
+- Xóa hẳn: `DROP TABLESPACE TS_DEMO INCLUDING CONTENTS AND DATAFILES;` — xóa luôn dữ liệu và file `.dbf` trên
+  đĩa. **Tuyệt đối không** chạy với `TS_SUCO`/`SYSTEM`/`SYSAUX` ngoài mục đích dọn tablespace demo.
+- Xem thông tin: `dba_tablespaces` (trạng thái, kiểu), `dba_data_files` (file, dung lượng, autoextend),
+  `dba_free_space` (dung lượng còn trống theo tablespace).
+
+### 6.3. ARCHIVELOG và khôi phục bằng RMAN
+- **NOARCHIVELOG** (mặc định khi mới cài): redo log cũ bị ghi đè khi đầy, chỉ khôi phục được đến **lần backup
+  gần nhất**, mất hết thay đổi sau đó nếu có sự cố. **ARCHIVELOG**: redo log đầy thì được **lưu lại** (archive)
+  trước khi ghi đè, nên có thể khôi phục đến **đúng thời điểm xảy ra sự cố** (point-in-time recovery), đổi lại
+  tốn thêm dung lượng đĩa cho các archive log tích lũy dần.
+- Bật: `SHUTDOWN IMMEDIATE` → `STARTUP MOUNT` (chưa `OPEN`, vì không đổi được log mode khi database đang mở) →
+  `ALTER DATABASE ARCHIVELOG;` → `ALTER DATABASE OPEN;`. Cần có **Fast Recovery Area** (thư mục chứa archive
+  log + backup RMAN, cấu hình bằng `db_recovery_file_dest`/`db_recovery_file_dest_size`).
+- Kịch bản khôi phục datafile bị mất (đã chạy thật, xem `sql/07_admin_demo.sql` Phần 3 và `sql/ketqua/`):
+  1. Tạo bảng/dữ liệu thử trong tablespace demo (`TS_DEMO`), `COMMIT`.
+  2. RMAN: `BACKUP TABLESPACE FREEPDB1:TS_DEMO;` — sao lưu.
+  3. Mô phỏng sự cố: `ALTER TABLESPACE TS_DEMO OFFLINE IMMEDIATE;` rồi **xóa thật** file `.dbf` bằng hệ điều
+     hành. Truy vấn bảng lúc này báo `ORA-00376`/`ORA-01110`.
+  4. RMAN: `RESTORE TABLESPACE FREEPDB1:TS_DEMO;` (lấy lại file từ bản backup) rồi `RECOVER TABLESPACE
+     FREEPDB1:TS_DEMO;` (áp dụng archive log để đưa dữ liệu về đúng trạng thái **ngay trước khi mất file**, kể
+     cả các thay đổi xảy ra **sau** lúc backup).
+  5. `ALTER TABLESPACE TS_DEMO ONLINE;` — dữ liệu còn nguyên, kể cả dòng thêm trước **và sau** lúc backup.
+- **RESTORE khác RECOVER**: `RESTORE` chỉ copy lại file từ bản backup (dữ liệu dừng ở đúng lúc backup).
+  `RECOVER` áp archive log + redo log còn lại lên trên bản restore đó để "chạy tiếp" tới đúng thời điểm mất
+  file — không `RECOVER` thì mất hết các thay đổi *giữa* lúc backup và lúc mất file.
+
+### 6.4. Profile (giới hạn mật khẩu và tài nguyên)
+```sql
+CREATE PROFILE PROFILE_NHANVIEN LIMIT
+  FAILED_LOGIN_ATTEMPTS 3 PASSWORD_LOCK_TIME 1/24 PASSWORD_LIFE_TIME 90
+  PASSWORD_GRACE_TIME 7 PASSWORD_REUSE_MAX 5
+  SESSIONS_PER_USER 2 IDLE_TIME 30 CONNECT_TIME 480;
+```
+- `FAILED_LOGIN_ATTEMPTS`: sai quá số lần này thì khóa tài khoản; `PASSWORD_LOCK_TIME`: tự mở khóa sau bao
+  lâu (đơn vị **ngày**, nên `1/24` = 1 giờ). `PASSWORD_LIFE_TIME`/`PASSWORD_GRACE_TIME`: mật khẩu hết hạn sau
+  bao ngày, được báo trước bao nhiêu ngày trước khi hết hạn hẳn. `PASSWORD_REUSE_MAX`: không cho dùng lại N
+  mật khẩu gần nhất. `SESSIONS_PER_USER`: số phiên đăng nhập đồng thời tối đa. `IDLE_TIME`/`CONNECT_TIME`: tự
+  ngắt phiên không hoạt động / phiên quá lâu.
+- Các giới hạn về **phiên/tài nguyên** (`SESSIONS_PER_USER`, `IDLE_TIME`, `CONNECT_TIME`) chỉ có hiệu lực khi
+  tham số hệ thống `RESOURCE_LIMIT = TRUE` (mặc định `TRUE` từ Oracle 12c).
+- Gán: `ALTER USER U_NHANVIEN PROFILE PROFILE_NHANVIEN;`. Xem nội dung: `dba_profiles`.
+- Đã thử thật cơ chế khóa: đăng nhập sai 3 lần liên tiếp → lần thứ 4 dù gõ **đúng** mật khẩu vẫn bị từ chối vì
+  tài khoản đã `LOCKED` (**ORA-28000**); admin mở khóa thủ công bằng `ALTER USER ... ACCOUNT UNLOCK;` mà không
+  cần chờ hết `PASSWORD_LOCK_TIME`.
+
+### 6.5. Quản lý user, quyền và role
+- **Tạo/sửa user**: `CREATE USER ... IDENTIFIED BY ... DEFAULT TABLESPACE ... QUOTA 5M ON ...;` (quota = hạn
+  mức dung lượng user được dùng trên 1 tablespace; `QUOTA UNLIMITED` không giới hạn). Đổi mật khẩu
+  (`ALTER USER ... IDENTIFIED BY ...`), đổi quota, đổi profile, buộc đổi mật khẩu lần sau
+  (`ALTER USER ... PASSWORD EXPIRE;` → trạng thái `EXPIRED`), khóa/mở khóa thủ công
+  (`ALTER USER ... ACCOUNT LOCK/UNLOCK;`).
+- **Quyền hệ thống (system privilege)**: gắn với *hành động*, không gắn với 1 object cụ thể — ví dụ
+  `CREATE SESSION` (được đăng nhập), `CREATE TABLE` (được tạo bảng của chính mình).
+- **Quyền đối tượng (object privilege)**: gắn với 1 bảng/view cụ thể của người khác — ví dụ
+  `GRANT SELECT ON SUCO_APP.PHONG TO U_DEMO WITH GRANT OPTION;` (`WITH GRANT OPTION`: được cấp quyền này cho
+  người khác nữa, không chỉ tự dùng).
+- **Role**: tập hợp quyền, gán cho nhiều user một lần thay vì `GRANT` lẻ từng quyền cho từng user. Bài có
+  **role nhiều cấp**: `ROLE_TRUONG_NHOM` = toàn bộ quyền của `ROLE_APP_USER` + thêm `CREATE VIEW`
+  (`GRANT ROLE_APP_USER TO ROLE_TRUONG_NHOM;` rồi `GRANT ROLE_TRUONG_NHOM TO U_DEMO;` — role được gán **cho**
+  role khác, không chỉ cho user).
+- **2 role ứng dụng chính** (`06_users_roles.sql`):
+  - `ROLE_APP_USER` (gán cho `U_NHANVIEN`): chỉ `SELECT` danh mục/kinh nghiệm/phòng/thiết bị/view chi tiết;
+    `SELECT, INSERT` trên `SU_CO`, `PHAN_HOI`, `BINH_LUAN_SU_CO` (báo sự cố mới, gửi phản hồi, gửi tin nhắn —
+    nhưng **không `UPDATE`/`DELETE`** được những gì đã gửi).
+  - `ROLE_APP_ADMIN` (gán cho `U_QUANTRI`): `SELECT, INSERT, UPDATE, DELETE` trên mọi bảng nghiệp vụ.
+  - Đã thử thật: `U_NHANVIEN` `UPDATE SU_CO` → lỗi thiếu quyền (**ORA-01031**/**ORA-41900** tùy bản); `SELECT
+    NGUOI_DUNG` → **ORA-00942** (không thấy bảng, vì không có quyền chứ không phải bảng không tồn tại — Oracle
+    cố ý trả lỗi giống nhau cho cả 2 trường hợp để không "gợi ý" tên bảng cho người không có quyền).
+- **Xem quyền hiệu lực của phiên đang đăng nhập**: `session_roles` (role đang có), `session_privs` (toàn bộ
+  quyền hiệu lực, **gồm cả quyền lấy qua role**, không chỉ quyền gán trực tiếp).
+- **Tra cứu bằng từ điển dữ liệu** (tiền tố `dba_` cần quyền DBA, `user_`/`session_` ai cũng xem được của
+  chính mình): `dba_role_privs` (ai có role nào), `dba_sys_privs` (ai có quyền hệ thống nào), `dba_tab_privs`
+  (ai có quyền gì trên bảng nào).
+- **Thu hồi**: `REVOKE INSERT ON SUCO_APP.SU_CO FROM ROLE_APP_USER;`, `REVOKE ROLE_TRUONG_NHOM FROM U_DEMO;`.
+- **Xóa**: `DROP USER U_DEMO CASCADE;` (`CASCADE` xóa luôn mọi object thuộc user đó; chỉ xóa được khi user
+  không còn phiên đăng nhập), `DROP ROLE ...;`.
+- **Theo dõi phiên**: `SELECT username, COUNT(*) FROM v$session ...` (phiên đang kết nối theo từng user);
+  `ALTER SYSTEM KILL SESSION 'sid,serial#' IMMEDIATE;` để buộc kết thúc 1 phiên cụ thể.
+
+### 6.6. Data Pump (`expdp`/`impdp`) — export/import cả schema
+- Khác `exp`/`imp` cũ: Data Pump chạy **phía server** (qua `DIRECTORY` object trỏ tới thư mục trên máy chủ CSDL,
+  không phải thư mục máy client) và nhanh hơn nhiều với CSDL lớn.
+- Chuẩn bị: `CREATE DIRECTORY DP_DIR AS 'C:\dpdump';` rồi `GRANT READ, WRITE ON DIRECTORY DP_DIR TO SUCO_APP;`.
+- Export (chạy ở cửa sổ lệnh hệ điều hành, **không** phải trong SQL*Plus):
+  `expdp SUCO_APP/...@FREEPDB1 schemas=SUCO_APP directory=DP_DIR dumpfile=suco_app.dmp logfile=exp_suco_app.log`
+- Import sang schema khác: phải **tạo sẵn user đích trước** (`CREATE USER SUCO_APP2 ...`), vì file dump do
+  `SUCO_APP` export không chứa lệnh tạo user — thiếu bước này `impdp` báo **ORA-01918**. Sau đó:
+  `impdp SYSTEM/...@FREEPDB1 directory=DP_DIR dumpfile=suco_app.dmp remap_schema=SUCO_APP:SUCO_APP2
+  remap_tablespace=TS_SUCO:USERS`
+  — `remap_schema` đổi chủ sở hữu dữ liệu khi import, `remap_tablespace` đổi tablespace đích (dùng `USERS` có
+  sẵn để khỏi phải tạo lại `TS_SUCO` ở môi trường đích).
+- Dùng để: sao lưu logic toàn schema, hoặc nhân bản schema sang môi trường khác (test/demo) mà không ảnh hưởng
+  dữ liệu gốc.
+
+---
+
+## 7. Phân quyền ứng dụng gắn với web (liên hệ ngắn)
+
+Web (`web-oracle/`, dùng cho báo cáo môn Oracle) **kết nối bằng chính user `SUCO_APP`** — có toàn quyền trên
+schema của mình, nên không bị chặn bởi 2 role `ROLE_APP_USER`/`ROLE_APP_ADMIN`. Hai role này chỉ để **minh họa
+phân quyền ở tầng CSDL** (độc lập với phân quyền USER/ADMIN mà web tự kiểm tra bằng session) — thể hiện qua 2
+user demo `U_NHANVIEN`/`U_QUANTRI` chạy trực tiếp bằng SQL*Plus, không qua web. Mục đích: cho thấy kể cả khi
+có người bỏ qua tầng web mà kết nối thẳng vào CSDL, Oracle vẫn tự chặn theo đúng quyền được `GRANT`.
+
+---
+
+## 8. Web chỉ để demo (1/10 điểm — không cần sâu)
+
+Phần đề chỉ cần **chạy được** và chụp màn hình các nghiệp vụ chính (đăng nhập, báo sự cố, xử lý sự cố, kho
+kinh nghiệm, quản lý thiết bị/phòng/người dùng). Không cần giải thích kiến trúc Java ở đây — xem
+`ON_TAP_WEB_JAVA.md` nếu cần (đó là tài liệu của môn Java, dùng bản `web-java/` khác, không phải bản nộp môn
+Oracle). Điều duy nhất cần nhớ cho môn Oracle: web đọc/ghi CSDL qua JDBC bằng đúng user `SUCO_APP`, dữ liệu
+hiển thị trên web chính là dữ liệu trong các bảng/view ở mục 2 và 4.
+
+---
+
+## 9. Bộ câu hỏi ôn tập (có gợi ý trả lời)
+
+### A. Thiết kế CSDL
+1. **Vì sao dùng khóa nhân tạo (`IDENTITY`) mà không dùng khóa tự nhiên (vd `EMAIL` làm PK của `NGUOI_DUNG`)?**
+   Khóa tự nhiên có thể cần sửa (người dùng đổi email) — sửa PK kéo theo sửa mọi FK tham chiếu tới nó. Khóa
+   nhân tạo không mang nghĩa nghiệp vụ nên không bao giờ cần đổi; ràng buộc `UNIQUE` riêng vẫn đảm bảo email
+   không trùng.
+2. **2 FK tự tham chiếu trong `NGUOI_DUNG` dùng để làm gì? Có gây vòng lặp không?**
+   `MA_NGUOI_TAO`/`MA_NGUOI_XOA` trỏ về `NGUOI_DUNG.MA_ND` để ghi "admin nào tạo/vô hiệu hóa tài khoản này".
+   Không gây vòng lặp vì cả hai cho phép `NULL` (tài khoản gốc do không ai tạo) và chỉ là tham chiếu 1 chiều.
+3. **Vì sao `SU_CO.MA_ADMIN_XU_LY`, `MA_TB`, `MA_BAI_KN` cho phép NULL còn `MA_NGUOI_BAO`, `MA_DM` thì không?**
+   Một sự cố luôn phải có người báo và thuộc 1 danh mục (bắt buộc theo nghiệp vụ), nhưng có thể chưa có admin
+   nhận xử lý, không gắn thiết bị cụ thể (vd lỗi tài khoản), hoặc chưa từng được gắn vào kho kinh nghiệm.
+4. **Vì sao `PHAN_HOI` là quan hệ 1-1 với `SU_CO` còn `BINH_LUAN_SU_CO`/`LICH_SU_XU_LY` là 1-nhiều?**
+   Nghiệp vụ chỉ cho đánh giá đúng 1 lần/sự cố (`UNIQUE(MA_SC)`), còn trao đổi qua lại và lịch sử xử lý thì
+   không giới hạn số dòng, nên không có `UNIQUE` trên `MA_SC` ở 2 bảng đó.
+5. **`CHECK` khác `FOREIGN KEY` ở điểm nào khi cả hai đều "giới hạn giá trị hợp lệ"?**
+   `CHECK` so giá trị với một **danh sách cố định viết sẵn trong câu lệnh** (vd `IN ('MOI','DANG_XU_LY',...)`)
+   — muốn thêm giá trị mới phải `ALTER TABLE ... DROP/ADD CONSTRAINT`. `FOREIGN KEY` so với **dữ liệu đang có**
+   ở bảng khác — thêm giá trị mới chỉ cần `INSERT` thêm 1 dòng ở bảng cha, không phải sửa cấu trúc.
+6. **Tại sao không tạo bảng "TRANG_THAI_SU_CO" riêng để chứa danh sách trạng thái, thay vì `CHECK`?**
+   Cả hai đều hợp lệ (bảng riêng gọi là *bảng danh mục tra cứu* — cách này mềm hơn, thêm giá trị mới không cần
+   sửa cấu trúc). Bài chọn `CHECK` vì số trạng thái cố định, ít thay đổi, và đơn giản hơn khi chỉ có 1 bài.
+7. **Oracle có tự tạo index cho khóa ngoại không? Vì sao bài phải tự `CREATE INDEX` thêm?**
+   Không — Oracle chỉ tự tạo index cho PK và UNIQUE. Không có index trên cột FK thì mỗi lần sửa/xóa ở bảng cha,
+   Oracle phải quét toàn bảng con để kiểm tra ràng buộc, và các câu `JOIN`/`WHERE` lọc theo cột đó cũng chậm.
+
+### B. Trigger và View
+8. **`AFTER` khác `BEFORE` trigger ở điểm nào? Vì sao `TRG_SU_CO_HOAN_THANH` phải là `BEFORE`?**
+   `BEFORE` chạy trước khi dòng được ghi, nên sửa được `:NEW` để đổi giá trị **trước khi lưu** (ở đây là gán
+   `NGAY_HOAN_THANH`). `AFTER` chạy sau khi dòng đã ghi, chỉ dùng để làm việc khác (ghi log) chứ không sửa được
+   dòng vừa `UPDATE`.
+9. **Mệnh đề `WHEN` trong trigger dùng để làm gì? Bỏ đi thì sao?**
+   Lọc để trigger chỉ thực sự chạy phần `BEGIN...END` khi điều kiện đúng (ở đây: giá trị `TRANG_THAI` thực sự
+   đổi). Bỏ `WHEN` thì `TRG_SU_CO_LICH_SU` sẽ ghi thêm 1 dòng lịch sử ngay cả khi `UPDATE` gán lại đúng giá trị
+   cũ, gây dữ liệu lịch sử sai (ghi nhận một lần "đổi trạng thái" không thật).
+10. **`AFTER UPDATE OF TRANG_THAI` khác `AFTER UPDATE` (không ghi rõ cột) thế nào?**
+    `OF TRANG_THAI` chỉ fire khi câu `UPDATE` có đụng tới cột đó trong mệnh đề `SET` (dù giá trị có đổi hay
+    không — việc kiểm tra "có đổi thật" là của `WHEN`). Không ghi cột thì fire với **mọi** `UPDATE` trên bảng,
+    kể cả khi chỉ sửa `NGUYEN_NHAN`, tốn công kiểm tra `WHEN` không cần thiết.
+11. **Trigger có thấy được ai đang đăng nhập vào ứng dụng web không?**
+    Không trực tiếp. Trigger chỉ đọc được giá trị cột trong chính dòng đang `UPDATE` (`:NEW`, `:OLD`). Việc "ai
+    đang đăng nhập" do tầng web biết (qua session) và **phải tự gán** vào cột `MA_ADMIN_XU_LY` trong câu
+    `UPDATE` thì trigger mới đọc lại được.
+12. **Vì sao dùng `VIEW` để đếm "sự cố hay gặp" mà không lưu một cột đếm sẵn trên `DANH_MUC_SU_CO`?**
+    Cột đếm sẵn là dữ liệu **suy ra được**, lưu cứng sẽ phải tự đồng bộ (trigger/cron) mỗi khi `SU_CO` được
+    thêm/xóa/đổi danh mục, dễ bị lệch nếu quên cập nhật một chỗ. View luôn tính lại từ dữ liệu gốc nên luôn
+    đúng, đổi lại tốn chi phí tính toán mỗi lần truy vấn (chấp nhận được vì số dòng không lớn).
+13. **View có `INSERT`/`UPDATE` được không?**
+    Về lý thuyết Oracle cho `UPDATE`/`INSERT` qua 1 số view đơn giản (1 bảng, không `GROUP BY`/`JOIN` phức
+    tạp). Cả 2 view ở đây đều có `JOIN`/`GROUP BY` nên không sửa được qua view — chỉ dùng để `SELECT`.
+
+### C. Truy vấn
+14. **Phân biệt `EXISTS` và `IN` khi viết subquery — khi nào nên dùng `EXISTS`?**
+    `IN` so giá trị với một **danh sách kết quả** của subquery. `EXISTS` chỉ kiểm tra subquery có **trả về
+    dòng nào không** (không quan tâm giá trị cụ thể), nên thường nhanh hơn khi bảng con lớn vì Oracle có thể
+    dừng ngay khi tìm thấy 1 dòng khớp. Cả hai cho kết quả như nhau ở Q5/Q6 trong bài vì chỉ cần biết "có hay
+    không".
+15. **`HAVING` khác `WHERE` ở điểm nào? Vì sao Q10 phải dùng `HAVING` chứ không phải `WHERE`?**
+    `WHERE` lọc **từng dòng gốc** trước khi gộp nhóm; `HAVING` lọc **sau khi** đã `GROUP BY`/tính hàm gộp. Q10
+    cần lọc theo `COUNT(*) >= 2` — giá trị này chỉ có sau khi gộp nhóm theo phòng, nên phải dùng `HAVING`.
+16. **Subquery trong `FROM` (Q9) khác subquery trong `WHERE` (Q8) ở điểm nào?**
+    Trong `FROM`: subquery được coi như một **bảng tạm** (inline view), câu lệnh ngoài `SELECT`/`ORDER BY` trên
+    kết quả đó. Trong `WHERE`: subquery trả về 1 giá trị (hoặc danh sách) để **so sánh** với cột của bảng
+    ngoài, không phải nguồn dữ liệu để `SELECT` tiếp.
+17. **`FETCH FIRST n ROWS ONLY` là cú pháp gì, khác `ROWNUM <= n` (cách cũ) ra sao?**
+    Cú pháp chuẩn SQL:2008, Oracle hỗ trợ từ 12c, phải đi kèm `ORDER BY` để "n dòng đầu" có ý nghĩa xác định.
+    `ROWNUM <= n` lấy theo thứ tự Oracle **đọc được** dữ liệu (không đảm bảo đúng thứ tự mong muốn nếu không
+    lồng thêm 1 subquery `ORDER BY` trước khi lọc `ROWNUM`), dễ viết sai hơn.
+
+### D. Quản trị Oracle (phần nặng điểm nhất)
+18. **Phân biệt CDB và PDB. Tắt CDB có tắt luôn PDB không? Ngược lại?**
+    CDB (Container Database) là 1 instance chứa nhiều PDB (Pluggable Database) độc lập về schema. Tắt CDB
+    (`SHUTDOWN`) tắt luôn mọi PDB bên trong. Đóng/mở 1 PDB riêng (`ALTER PLUGGABLE DATABASE ... CLOSE/OPEN`)
+    không ảnh hưởng CDB hay các PDB khác.
+19. **3 trạng thái khi khởi động database: NOMOUNT, MOUNT, OPEN khác nhau thế nào?**
+    `NOMOUNT`: instance đọc tham số khởi động (`init`), chưa biết database nào. `MOUNT`: đọc control file,
+    biết cấu trúc file nhưng chưa cho user thường truy cập — dùng khi cần đổi những thứ ảnh hưởng toàn CSDL
+    (vd bật `ARCHIVELOG`). `OPEN`: mở hoàn toàn, user kết nối và truy vấn được.
+20. **Vì sao phải `STARTUP MOUNT` (chứ không `OPEN` luôn) rồi mới bật `ARCHIVELOG`?**
+    Lệnh `ALTER DATABASE ARCHIVELOG` đổi chế độ ghi log toàn hệ thống, Oracle không cho đổi khi database đang
+    ở trạng thái `OPEN` (đang có người dùng); phải ở `MOUNT` (đã gắn, chưa mở) để đổi an toàn rồi mới `OPEN`.
+21. **RESTRICTED SESSION dùng để làm gì, khác việc `REVOKE CREATE SESSION` ra sao?**
+    `RESTRICTED SESSION` tạm chặn **mọi** user thường đăng nhập (trừ user có quyền `RESTRICTED SESSION`, dễ
+    tắt/mở theo phiên bảo trì), không cần sửa quyền của từng user. `REVOKE CREATE SESSION` là sửa quyền **lâu
+    dài** của riêng 1 user, phải `GRANT` lại mới cho đăng nhập được tiếp.
+22. **NOARCHIVELOG và ARCHIVELOG khác nhau thế nào? Đánh đổi gì khi bật ARCHIVELOG?**
+    Xem mục 6.3: ARCHIVELOG cho khôi phục đến đúng thời điểm sự cố (không chỉ đến lần backup gần nhất), đổi lại
+    tốn thêm dung lượng đĩa cho archive log tích lũy — máy thật trong bài đã từng bị đầy Fast Recovery Area
+    (ORA-19809) vì bật ARCHIVELOG mà không dọn log cũ (xem `TIEN_DO.md`).
+23. **RESTORE và RECOVER trong RMAN khác nhau thế nào? Làm sao biết thứ tự đúng?**
+    `RESTORE` chỉ lấy lại file từ bản backup (dữ liệu "đứng yên" ở đúng lúc backup). `RECOVER` áp archive/redo
+    log phát sinh **sau** lúc backup để đưa dữ liệu tới đúng thời điểm mất file. Luôn `RESTORE` trước,
+    `RECOVER` sau; bỏ qua `RECOVER` sẽ mất các thay đổi giữa lúc backup và lúc mất dữ liệu.
+24. **Vì sao phải đưa tablespace `OFFLINE` trước khi "xóa" datafile để mô phỏng sự cố?**
+    Để mô phỏng đúng tình huống mất file một cách có kiểm soát (không làm crash cả instance) và để Oracle
+    không giữ file đang mở (trên một số hệ điều hành không xóa được file đang được tiến trình khác mở).
+25. **`SMALLFILE` và `BIGFILE` tablespace khác nhau thế nào? Vì sao gặp lỗi `ORA-32771`?**
+    `BIGFILE`: đúng 1 datafile nhưng có thể cực lớn. `SMALLFILE` (kiểu truyền thống): nhiều datafile nhỏ hơn.
+    `FREEPDB1` mặc định tạo tablespace kiểu `BIGFILE`; cố `ADD DATAFILE` thêm cái thứ 2 vào tablespace
+    `BIGFILE` sẽ báo `ORA-32771` — phải khai `CREATE SMALLFILE TABLESPACE` ngay từ đầu nếu cần nhiều datafile.
+26. **Profile khác Role ở điểm nào? Có thể dùng 1 trong 2 để thay cho cái còn lại không?**
+    Role chứa **quyền** (được làm gì). Profile chứa **giới hạn** (mật khẩu, số phiên, thời gian) — không phải
+    quyền. Một user có đúng 1 profile nhưng có thể có nhiều role; hai khái niệm độc lập, không thay thế nhau.
+27. **Vì sao khóa tài khoản sau 3 lần đăng nhập sai lại là việc của Oracle (profile) chứa không phải của web?**
+    Đặt ở CSDL thì áp dụng được cho **mọi** đường kết nối (web, SQL*Plus, công cụ khác), không chỉ riêng ai
+    gõ sai mật khẩu qua form web. Đây cũng là lớp bảo vệ độc lập, không phụ thuộc tầng ứng dụng có cài đúng
+    logic hay không.
+28. **Quyền hệ thống và quyền đối tượng khác nhau thế nào? Cho ví dụ mỗi loại trong bài.**
+    Quyền hệ thống: hành động chung, không gắn 1 object — `CREATE SESSION`, `CREATE TABLE`. Quyền đối tượng:
+    gắn với 1 bảng/view cụ thể của người khác — `GRANT SELECT ON SUCO_APP.PHONG TO U_DEMO`.
+29. **`WITH GRANT OPTION` nghĩa là gì? Thu hồi quyền gốc thì quyền đã "cấp lại" có mất theo không?**
+    Cho người được cấp quyền, cấp tiếp quyền đó cho người khác. Khi `REVOKE` quyền gốc, Oracle **tự động thu
+    hồi theo chuỗi** (cascading revoke) mọi quyền đã được cấp lại dựa trên quyền đó.
+30. **Role nhiều cấp (`ROLE_TRUONG_NHOM`) hoạt động thế nào khi user đăng nhập?**
+    Khi `GRANT ROLE_APP_USER TO ROLE_TRUONG_NHOM`, mọi quyền của `ROLE_APP_USER` trở thành một phần của
+    `ROLE_TRUONG_NHOM`. User được `GRANT ROLE_TRUONG_NHOM` sẽ có **toàn bộ** quyền của cả 2 cấp — xem bằng
+    `session_privs` sau khi đăng nhập (gồm quyền từ role, không chỉ quyền gán trực tiếp cho user).
+31. **Vì sao `SELECT COUNT(*) FROM SUCO_APP.NGUOI_DUNG` báo `ORA-00942` (table or view does not exist) dù bảng
+    có tồn tại thật?**
+    Do thiếu quyền `SELECT`, không phải do bảng không tồn tại — Oracle **cố ý** trả cùng một lỗi cho 2 trường
+    hợp "không có quyền" và "không tồn tại" để không gợi ý tên bảng/object cho người không có quyền xem.
+32. **Data Pump (`expdp`/`impdp`) khác `exp`/`imp` cũ và khác backup RMAN ở điểm nào?**
+    `expdp`/`impdp` chạy phía server (qua `DIRECTORY`), nhanh hơn, hỗ trợ lọc/biến đổi khi import
+    (`remap_schema`, `remap_tablespace`) — dùng để sao lưu **logic** (dữ liệu dạng có thể đọc lại bằng SQL) hoặc
+    di chuyển dữ liệu giữa môi trường. RMAN sao lưu ở mức **vật lý** (khối dữ liệu/datafile), dùng cho khôi
+    phục sau sự cố (mất file, hỏng đĩa), không di chuyển được sang schema/tên khác dễ dàng như Data Pump.
+33. **`impdp` báo lỗi `ORA-01918: user does not exist` khi import sang schema mới, vì sao, và sửa thế nào?**
+    File dump do `SUCO_APP` export (chạy bằng quyền user thường, không phải `FULL=Y` ở mức toàn CSDL) không
+    chứa lệnh tạo user. Phải `CREATE USER SUCO_APP2 ...` (và `GRANT CREATE SESSION`) **trước** khi `impdp` với
+    `remap_schema=SUCO_APP:SUCO_APP2`.
+34. **`v$session` dùng để làm gì? Làm sao buộc đóng 1 phiên đang treo?**
+    Xem danh sách phiên đang kết nối (user, SID, SERIAL#...). Buộc đóng:
+    `ALTER SYSTEM KILL SESSION 'sid,serial#' IMMEDIATE;`, dùng khi 1 phiên giữ lock lâu hoặc không còn phản hồi.
+
+### E. Câu hỏi "nếu... thì sao"
+35. **Muốn thêm trạng thái mới `TAM_DUNG` cho sự cố, phải sửa gì ở phía Oracle?**
+    `ALTER TABLE SU_CO DROP CONSTRAINT CK_SU_CO_TRANG_THAI;` rồi tạo lại `CHECK` với danh sách có thêm
+    `'TAM_DUNG'`; sửa tương tự cho `CK_LICH_SU_TT_CU`/`CK_LICH_SU_TT_MOI` ở `LICH_SU_XU_LY` nếu trạng thái đó
+    cũng có thể xuất hiện ở lịch sử. 2 trigger không cần sửa vì chúng không kiểm tra danh sách trạng thái cụ
+    thể, chỉ so sánh `:OLD`/`:NEW`.
+36. **Nếu quên tạo index trên cột FK, hậu quả thấy được khi nào?**
+    Không ảnh hưởng tính đúng đắn (ràng buộc FK vẫn hoạt động), chỉ ảnh hưởng **hiệu năng**: `DELETE`/`UPDATE`
+    khóa chính ở bảng cha sẽ chậm đi khi bảng con lớn (Oracle phải full scan bảng con để kiểm tra còn tham
+    chiếu hay không), và các câu `JOIN`/`WHERE` lọc theo cột đó cũng chậm hơn.
+37. **Muốn cho `ROLE_APP_USER` xem được lịch sử xử lý sự cố của chính mình, cấp quyền gì?**
+    `GRANT SELECT ON SUCO_APP.LICH_SU_XU_LY TO ROLE_APP_USER;` (hiện role này chưa có quyền trên bảng này).
+    Muốn giới hạn chỉ xem lịch sử của sự cố **do chính mình báo** (không phải mọi sự cố) thì phải làm ở tầng
+    ứng dụng (lọc `WHERE MA_SC IN (...)`) hoặc tạo thêm 1 view/VPD (Virtual Private Database) lọc theo
+    `SYS_CONTEXT`, vì `GRANT` ở Oracle không tự giới hạn theo dòng.
+38. **Mất toàn bộ datafile của `TS_SUCO` mà không có backup RMAN nào, có khôi phục được không?**
+    Không khôi phục được bằng RMAN restore/recover (không có gì để restore từ). Chỉ còn cách dựng lại từ các
+    script `sql/00_run_all.sql`/`02-06` nếu có lưu, hoặc từ bản export Data Pump gần nhất nếu có — đây là lý do
+    bài nhấn mạnh phải có backup **trước khi** mô phỏng sự cố mất file.
+
+---
+
+### Mẹo khi trả lời
+- Mở sẵn: `sql/02_tables.sql` (ràng buộc), `sql/03_triggers.sql`, `sql/05_queries.sql` (view + truy vấn),
+  `sql/06_users_roles.sql` + `sql/08_quan_tri_user.sql` (phần quản trị, nặng điểm nhất), và `SO_DO_QUAN_HE.md`
+  (ảnh ER) để trỏ tay khi được hỏi về quan hệ giữa các bảng.
+- Phần quản trị (mục 6) không phải "chạy 1 lần nhớ hết" — bám theo đúng số thứ tự trong `07_admin_demo.sql` và
+  `08_quan_tri_user.sql`: Instance/PDB → Tablespace/Datafile → RMAN → Profile/User/Role → Data Pump. Nếu quên
+  cú pháp chính xác, nói đúng **khái niệm + vì sao làm bước đó** vẫn được điểm phần lớn.
+- `TIEN_DO.md` có ghi lại các lỗi **thật đã gặp khi làm** (`ORA-00439`, `ORA-32771`, `ORA-19809`...) — nêu được
+  lỗi thật và cách đã xử lý luôn thuyết phục hơn là chỉ đọc lý thuyết.

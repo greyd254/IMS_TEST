@@ -81,6 +81,15 @@ public class SuCoRepo {
                 MAPPER, thamSo.toArray());
     }
 
+    /** Sự cố mới hơn maSc đã biết (polling AJAX ở /admin để tự hiện sự cố mới báo mà không cần F5). */
+    public List<SuCo> timMoiHon(String trangThai, Long sauMa) {
+        if (trangThai == null) {
+            return jdbc.query(SELECT + "WHERE MA_SC > ? ORDER BY NGAY_TAO DESC, MA_SC DESC", MAPPER, sauMa);
+        }
+        return jdbc.query(SELECT + "WHERE TRANG_THAI = ? AND MA_SC > ? ORDER BY NGAY_TAO DESC, MA_SC DESC",
+                MAPPER, trangThai, sauMa);
+    }
+
     /** Toàn bộ sự cố khớp bộ lọc (không phân trang), để xuất Excel. */
     public List<SuCo> timDeXuat(String trangThai, String q) {
         List<Object> thamSo = new ArrayList<>();
