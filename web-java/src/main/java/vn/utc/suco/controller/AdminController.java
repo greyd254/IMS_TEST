@@ -1,9 +1,13 @@
 package vn.utc.suco.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +25,7 @@ import vn.utc.suco.repository.DanhMucRepo;
 import vn.utc.suco.repository.KinhNghiemRepo;
 import vn.utc.suco.repository.PhanHoiRepo;
 import vn.utc.suco.repository.SuCoRepo;
+import vn.utc.suco.util.ExcelSuCo;
 import vn.utc.suco.util.FileKhongHopLeException;
 import vn.utc.suco.util.LuuTepTraoDoi;
 import vn.utc.suco.util.TimKiem;
@@ -62,6 +67,19 @@ public class AdminController {
         model.addAttribute("q", tuKhoa);
         model.addAttribute("dem", suCoRepo.demTheoTrangThai());   // số liệu cho các ô lọc nhanh
         return "admin";
+    }
+
+    /** Xuất các sự cố đang được lọc (mọi trang, không chỉ trang đang xem) ra file Excel. */
+    @GetMapping("/admin/xuat-excel")
+    public void xuatExcel(@RequestParam(required = false) String trangThai, @RequestParam(required = false) String q,
+                          HttpServletResponse res) throws IOException {
+        String loc = (trangThai != null && TRANG_THAI.contains(trangThai)) ? trangThai : null;
+        // Lấy dữ liệu trước khi đặt header: lỗi CSDL vẫn ra trang lỗi bình thường, không ra file hỏng
+        List<SuCo> ds = suCoRepo.timDeXuat(loc, TimKiem.chuanHoa(q));
+        res.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        res.setHeader(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=\"su-co-" + LocalDate.now() + ".xlsx\"");
+        ExcelSuCo.ghi(ds, res.getOutputStream());
     }
 
     /** Chi tiết một sự cố: form cập nhật + lịch sử xử lý. */

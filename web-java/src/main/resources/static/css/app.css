@@ -334,17 +334,17 @@ a.o-thong-ke:hover { border-color: rgba(var(--bs-primary-rgb), .45); color: inhe
 .khoi-bieu-do .so { font-weight: 600; color: var(--sc-mo); flex-shrink: 0; font-variant-numeric: tabular-nums; }
 .khoi-bieu-do .thanh-nen { height: .5rem; background: var(--sc-nen); border-radius: 999px; overflow: hidden; }
 .khoi-bieu-do .thanh-day { height: 100%; background: var(--sc-xanh); border-radius: 999px; }
-.khoi-bieu-do .thanh-day.mo { background: #6c757d; }
 .khoi-bieu-do .thanh-day.tot { background: #1a9c5b; }
 .khoi-bieu-do .thanh-day.canh-bao { background: #e0a800; }
 .khoi-bieu-do .thanh-day.xau { background: #dc3545; }
 
 /* Biểu đồ cột dọc cho xu hướng theo tháng */
-.cot-thang { display: flex; align-items: flex-end; gap: clamp(.4rem, 2vw, 1rem); height: 150px; padding-top: .5rem; }
+.cot-thang { display: flex; align-items: flex-end; gap: clamp(.25rem, 1.5vw, 1rem); height: 190px; padding-top: .5rem; }
 .cot-thang .cot { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: .3rem; min-width: 0; }
 .cot-thang .cot .so { font-size: .75rem; font-weight: 600; color: var(--sc-mo); }
-.cot-thang .cot .thanh { width: 100%; max-width: 38px; background: var(--sc-xanh); border-radius: .3rem .3rem 0 0; min-height: 3px; }
-.cot-thang .cot .nhan { font-size: .72rem; color: var(--sc-mo); white-space: nowrap; }
+.cot-thang .cot .thanh { width: 100%; max-width: 48px; background: var(--sc-xanh); border-radius: .3rem .3rem 0 0; min-height: 3px; }
+/* Nhãn "T1 2026" xuống 2 dòng; giữ cao 2 dòng ở mọi cột để đáy các cột luôn thẳng hàng */
+.cot-thang .cot .nhan { font-size: .72rem; line-height: 1.15; min-height: 2.3em; width: min-content; text-align: center; color: var(--sc-mo); }
 
 .sao-hai-long .bi-star-fill { color: #e0a800; }
 .sao-hai-long .bi-star { color: var(--sc-vien); }

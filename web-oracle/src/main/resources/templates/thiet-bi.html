@@ -13,10 +13,41 @@
       <div class="hanh-dong">
         <input type="search" class="form-control o-tim" data-loc="#bangThietBi"
                placeholder="Tìm tên, loại, phòng..." aria-label="Tìm thiết bị">
+        <button class="btn btn-outline-primary text-nowrap" type="button" data-bs-toggle="collapse"
+                data-bs-target="#formNhap" aria-expanded="false" aria-controls="formNhap">
+          <i class="bi bi-file-earmark-arrow-up"></i> Nhập Excel
+        </button>
         <button class="btn btn-primary text-nowrap" type="button" data-bs-toggle="collapse"
                 data-bs-target="#formThem" aria-expanded="false" aria-controls="formThem">
           <i class="bi bi-plus-lg"></i> Thêm thiết bị
         </button>
+      </div>
+    </div>
+
+    <!-- Nhập thiết bị từ Excel: tự mở lại nếu lần nhập trước có lỗi để xem ngay dòng nào sai -->
+    <div class="collapse mb-3" id="formNhap" th:classappend="${loiNhap} ? 'show'">
+      <div class="card">
+        <div class="card-header"><i class="bi bi-file-earmark-arrow-up"></i>Nhập thiết bị từ Excel</div>
+        <div class="card-body">
+          <div class="alert alert-danger" role="alert" th:if="${loiNhap}">
+            <strong>Chưa nhập thiết bị nào.</strong> Hãy sửa các lỗi sau rồi tải file lên lại:
+            <ul class="mb-0 mt-1"><li th:each="l : ${loiNhap}" th:text="${l}"></li></ul>
+          </div>
+          <ol class="ps-3 mb-3">
+            <li><a th:href="@{/admin/thiet-bi/mau-nhap}"><i class="bi bi-download"></i> Tải file mẫu</a>
+              rồi điền thiết bị vào (loại, phòng, tình trạng chọn trong danh sách thả xuống).</li>
+            <li>Tải file lên. Chỉ nhập khi mọi dòng đều hợp lệ, không có chuyện nhập được một nửa. Tối đa 1000 thiết bị mỗi lần.</li>
+          </ol>
+          <form th:action="@{/admin/thiet-bi/nhap}" method="post" enctype="multipart/form-data" class="row g-2">
+            <div class="col-12 col-md">
+              <input class="form-control" type="file" name="tep" accept=".xlsx" required aria-label="Chọn file Excel">
+            </div>
+            <div class="col-12 col-md-auto d-flex gap-2">
+              <button class="btn btn-primary" type="submit"><i class="bi bi-upload"></i> Nhập</button>
+              <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#formNhap">Đóng</button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
 

@@ -6,6 +6,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
 /**
@@ -19,6 +20,13 @@ public class XuLyLoiChung {
     public String duLieuKhongHopLe(HttpServletRequest request) {
         // @ExceptionHandler không nhận RedirectAttributes, nên ghi thẳng vào flash map của request
         RequestContextUtils.getOutputFlashMap(request).put("loi", "Dữ liệu nhập không hợp lệ, vui lòng kiểm tra lại");
+        return "redirect:" + trangTruoc(request.getHeader("Referer"));
+    }
+
+    /** File tải lên vượt giới hạn (spring.servlet.multipart.max-file-size). */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public String fileQuaLon(HttpServletRequest request) {
+        RequestContextUtils.getOutputFlashMap(request).put("loi", "File quá lớn, chỉ được tải lên file tối đa 5MB");
         return "redirect:" + trangTruoc(request.getHeader("Referer"));
     }
 

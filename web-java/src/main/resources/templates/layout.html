@@ -196,7 +196,7 @@
 <!--/*
   Danh sách cột ngang cho trang /admin/thong-ke.
   ds = List<ThongKeCot> (nhan, soLuong, phanTram đã tính sẵn ở tầng Java).
-  kieu = 'trangthai' | 'tinhtrang' | null -> tô màu thanh theo đúng 3 nhãn cố định của loại đó, còn lại giữ màu xanh mặc định.
+  kieu = 'tinhtrang' | null -> tô màu thanh theo đúng 3 nhãn tình trạng thiết bị, còn lại giữ màu xanh mặc định.
 */-->
 <div th:fragment="bieuDo(ds, kieu)" class="khoi-bieu-do">
   <div class="dong" th:each="d : ${ds}">
@@ -206,8 +206,7 @@
     </div>
     <div class="thanh-nen">
       <div class="thanh-day" th:style="'width:' + ${d.phanTram} + '%'"
-           th:classappend="${kieu == 'trangthai'} ? (${d.nhan == 'Mới'} ? 'mo' : (${d.nhan == 'Đang xử lý'} ? 'canh-bao' : 'tot'))
-                            : (${kieu == 'tinhtrang'} ? (${d.nhan == 'Hoạt động'} ? 'tot' : (${d.nhan == 'Đang sửa'} ? 'canh-bao' : 'xau')) : '')"></div>
+           th:classappend="${kieu == 'tinhtrang'} ? (${d.nhan == 'Hoạt động'} ? 'tot' : (${d.nhan == 'Đang sửa'} ? 'canh-bao' : 'xau'))"></div>
     </div>
   </div>
   <p class="trong-rong mb-0" th:if="${#lists.isEmpty(ds)}"><i class="bi bi-inbox"></i>Chưa có dữ liệu</p>

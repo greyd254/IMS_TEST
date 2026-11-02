@@ -11,8 +11,7 @@
     <div class="thanh-trang">
       <div th:replace="~{layout :: tieuDe('bi-people','Người dùng',null)}"></div>
       <div class="hanh-dong">
-        <input type="search" class="form-control o-tim" data-loc="#bangNguoiDung"
-               placeholder="Tìm họ tên, email, đơn vị..." aria-label="Tìm người dùng">
+        <form th:replace="~{layout :: oTim('/admin/nguoi-dung', ${q}, 'Tìm họ tên, email, đơn vị, SĐT...', null)}"></form>
         <button class="btn btn-primary text-nowrap" type="button" data-bs-toggle="collapse"
                 data-bs-target="#formThem" aria-expanded="false" aria-controls="formThem">
           <i class="bi bi-person-plus"></i> Thêm người dùng
@@ -75,7 +74,7 @@
             <tr><th>Mã</th><th>Họ tên / Email</th><th>SĐT</th><th>Đơn vị</th><th>Vai trò</th><th>Trạng thái</th><th></th></tr>
           </thead>
           <tbody>
-            <tr th:each="nd : ${dsNguoiDung}">
+            <tr th:each="nd : ${trang.ds}">
               <td data-label="Mã" class="an-mobile" th:text="'#' + ${nd.maNd}"></td>
               <td class="o-chinh">
                 <span th:text="${nd.hoTen}"></span>
@@ -100,11 +99,15 @@
                   </a>
                   <form th:if="${nd.dangHoatDong()}" th:action="@{/admin/nguoi-dung/{id}/xoa(id=${nd.maNd})}" method="post"
                         onsubmit="return confirm('Vô hiệu hóa người dùng này? (không xóa dữ liệu, có thể kích hoạt lại)');">
+                    <input type="hidden" name="q" th:value="${q}" th:if="${q}">
+                    <input type="hidden" name="trang" th:value="${trang.so}">
                     <button class="btn btn-sm btn-outline-danger" type="submit">
                       <i class="bi bi-slash-circle"></i> Vô hiệu hóa
                     </button>
                   </form>
                   <form th:unless="${nd.dangHoatDong()}" th:action="@{/admin/nguoi-dung/{id}/kich-hoat(id=${nd.maNd})}" method="post">
+                    <input type="hidden" name="q" th:value="${q}" th:if="${q}">
+                    <input type="hidden" name="trang" th:value="${trang.so}">
                     <button class="btn btn-sm btn-outline-success" type="submit">
                       <i class="bi bi-check-circle"></i> Kích hoạt
                     </button>
@@ -112,12 +115,14 @@
                 </span>
               </td>
             </tr>
-            <tr th:if="${#lists.isEmpty(dsNguoiDung)}">
-              <td colspan="7" class="trong-rong"><i class="bi bi-inbox"></i>Chưa có người dùng</td>
+            <tr th:if="${#lists.isEmpty(trang.ds)}">
+              <td colspan="7" class="trong-rong"><i class="bi bi-inbox"></i>
+                <span th:text="${q} ? 'Không có người dùng nào khớp từ khóa' : 'Chưa có người dùng'"></span></td>
             </tr>
           </tbody>
         </table>
       </div>
+      <div th:replace="~{layout :: phanTrang(${trang})}"></div>
     </div>
   </div>
 </main>

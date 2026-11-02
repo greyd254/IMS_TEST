@@ -3,6 +3,7 @@ package vn.utc.suco.controller;
 import jakarta.servlet.http.HttpSession;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,8 +12,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 import vn.utc.suco.model.NguoiDung;
+import vn.utc.suco.model.Trang;
 import vn.utc.suco.repository.NguoiDungRepo;
+import vn.utc.suco.util.TimKiem;
 
 /** Admin quản lý người dùng: danh sách, thêm, sửa, xóa (/admin/** đã được AuthInterceptor chặn cho USER). */
 @Controller
@@ -31,8 +35,14 @@ public class NguoiDungController {
     }
 
     @GetMapping("/admin/nguoi-dung")
-    public String danhSach(Model model) {
-        model.addAttribute("dsNguoiDung", nguoiDungRepo.timTatCa());
+    public String danhSach(@RequestParam(required = false) String q, @RequestParam(required = false) Integer trang,
+                           Model model) {
+        String tuKhoa = TimKiem.chuanHoa(q);
+        long tong = nguoiDungRepo.dem(tuKhoa);
+        int so = Trang.gioiHan(trang, tong);
+        model.addAttribute("trang", new Trang<>(nguoiDungRepo.timTrang(tuKhoa, so), so, tong,
+                UriComponentsBuilder.fromPath("/admin/nguoi-dung").queryParamIfPresent("q", Optional.ofNullable(tuKhoa))));
+        model.addAttribute("q", tuKhoa);
         model.addAttribute("dsVaiTro", VAI_TRO);
         return "nguoi-dung";
     }
@@ -100,7 +110,9 @@ public class NguoiDungController {
 
     /** Xóa mềm: chuyển tài khoản sang KHONG_HOAT_DONG thay vì DELETE, để giữ lại lịch sử gắn với người này. */
     @PostMapping("/admin/nguoi-dung/{maNd}/xoa")
-    public String xoa(@PathVariable Long maNd, HttpSession session, RedirectAttributes ra) {
+    public String xoa(@PathVariable Long maNd, @RequestParam(required = false) String q,
+                      @RequestParam(required = false) Integer trang, HttpSession session, RedirectAttributes ra) {
+        giuViTri(ra, q, trang);
         NguoiDung toi = (NguoiDung) session.getAttribute("nguoiDung");
         if (maNd.equals(toi.maNd())) {
             ra.addFlashAttribute("loi", "Bạn không thể tự vô hiệu hóa tài khoản đang đăng nhập");
@@ -112,10 +124,18 @@ public class NguoiDungController {
     }
 
     @PostMapping("/admin/nguoi-dung/{maNd}/kich-hoat")
-    public String kichHoat(@PathVariable Long maNd, RedirectAttributes ra) {
+    public String kichHoat(@PathVariable Long maNd, @RequestParam(required = false) String q,
+                           @RequestParam(required = false) Integer trang, RedirectAttributes ra) {
+        giuViTri(ra, q, trang);
         nguoiDungRepo.kichHoatLai(maNd);
         ra.addFlashAttribute("thongBao", "Đã kích hoạt lại người dùng");
         return "redirect:/admin/nguoi-dung";
+    }
+
+    /** Sau khi thao tác ngay trên danh sách, quay lại đúng trang và từ khóa đang xem thay vì về trang 1. */
+    private static void giuViTri(RedirectAttributes ra, String q, Integer trang) {
+        ra.addAttribute("q", TimKiem.chuanHoa(q));
+        ra.addAttribute("trang", trang);
     }
 
     private boolean hopLe(String hoTen, String email, String vaiTro) {

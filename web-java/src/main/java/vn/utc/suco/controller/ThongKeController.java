@@ -28,10 +28,6 @@ public class ThongKeController {
         model.addAttribute("tongSuCo", tongSuCo);
         model.addAttribute("demTrangThai", demTrangThai);
 
-        model.addAttribute("theoTrangThai", bieuDo(List.of(
-                new ThongKeDong("Mới", demTrangThai.getOrDefault("MOI", 0)),
-                new ThongKeDong("Đang xử lý", demTrangThai.getOrDefault("DANG_XU_LY", 0)),
-                new ThongKeDong("Hoàn thành", demTrangThai.getOrDefault("HOAN_THANH", 0)))));
         model.addAttribute("theoDanhMuc", bieuDo(thongKeRepo.theoDanhMuc()));
         model.addAttribute("theoPhong", bieuDo(thongKeRepo.theoPhong()));
         model.addAttribute("theoThang", bieuDo(thongKeRepo.theoThang()));

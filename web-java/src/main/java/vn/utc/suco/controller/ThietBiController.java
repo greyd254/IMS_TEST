@@ -1,22 +1,30 @@
 package vn.utc.suco.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 import vn.utc.suco.model.Trang;
 import vn.utc.suco.repository.ThietBiRepo;
+import vn.utc.suco.util.ExcelThietBi;
 import vn.utc.suco.util.TimKiem;
 
 /** Admin quản lý thiết bị: danh sách, thêm, sửa, xóa (đường dẫn /admin/** đã được AuthInterceptor chặn cho USER). */
@@ -40,6 +48,8 @@ public class ThietBiController {
     /** Ngày lắp đặt sớm nhất chấp nhận (chặn năm gõ nhầm, VD 0202) */
     private static final LocalDate NGAY_NHO_NHAT = LocalDate.of(1990, 1, 1);
     private static final String TRUNG = "Phòng này đã có thiết bị cùng loại, cùng tên. Hãy đặt tên khác (VD thêm số thứ tự)";
+
+    private static final String XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
     private final ThietBiRepo thietBiRepo;
 
@@ -87,6 +97,45 @@ public class ThietBiController {
             return "redirect:/admin/thiet-bi";
         }
         ra.addFlashAttribute("thongBao", "Đã thêm thiết bị");
+        return "redirect:/admin/thiet-bi";
+    }
+
+    /** Tải file Excel mẫu để nhập thiết bị, có sẵn danh sách thả xuống cho loại, phòng, tình trạng. */
+    @GetMapping("/admin/thiet-bi/mau-nhap")
+    public void taiMauNhap(HttpServletResponse res) throws IOException {
+        Set<String> phong = thietBiRepo.nhanPhong().keySet();
+        res.setContentType(XLSX);
+        res.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"mau-nhap-thiet-bi.xlsx\"");
+        ExcelThietBi.ghiMau(LOAI, TINH_TRANG, phong, res.getOutputStream());
+    }
+
+    /** Nhập thiết bị từ file Excel: chỉ ghi CSDL khi mọi dòng đều hợp lệ, nếu không thì báo lỗi từng dòng và không nhập gì. */
+    @PostMapping("/admin/thiet-bi/nhap")
+    public String nhapExcel(@RequestParam(required = false) MultipartFile tep, RedirectAttributes ra) {
+        if (tep == null || tep.isEmpty()) {
+            ra.addFlashAttribute("loiNhap", List.of("Vui lòng chọn file Excel (.xlsx)"));
+            return "redirect:/admin/thiet-bi";
+        }
+        ExcelThietBi.KetQua kq;
+        try (InputStream vao = tep.getInputStream()) {
+            kq = ExcelThietBi.doc(vao, LOAI, TINH_TRANG, thietBiRepo.nhanPhong(), thietBiRepo.khoaDaCo());
+        } catch (IOException | RuntimeException e) {
+            // POI ném nhiều loại lỗi khi file không phải .xlsx thật hoặc bị hỏng
+            ra.addFlashAttribute("loiNhap", List.of("Không đọc được file. Hãy dùng file Excel .xlsx theo đúng mẫu."));
+            return "redirect:/admin/thiet-bi";
+        }
+        if (!kq.getDsLoi().isEmpty()) {
+            ra.addFlashAttribute("loiNhap", kq.loiDeHien());
+            return "redirect:/admin/thiet-bi";
+        }
+        try {
+            thietBiRepo.taoNhieu(kq.getDsDong());
+        } catch (DuplicateKeyException e) {
+            // Chỉ xảy ra khi đã chạy sql/13 (index UQ_THIET_BI_TEN) và có người thêm trùng cùng lúc
+            ra.addFlashAttribute("loiNhap", List.of("Có thiết bị vừa được người khác thêm trùng. Chưa nhập dòng nào, hãy thử lại."));
+            return "redirect:/admin/thiet-bi";
+        }
+        ra.addFlashAttribute("thongBao", "Đã nhập " + kq.getDsDong().size() + " thiết bị từ file Excel");
         return "redirect:/admin/thiet-bi";
     }
 

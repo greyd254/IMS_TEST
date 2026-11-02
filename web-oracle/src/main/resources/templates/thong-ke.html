@@ -11,12 +11,18 @@
       <div th:replace="~{layout :: tieuDe('bi-bar-chart-line','Thống kê tổng quan','Số liệu toàn hệ thống, chỉ để xem')}"></div>
     </div>
 
-    <!-- Ô số liệu nhanh -->
+    <!-- Ô số liệu nhanh: hàng trên là sự cố theo trạng thái (cùng thứ tự với trang /admin), hàng dưới là số liệu khác -->
     <div class="row row-cols-2 row-cols-md-4 g-2 g-md-3 mb-3">
       <div class="col">
         <div class="o-thong-ke">
           <span class="nhan"><span class="cham tong"></span> Tổng sự cố</span>
           <span class="so" th:text="${tongSuCo}">0</span>
+        </div>
+      </div>
+      <div class="col">
+        <div class="o-thong-ke">
+          <span class="nhan"><span class="cham moi"></span> Mới</span>
+          <span class="so" th:text="${demTrangThai['MOI'] ?: 0}">0</span>
         </div>
       </div>
       <div class="col">
@@ -54,84 +60,68 @@
       </div>
       <div class="col">
         <div class="o-thong-ke">
-          <span class="nhan"><i class="bi bi-journal-text"></i> Kho kinh nghiệm</span>
-          <span class="so" th:text="${tongBaiKn}">0</span>
-          <span class="ghi-chu">Bài đã lưu</span>
-        </div>
-      </div>
-      <div class="col">
-        <div class="o-thong-ke">
           <span class="nhan"><i class="bi bi-star-fill"></i> Hài lòng</span>
           <span class="so" th:text="${diemHaiLong != null} ? ${#numbers.formatDecimal(diemHaiLong,1,1)} + ' / 5' : 'Chưa có'">0</span>
-          <span class="ghi-chu" th:text="'Theo ' + ${soPhanHoi} + ' phản hồi'"></span>
+          <span class="ghi-chu" th:text="'Theo ' + ${soPhanHoi} + ' phản hồi · ' + ${tongBaiKn} + ' bài kinh nghiệm'"></span>
         </div>
       </div>
     </div>
 
-    <div class="row g-3 mb-3 align-items-start">
-      <div class="col-md-7">
-        <div class="card">
-          <div class="card-header"><i class="bi bi-graph-up"></i>Sự cố theo tháng (6 tháng gần nhất)</div>
-          <div class="card-body">
-            <div class="cot-thang">
-              <div class="cot" th:each="c : ${theoThang}">
-                <span class="so" th:text="${c.soLuong}"></span>
-                <div class="thanh" th:style="'height:' + ${c.phanTram} + '%'"></div>
-                <span class="nhan" th:text="${c.nhan}"></span>
-              </div>
-            </div>
+    <div class="card mb-3">
+      <div class="card-header"><i class="bi bi-graph-up"></i>Sự cố theo tháng (12 tháng gần nhất)</div>
+      <div class="card-body">
+        <div class="cot-thang">
+          <div class="cot" th:each="c : ${theoThang}">
+            <span class="so" th:text="${c.soLuong}"></span>
+            <div class="thanh" th:style="'height:' + ${c.phanTram} + '%'"></div>
+            <span class="nhan" th:text="${c.nhan}"></span>
           </div>
         </div>
       </div>
-      <div class="col-md-5">
-        <div class="card">
-          <div class="card-header"><i class="bi bi-life-preserver"></i>Theo trạng thái</div>
-          <div class="card-body" th:replace="~{layout :: bieuDo(${theoTrangThai}, 'trangthai')}"></div>
-        </div>
-      </div>
     </div>
 
-    <div class="row g-3 mb-3 align-items-start">
+    <!-- Xếp các biểu đồ có số dòng gần nhau vào cùng hàng; h-100 để 2 thẻ trong hàng luôn cao bằng nhau -->
+    <div class="row g-3 mb-3">
       <div class="col-md-6">
-        <div class="card">
+        <div class="card h-100">
           <div class="card-header"><i class="bi bi-tags"></i>Theo danh mục</div>
-          <div class="card-body" th:replace="~{layout :: bieuDo(${theoDanhMuc}, null)}"></div>
+          <div class="card-body"><div th:replace="~{layout :: bieuDo(${theoDanhMuc}, null)}"></div></div>
         </div>
       </div>
       <div class="col-md-6">
-        <div class="card">
-          <div class="card-header"><i class="bi bi-exclamation-diamond"></i>Theo mức ưu tiên</div>
-          <div class="card-body" th:replace="~{layout :: bieuDo(${theoUuTien}, null)}"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="row g-3 mb-3 align-items-start">
-      <div class="col-md-6">
-        <div class="card">
+        <div class="card h-100">
           <div class="card-header"><i class="bi bi-door-open"></i>Phòng có nhiều sự cố nhất</div>
-          <div class="card-body" th:replace="~{layout :: bieuDo(${theoPhong}, null)}"></div>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-header"><i class="bi bi-person-check"></i>Admin xử lý nhiều sự cố nhất</div>
-          <div class="card-body" th:replace="~{layout :: bieuDo(${topAdmin}, null)}"></div>
+          <div class="card-body"><div th:replace="~{layout :: bieuDo(${theoPhong}, null)}"></div></div>
         </div>
       </div>
     </div>
 
-    <div class="row g-3 mb-3 align-items-start">
+    <div class="row g-3 mb-3">
       <div class="col-md-6">
-        <div class="card">
-          <div class="card-header"><i class="bi bi-wrench-adjustable"></i>Thiết bị theo tình trạng</div>
-          <div class="card-body" th:replace="~{layout :: bieuDo(${theoTinhTrangTb}, 'tinhtrang')}"></div>
+        <div class="card h-100">
+          <div class="card-header"><i class="bi bi-exclamation-diamond"></i>Theo mức ưu tiên</div>
+          <div class="card-body"><div th:replace="~{layout :: bieuDo(${theoUuTien}, null)}"></div></div>
         </div>
       </div>
       <div class="col-md-6">
-        <div class="card">
+        <div class="card h-100">
+          <div class="card-header"><i class="bi bi-wrench-adjustable"></i>Thiết bị theo tình trạng</div>
+          <div class="card-body"><div th:replace="~{layout :: bieuDo(${theoTinhTrangTb}, 'tinhtrang')}"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <div class="card h-100">
           <div class="card-header"><i class="bi bi-pc-display"></i>Thiết bị theo loại</div>
-          <div class="card-body" th:replace="~{layout :: bieuDo(${theoLoaiTb}, null)}"></div>
+          <div class="card-body"><div th:replace="~{layout :: bieuDo(${theoLoaiTb}, null)}"></div></div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-header"><i class="bi bi-person-check"></i>Admin xử lý nhiều sự cố nhất</div>
+          <div class="card-body"><div th:replace="~{layout :: bieuDo(${topAdmin}, null)}"></div></div>
         </div>
       </div>
     </div>

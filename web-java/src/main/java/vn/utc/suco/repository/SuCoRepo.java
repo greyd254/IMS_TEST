@@ -81,6 +81,13 @@ public class SuCoRepo {
                 MAPPER, thamSo.toArray());
     }
 
+    /** Toàn bộ sự cố khớp bộ lọc (không phân trang), để xuất Excel. */
+    public List<SuCo> timDeXuat(String trangThai, String q) {
+        List<Object> thamSo = new ArrayList<>();
+        String where = dieuKienLoc(trangThai, q, thamSo);
+        return jdbc.query(SELECT + where + "ORDER BY NGAY_TAO DESC, MA_SC DESC", MAPPER, thamSo.toArray());
+    }
+
     /** Tổng số sự cố khớp bộ lọc (để tính số trang). */
     public long dem(String trangThai, String q) {
         List<Object> thamSo = new ArrayList<>();

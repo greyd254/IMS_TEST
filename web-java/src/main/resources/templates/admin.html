@@ -12,6 +12,10 @@
       <div th:replace="~{layout :: tieuDe('bi-life-preserver','Sự cố CNTT','Bấm vào ô số liệu để lọc theo trạng thái')}"></div>
       <div class="hanh-dong">
         <form th:replace="~{layout :: oTim('/admin', ${q}, 'Tìm tiêu đề, người báo, phòng...', ${trangThaiLoc})}"></form>
+        <a class="btn btn-outline-success text-nowrap" title="Xuất toàn bộ sự cố theo bộ lọc đang chọn"
+           th:href="@{/admin/xuat-excel(trangThai=${trangThaiLoc},q=${q})}">
+          <i class="bi bi-file-earmark-excel"></i> Xuất Excel
+        </a>
       </div>
     </div>
 

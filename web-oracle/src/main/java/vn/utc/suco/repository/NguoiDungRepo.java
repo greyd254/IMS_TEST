@@ -1,12 +1,15 @@
 package vn.utc.suco.repository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import vn.utc.suco.model.NguoiDung;
+import vn.utc.suco.model.Trang;
 import vn.utc.suco.util.MatKhau;
+import vn.utc.suco.util.TimKiem;
 
 @Repository
 public class NguoiDungRepo {
@@ -36,8 +39,27 @@ public class NguoiDungRepo {
                 .stream().filter(java.util.Objects::nonNull).findFirst();
     }
 
-    public List<NguoiDung> timTatCa() {
-        return jdbc.query(SELECT + "ORDER BY TRANG_THAI, VAI_TRO, HO_TEN", MAPPER);
+    /** Một trang người dùng (trang số so, đếm từ 1); q = null nghĩa là không lọc theo từ khóa. */
+    public List<NguoiDung> timTrang(String q, int so) {
+        List<Object> thamSo = new ArrayList<>();
+        String where = dieuKienLoc(q, thamSo);
+        thamSo.add(Trang.viTriDau(so));
+        thamSo.add(Trang.KICH_THUOC);
+        // MA_ND ở cuối để thứ tự luôn xác định: không có dòng nào lặp hoặc bị sót khi chuyển trang
+        return jdbc.query(SELECT + where + "ORDER BY TRANG_THAI, VAI_TRO, HO_TEN, MA_ND "
+                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY", MAPPER, thamSo.toArray());
+    }
+
+    /** Tổng số người dùng khớp từ khóa (để tính số trang). */
+    public long dem(String q) {
+        List<Object> thamSo = new ArrayList<>();
+        Long tong = jdbc.queryForObject("SELECT COUNT(*) FROM NGUOI_DUNG " + dieuKienLoc(q, thamSo), Long.class,
+                thamSo.toArray());
+        return tong == null ? 0 : tong;
+    }
+
+    private static String dieuKienLoc(String q, List<Object> thamSo) {
+        return q == null ? "" : "WHERE " + TimKiem.dieuKien(q, thamSo, "HO_TEN", "EMAIL", "DON_VI", "SDT") + " ";
     }
 
     public Optional<NguoiDung> timTheoMa(Long maNd) {

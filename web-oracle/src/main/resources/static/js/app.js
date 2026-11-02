@@ -60,3 +60,24 @@
 
   document.querySelectorAll('[data-loc]').forEach(khoiTao);
 })();
+
+/*
+ * Link có data-kem-tu-khoa (nút Xuất Excel ở /admin): gắn từ khóa đang gõ trong ô tìm vào link ngay lúc bấm,
+ * vì ô tìm chỉ lọc bằng JS nên server không biết từ khóa này.
+ */
+(function () {
+  'use strict';
+
+  document.querySelectorAll('[data-kem-tu-khoa]').forEach(function (a) {
+    a.addEventListener('click', function () {
+      var o = document.querySelector('.o-tim');
+      var u = new URL(a.href);
+      if (o && o.value.trim()) {
+        u.searchParams.set('q', o.value.trim());
+      } else {
+        u.searchParams.delete('q');
+      }
+      a.href = u.toString();
+    });
+  });
+})();

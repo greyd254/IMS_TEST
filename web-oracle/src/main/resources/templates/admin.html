@@ -13,6 +13,10 @@
       <div class="hanh-dong">
         <input type="search" class="form-control o-tim" data-loc="#bangSuCo"
                placeholder="Tìm tiêu đề, người báo, phòng..." aria-label="Tìm sự cố">
+        <a class="btn btn-outline-success text-nowrap" title="Xuất toàn bộ sự cố theo bộ lọc đang chọn" data-kem-tu-khoa
+           th:href="@{/admin/xuat-excel(trangThai=${trangThaiLoc})}">
+          <i class="bi bi-file-earmark-excel"></i> Xuất Excel
+        </a>
       </div>
     </div>
 

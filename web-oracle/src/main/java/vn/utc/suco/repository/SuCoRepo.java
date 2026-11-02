@@ -3,6 +3,7 @@ package vn.utc.suco.repository;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import vn.utc.suco.model.LichSu;
 import vn.utc.suco.model.SuCo;
 import vn.utc.suco.model.SuCoHayGap;
+import vn.utc.suco.util.TimKiem;
 
 @Repository
 public class SuCoRepo {
@@ -67,6 +69,21 @@ public class SuCoRepo {
             return jdbc.query(SELECT + "ORDER BY NGAY_TAO DESC, MA_SC DESC", MAPPER);
         }
         return jdbc.query(SELECT + "WHERE TRANG_THAI = ? ORDER BY NGAY_TAO DESC, MA_SC DESC", MAPPER, trangThai);
+    }
+
+    /** Toàn bộ sự cố khớp trạng thái và từ khóa (null = không lọc), để xuất Excel. */
+    public List<SuCo> timDeXuat(String trangThai, String q) {
+        List<Object> thamSo = new ArrayList<>();
+        List<String> dk = new ArrayList<>();
+        if (trangThai != null) {
+            dk.add("TRANG_THAI = ?");
+            thamSo.add(trangThai);
+        }
+        if (q != null) {
+            dk.add(TimKiem.dieuKien(q, thamSo, "TIEU_DE", "TEN_NGUOI_BAO", "TEN_TB", "TEN_PHONG", "TEN_DM"));
+        }
+        String where = dk.isEmpty() ? "" : "WHERE " + String.join(" AND ", dk) + " ";
+        return jdbc.query(SELECT + where + "ORDER BY NGAY_TAO DESC, MA_SC DESC", MAPPER, thamSo.toArray());
     }
 
     public Optional<SuCo> timTheoMa(Long maSc) {

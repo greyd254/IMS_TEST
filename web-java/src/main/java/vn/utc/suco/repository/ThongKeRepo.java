@@ -16,6 +16,9 @@ public class ThongKeRepo {
     private static final RowMapper<ThongKeDong> MAPPER =
             (rs, i) -> new ThongKeDong(rs.getString("NHAN"), rs.getInt("SO_LUONG"));
 
+    /** Số tháng hiển thị trên biểu đồ xu hướng */
+    private static final int SO_THANG = 12;
+
     private final JdbcTemplate jdbc;
 
     public ThongKeRepo(JdbcTemplate jdbc) {
@@ -38,11 +41,13 @@ public class ThongKeRepo {
                 MAPPER);
     }
 
-    /** Số sự cố theo mức ưu tiên, nhãn tiếng Việt khớp fragment layout :: uuTien. */
+    /** Số sự cố theo mức ưu tiên, đủ 3 mức kể cả mức chưa có sự cố (điền 0) để biểu đồ luôn 3 dòng. */
     public List<ThongKeDong> theoUuTien() {
-        return jdbc.query("SELECT CASE MUC_UU_TIEN WHEN 'THAP' THEN 'Thấp' WHEN 'CAO' THEN 'Cao' "
-                        + "ELSE 'Trung bình' END AS NHAN, COUNT(*) AS SO_LUONG FROM SU_CO "
-                        + "GROUP BY MUC_UU_TIEN ORDER BY DECODE(MUC_UU_TIEN, 'THAP', 1, 'TRUNG_BINH', 2, 3)",
+        return jdbc.query("SELECT m.NHAN, COUNT(sc.MA_SC) AS SO_LUONG FROM ("
+                        + "SELECT 'THAP' AS MA, 'Thấp' AS NHAN, 1 AS TT FROM DUAL "
+                        + "UNION ALL SELECT 'TRUNG_BINH', 'Trung bình', 2 FROM DUAL "
+                        + "UNION ALL SELECT 'CAO', 'Cao', 3 FROM DUAL) m "
+                        + "LEFT JOIN SU_CO sc ON sc.MUC_UU_TIEN = m.MA GROUP BY m.NHAN, m.TT ORDER BY m.TT",
                 MAPPER);
     }
 
@@ -54,11 +59,13 @@ public class ThongKeRepo {
                 MAPPER);
     }
 
-    /** Số thiết bị theo tình trạng, nhãn tiếng Việt khớp ThietBiController.TINH_TRANG. */
+    /** Số thiết bị theo tình trạng, đủ 3 tình trạng kể cả chưa có thiết bị (điền 0) để biểu đồ luôn 3 dòng. */
     public List<ThongKeDong> theoTinhTrangThietBi() {
-        return jdbc.query("SELECT CASE TINH_TRANG WHEN 'HOAT_DONG' THEN 'Hoạt động' WHEN 'HONG' THEN 'Hỏng' "
-                        + "ELSE 'Đang sửa' END AS NHAN, COUNT(*) AS SO_LUONG FROM THIET_BI "
-                        + "GROUP BY TINH_TRANG ORDER BY DECODE(TINH_TRANG, 'HOAT_DONG', 1, 'DANG_SUA', 2, 3)",
+        return jdbc.query("SELECT m.NHAN, COUNT(tb.MA_TB) AS SO_LUONG FROM ("
+                        + "SELECT 'HOAT_DONG' AS MA, 'Hoạt động' AS NHAN, 1 AS TT FROM DUAL "
+                        + "UNION ALL SELECT 'DANG_SUA', 'Đang sửa', 2 FROM DUAL "
+                        + "UNION ALL SELECT 'HONG', 'Hỏng', 3 FROM DUAL) m "
+                        + "LEFT JOIN THIET_BI tb ON tb.TINH_TRANG = m.MA GROUP BY m.NHAN, m.TT ORDER BY m.TT",
                 MAPPER);
     }
 
@@ -72,27 +79,30 @@ public class ThongKeRepo {
     }
 
     /**
-     * Số sự cố theo tháng, đủ 6 tháng gần nhất kể cả tháng chưa có sự cố nào (điền 0), để vẽ biểu đồ xu hướng
-     * không bị "nhảy cóc" khi có tháng trống.
+     * Số sự cố theo tháng, đủ 12 tháng gần nhất kể cả tháng chưa có sự cố nào (điền 0), để vẽ biểu đồ xu hướng
+     * không bị "nhảy cóc" khi có tháng trống. Nhãn ngắn ("T11") để 12 cột vẫn vừa màn hình điện thoại;
+     * tháng 1 và cột đầu tiên kèm năm ("T1 2026").
      */
     public List<ThongKeDong> theoThang() {
         Map<YearMonth, Integer> dem = new LinkedHashMap<>();
-        YearMonth batDau = YearMonth.now().minusMonths(5);
-        for (int i = 0; i < 6; i++) {
+        YearMonth batDau = YearMonth.now().minusMonths(SO_THANG - 1);
+        for (int i = 0; i < SO_THANG; i++) {
             dem.put(batDau.plusMonths(i), 0);
         }
         jdbc.query("SELECT TO_CHAR(NGAY_TAO, 'YYYY-MM') AS THANG, COUNT(*) AS SO_LUONG FROM SU_CO "
-                        + "WHERE NGAY_TAO >= ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -5) "
+                        + "WHERE NGAY_TAO >= ADD_MONTHS(TRUNC(SYSDATE, 'MM'), ?) "
                         + "GROUP BY TO_CHAR(NGAY_TAO, 'YYYY-MM')",
                 rs -> {
-                    while (rs.next()) {
-                        dem.put(YearMonth.parse(rs.getString("THANG")), rs.getInt("SO_LUONG"));
-                    }
-                    return null;
-                });
+                    dem.put(YearMonth.parse(rs.getString("THANG")), rs.getInt("SO_LUONG"));
+                },
+                -(SO_THANG - 1));
         List<ThongKeDong> ketQua = new ArrayList<>();
-        dem.forEach((thang, soLuong) -> ketQua.add(
-                new ThongKeDong("Th" + thang.getMonthValue() + "/" + thang.getYear(), soLuong)));
+        dem.forEach((thang, soLuong) -> {
+            // Cột đầu là tháng 12 thì không ghi năm, vì ngay cạnh là "T1 2026" và 2 số năm sẽ dính nhau trên điện thoại
+            boolean kemNam = thang.getMonthValue() == 1
+                    || (thang.equals(batDau) && thang.getMonthValue() != 12);
+            ketQua.add(new ThongKeDong("T" + thang.getMonthValue() + (kemNam ? " " + thang.getYear() : ""), soLuong));
+        });
         return ketQua;
     }
 
