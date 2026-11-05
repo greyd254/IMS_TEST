@@ -2,7 +2,9 @@
 
 Đồ án Java: ứng dụng web Spring Boot MVC quản lý sự cố CNTT và kho kinh nghiệm xử lý, dùng CSDL Oracle. Phần
 Java viết đầy đủ các tính chất OOP cơ bản (class, kế thừa, đa hình, trừu tượng, enum, exception riêng) - xem
-mục 5. Sơ đồ bảng và quan hệ: xem [SO_DO_QUAN_HE.md](SO_DO_QUAN_HE.md).
+mục 5. Sơ đồ bảng và quan hệ: xem [SO_DO_QUAN_HE.md](SO_DO_QUAN_HE.md). Bộ mô hình UML (Use Case, Conceptual
+Model, CRC, Sequence Diagram, DCD, State Machine) dùng lại đúng hệ thống này cho môn Phân tích & thiết kế
+hướng đối tượng (OOAD): xem [BAO_CAO_OOAD.md](BAO_CAO_OOAD.md).
 
 ## Môi trường
 
