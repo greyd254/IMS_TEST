@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Chi tiết kinh nghiệm')}"></head>
+<body>
+<th:block th:replace="~{layout :: menu('kinh-nghiem')}"></th:block>
+
+<main class="noi-dung">
+  <div class="container-xxl hep">
+    <a th:href="@{/kinh-nghiem}" class="quay-lai"><i class="bi bi-arrow-left"></i> Quay lại kho kinh nghiệm</a>
+
+    <div class="card">
+      <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <span>
+          <i class="bi bi-journal-text"></i>
+          <span th:text="${bai.tieuDe}"></span>
+        </span>
+        <span class="badge text-bg-secondary" th:text="${bai.tenDm}"></span>
+      </div>
+      <div class="card-body">
+        <h6 class="fw-bold text-uppercase o-phu">Triệu chứng</h6>
+        <p class="xuong-dong" th:text="${bai.trieuChung} ?: '(không ghi)'"></p>
+        <h6 class="fw-bold text-uppercase o-phu">Nguyên nhân</h6>
+        <p class="xuong-dong" th:text="${bai.nguyenNhan} ?: '(không ghi)'"></p>
+        <h6 class="fw-bold text-uppercase o-phu">Giải pháp</h6>
+        <p class="xuong-dong mb-0" th:text="${bai.giaiPhap}"></p>
+      </div>
+      <div class="card-footer bg-transparent d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <small class="text-muted">
+          <i class="bi bi-person"></i> <span th:text="${bai.tenNguoiViet}"></span> ·
+          <span th:text="${#temporals.format(bai.ngayTao, 'dd/MM/yyyy')}"></span>
+        </small>
+        <a th:if="${session.nguoiDung.laAdmin()}" class="btn btn-sm btn-outline-primary"
+           th:href="@{/admin/kinh-nghiem/{id}/sua(id=${bai.maBai})}">
+          <i class="bi bi-pencil-square"></i> Sửa bài
+        </a>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,9 @@
+# Giữ nguyên xuống dòng LF cho mã nguồn và script để chạy giống nhau trên Windows, macOS, Linux
+*.java text eol=lf
+*.sql  text eol=lf
+*.html text eol=lf
+*.properties text eol=lf
+*.xml  text eol=lf
+*.md   text eol=lf
+*.docx binary
+*.png  binary

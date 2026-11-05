@@ -1,0 +1,8 @@
+target/
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Ảnh/file đính kèm do người dùng tải lên (xem LuuAnh.java)
+uploads/
