@@ -129,56 +129,84 @@ Hệ thống không có actor hệ thống ngoài (không tích hợp email/SMS/
 ### 1.5. Use Case Diagram
 
 > *Ghi chú: Mermaid không có ký hiệu actor hình que và hình ellipse UC chuẩn UML, nên sơ đồ dưới dùng hình
-> chữ nhật cho actor và hình "viên thuốc" (stadium) cho use case; đường liền là association, đường nét đứt
-> có nhãn `«include»`/`«extend»`/kế thừa đúng ý nghĩa UML.*
+> "viên thuốc" (stadium) cho cả actor lẫn use case; đường liền là association, đường nét đứt có nhãn
+> `«extend»` đúng ý nghĩa UML. Để sơ đồ không bị chồng chéo, actor **Người báo sự cố** đặt ở phía trên/trái,
+> **Cán bộ CNTT** ở bên phải; các UC xếp thành 3 cột: cột giữa trên là UC dùng chung của cả hai actor (UC1,
+> UC4, UC8), phía dưới là UC riêng của từng actor.*
 
 ```mermaid
 flowchart LR
-    NguoiDungHT(["Người dùng hệ thống"])
-    NguoiBao(["Người báo sự cố\n(USER)"])
-    Admin(["Cán bộ CNTT\n(ADMIN)"])
-    NguoiBao -. kế thừa .-> NguoiDungHT
-    Admin -. kế thừa .-> NguoiDungHT
+    NguoiBao(["👤 Người báo sự cố<br/>(USER)"])
 
     subgraph HeThong["Hệ thống Quản lý sự cố CNTT"]
-        UC1([Đăng nhập / Đăng xuất])
-        UC2([Báo sự cố])
-        UC3([Theo dõi sự cố của tôi])
-        UC4([Trao đổi về sự cố])
-        UC5([Gửi phản hồi sau hoàn thành])
-        UC6([Tiếp nhận và xử lý sự cố])
-        UC7([Lưu kinh nghiệm xử lý])
-        UC8([Tra cứu kho kinh nghiệm])
-        UC9([Quản lý kho kinh nghiệm])
-        UC10([Quản lý danh mục sự cố])
-        UC11([Quản lý phòng])
-        UC12([Quản lý thiết bị])
-        UC13([Nhập thiết bị từ Excel])
-        UC14([Quản lý người dùng])
-        UC15([Xem thống kê])
-        UC16([Xuất Excel danh sách sự cố])
+        direction TB
+        subgraph RiengUser[" "]
+            direction TB
+            UC2([UC2. Báo sự cố])
+            UC3([UC3. Theo dõi sự cố của tôi])
+            UC5([UC5. Gửi phản hồi sau hoàn thành])
+        end
+        subgraph DungChung[" "]
+            direction TB
+            UC1([UC1. Đăng nhập / Đăng xuất])
+            UC4([UC4. Trao đổi về sự cố])
+            UC8([UC8. Tra cứu kho kinh nghiệm])
+        end
+        subgraph RiengAdmin[" "]
+            direction TB
+            UC6([UC6. Tiếp nhận và xử lý sự cố])
+            UC7([UC7. Lưu kinh nghiệm xử lý])
+            UC9([UC9. Quản lý kho kinh nghiệm])
+            UC10([UC10. Quản lý danh mục sự cố])
+            UC11([UC11. Quản lý phòng])
+            UC12([UC12. Quản lý thiết bị])
+            UC13([UC13. Nhập thiết bị từ Excel])
+            UC14([UC14. Quản lý người dùng])
+            UC15([UC15. Xem thống kê])
+            UC16([UC16. Xuất Excel danh sách sự cố])
+        end
     end
 
-    NguoiDungHT --- UC1
+    Admin(["👤 Cán bộ CNTT<br/>(ADMIN)"])
+
     NguoiBao --- UC2
     NguoiBao --- UC3
-    NguoiBao --- UC4
     NguoiBao --- UC5
+    NguoiBao --- UC1
+    NguoiBao --- UC4
     NguoiBao --- UC8
-    Admin --- UC4
-    Admin --- UC6
-    Admin --- UC8
-    Admin --- UC9
-    Admin --- UC10
-    Admin --- UC11
-    Admin --- UC12
-    Admin --- UC14
-    Admin --- UC15
 
-    UC7 -. "«extend»\n[luuKho=true, chưa chọn bài có sẵn]" .-> UC6
-    UC13 -. "«extend»\n[nhập hàng loạt thay vì từng dòng]" .-> UC12
-    UC16 -. "«extend»\n[xuất thay vì chỉ xem]" .-> UC15
+    UC1 --- Admin
+    UC4 --- Admin
+    UC8 --- Admin
+    UC6 --- Admin
+    UC9 --- Admin
+    UC10 --- Admin
+    UC11 --- Admin
+    UC12 --- Admin
+    UC14 --- Admin
+    UC15 --- Admin
+
+    UC7 -. "«extend»" .-> UC6
+    UC13 -. "«extend»" .-> UC12
+    UC16 -. "«extend»" .-> UC15
+
+    style RiengUser fill:none,stroke:none
+    style DungChung fill:none,stroke:none
+    style RiengAdmin fill:none,stroke:none
 ```
+
+Điều kiện của các quan hệ `«extend»` (để trong ghi chú thay vì trên mũi tên cho sơ đồ gọn):
+
+| Use case mở rộng | Use case gốc | Điều kiện mở rộng |
+|---|---|---|
+| UC7. Lưu kinh nghiệm xử lý | UC6. Tiếp nhận và xử lý sự cố | `luuKho = true` và chưa chọn bài kinh nghiệm có sẵn |
+| UC13. Nhập thiết bị từ Excel | UC12. Quản lý thiết bị | Nhập hàng loạt thay vì thêm từng dòng |
+| UC16. Xuất Excel danh sách sự cố | UC15. Xem thống kê | Xuất ra file thay vì chỉ xem trên màn hình |
+
+Hai actor đều kế thừa từ actor trừu tượng **Người dùng hệ thống** (§1.4). Trên sơ đồ, quan hệ kế thừa này
+được thể hiện gián tiếp bằng việc cả hai actor cùng nối tới UC1 (Đăng nhập / Đăng xuất), UC dùng chung duy
+nhất mà actor cha sở hữu; cách này tránh thêm một actor và hai mũi tên kế thừa cắt ngang các UC khác.
 
 Không dùng `«include»` cho "Đăng nhập" trên từng UC còn lại để tránh làm sơ đồ rối (đăng nhập là **tiền
 điều kiện** của mọi UC khác, không phải một bước con lặp lại có ý nghĩa nghiệp vụ riêng — xem khuyến cáo ở
@@ -270,10 +298,13 @@ Mục 4.1 của hướng dẫn BTL).
 
 Ở mức phân tích, mô hình chỉ thể hiện các khái niệm nghiệp vụ và quan hệ giữa chúng — **không** đưa khóa kỹ
 thuật (ID), kiểu dữ liệu CSDL hay chi tiết cài đặt vào đây (những thứ đó thuộc Chương 3). Tên lớp dùng thuật
-ngữ nghiệp vụ (ví dụ "Lần xử lý", "Trao đổi") thay vì tên bảng CSDL.
+ngữ nghiệp vụ (ví dụ "Lần xử lý", "Trao đổi") thay vì tên bảng CSDL. Quan hệ vẽ bằng đường liên kết
+(association) không mũi tên, đúng ký hiệu của mô hình miền; dấu ▶ sau tên quan hệ chỉ chiều đọc (ví dụ
+"Phong *chứa ▶* ThietBi").
 
 ```mermaid
 classDiagram
+    direction TB
     class NguoiDung {
         Họ tên
         Email
@@ -330,20 +361,19 @@ classDiagram
         Tệp đính kèm
         Thời điểm
     }
-
-    NguoiDung "1" --> "0..*" SuCo : báo
-    NguoiDung "0..1" --> "0..*" SuCo : xử lý
-    NguoiDung "1" --> "0..*" BaiKinhNghiem : viết
-    NguoiDung "1" --> "0..*" PhanHoi : gửi
-    NguoiDung "1" --> "0..*" TraoDoi : gửi
-    Phong "1" --> "0..*" ThietBi : chứa
-    ThietBi "0..1" --> "0..*" SuCo : liên quan
-    DanhMucSuCo "1" --> "0..*" SuCo : phân loại
-    DanhMucSuCo "1" --> "0..*" BaiKinhNghiem : phân loại
-    BaiKinhNghiem "0..1" --> "0..*" SuCo : tham chiếu
-    SuCo "1" --> "0..*" LanXuLy : có lịch sử
-    SuCo "1" --> "0..1" PhanHoi : được phản hồi
-    SuCo "1" --> "0..*" TraoDoi : có trao đổi
+    Phong "1" -- "0..*" ThietBi : chứa ▶
+    ThietBi "0..1" -- "0..*" SuCo : liên quan ▶
+    DanhMucSuCo "1" -- "0..*" SuCo : phân loại ▶
+    DanhMucSuCo "1" -- "0..*" BaiKinhNghiem : phân loại ▶
+    BaiKinhNghiem "0..1" -- "0..*" SuCo : tham chiếu ▶
+    NguoiDung "1" -- "0..*" BaiKinhNghiem : viết ▶
+    NguoiDung "1" -- "0..*" SuCo : báo ▶
+    NguoiDung "0..1" -- "0..*" SuCo : xử lý ▶
+    SuCo "1" -- "0..*" LanXuLy : có lịch sử ▶
+    SuCo "1" -- "0..1" PhanHoi : được phản hồi ▶
+    SuCo "1" -- "0..*" TraoDoi : có trao đổi ▶
+    NguoiDung "1" -- "0..*" PhanHoi : gửi ▶
+    NguoiDung "1" -- "0..*" TraoDoi : gửi ▶
 ```
 
 **Giải thích các quyết định:**
@@ -527,40 +557,39 @@ sequenceDiagram
 
 ### 3.3. Design Class Diagram (DCD)
 
+DCD được tách thành 3 hình nhỏ theo từng nhóm trách nhiệm thay vì dồn vào 1 hình (Mermaid tự dàn trang, và
+khi gộp chung thì các mũi tên đi xuyên qua lớp khác, gây hiểu nhầm về phụ thuộc). Quy ước chung cho cả 3
+hình:
+
+- Một mũi tên liền `-->` có bội số `1` nghĩa là lớp nguồn giữ một thuộc tính `private final` kiểu lớp đích,
+  được Spring tiêm qua constructor. Thuộc tính đó không lặp lại trong ô thuộc tính; ô thuộc tính chỉ liệt kê
+  các repo không có mặt trên hình.
+- Chữ ký phương thức của Controller lược bỏ tham số hạ tầng của Spring (`HttpSession`, `Model`,
+  `RedirectAttributes`) để dòng không quá dài; chữ ký đầy đủ xem trong mã nguồn.
+
+**Hình 3.3a — Luồng Controller → Repository → đối tượng nghiệp vụ:**
+
 ```mermaid
 classDiagram
+    direction LR
     class SuCoController {
-        -SuCoRepo suCoRepo
         -ThietBiRepo thietBiRepo
         -DanhMucRepo danhMucRepo
-        -PhanHoiRepo phanHoiRepo
         -BinhLuanRepo binhLuanRepo
-        -LuuAnhSuCo luuAnhSuCo
-        -LuuTepTraoDoi luuTep
-        +trangNguoiDung(session, model) String
-        +chiTietCuaToi(maSc, session, model) String
-        +baoSuCo(tieuDe, moTa, maTb, maDm, mucUuTien, anh, session, ra) String
-        +guiBinhLuan(maSc, noiDung, tep, session, ra) String
-        +guiPhanHoi(maSc, mucHaiLong, noiDung, session, ra) String
+        +trangNguoiDung() String
+        +chiTietCuaToi(maSc) String
+        +baoSuCo(tieuDe, moTa, maTb, maDm, mucUuTien, anh) String
+        +guiBinhLuan(maSc, noiDung, tep) String
+        +guiPhanHoi(maSc, mucHaiLong, noiDung) String
     }
     class AdminController {
-        -SuCoRepo suCoRepo
-        -KinhNghiemRepo kinhNghiemRepo
         -DanhMucRepo danhMucRepo
         -PhanHoiRepo phanHoiRepo
         -BinhLuanRepo binhLuanRepo
-        -LuuTepTraoDoi luuTep
-        +danhSach(trangThai, q, trang, model) String
-        +chiTiet(maSc, model) String
-        +capNhat(maSc, trangThai, nguyenNhan, cachKhacPhuc, maBaiKn, luuKho, maDmKho, ghiChu, session, ra) String
-        +xoa(maSc, ra) String
-    }
-    class AuthInterceptor {
-        +preHandle(req, resp, handler) boolean
-    }
-    class XuLyLoiChung {
-        +duLieuKhongHopLe(request) String
-        +fileQuaLon(request) String
+        +danhSach(trangThai, q, trang) String
+        +chiTiet(maSc) String
+        +capNhat(maSc, trangThai, nguyenNhan, cachKhacPhuc, maBaiKn, luuKho, maDmKho, ghiChu) String
+        +xoa(maSc) String
     }
     class SuCoRepo {
         +taoMoi(tieuDe, moTa, maNguoiBao, maTb, maDm, mucUuTien, anh) void
@@ -580,6 +609,33 @@ classDiagram
         +timTheoSuCo(maSc) Optional~PhanHoi~
         +taoMoi(maSc, maNguoiPhanHoi, mucHaiLong, noiDung) void
     }
+    class SuCo {
+        -Long maSc
+        -String tieuDe
+        -MucUuTien mucUuTien
+        +daHoanThanh() boolean
+    }
+    class TrangThaiSuCo {
+        <<enumeration>>
+        MOI
+        DANG_XU_LY
+        HOAN_THANH
+    }
+    SuCoController --> "1" PhanHoiRepo
+    SuCoController --> "1" SuCoRepo
+    AdminController --> "1" SuCoRepo
+    AdminController --> "1" KinhNghiemRepo
+    SuCoRepo ..> SuCo : «create»
+    SuCo --> "1" TrangThaiSuCo
+```
+
+**Hình 3.3b — Lưu tệp tải lên (Template Method):**
+
+```mermaid
+classDiagram
+    direction TB
+    class SuCoController
+    class AdminController
     class BoLuuTru {
         <<abstract>>
         -Path thuMuc
@@ -595,6 +651,18 @@ classDiagram
         #duoiHopLe() Map~String,String~
         #thongBaoLoiLoai() String
     }
+    SuCoController --> "1" LuuAnhSuCo
+    SuCoController --> "1" LuuTepTraoDoi
+    AdminController --> "1" LuuTepTraoDoi
+    BoLuuTru <|-- LuuAnhSuCo
+    BoLuuTru <|-- LuuTepTraoDoi
+```
+
+**Hình 3.3c — Kiểu nhãn dùng chung và lớp hạ tầng web:**
+
+```mermaid
+classDiagram
+    direction TB
     class CoNhan {
         <<interface>>
         +getNhan() String
@@ -606,27 +674,19 @@ classDiagram
         DANG_XU_LY
         HOAN_THANH
     }
-    class SuCo {
-        -Long maSc
-        -String tieuDe
-        -TrangThaiSuCo trangThai
-        -MucUuTien mucUuTien
-        +daHoanThanh() boolean
+    class AuthInterceptor {
+        +preHandle(req, resp, handler) boolean
     }
-
-    SuCoController ..> SuCoRepo
-    SuCoController ..> LuuAnhSuCo
-    SuCoController ..> LuuTepTraoDoi
-    SuCoController ..> PhanHoiRepo
-    AdminController ..> SuCoRepo
-    AdminController ..> KinhNghiemRepo
-    AdminController ..> LuuTepTraoDoi
-    BoLuuTru <|-- LuuAnhSuCo
-    BoLuuTru <|-- LuuTepTraoDoi
+    class XuLyLoiChung {
+        +duLieuKhongHopLe(request) String
+        +fileQuaLon(request) String
+    }
     CoNhan <|.. TrangThaiSuCo
-    SuCoRepo ..> SuCo : tạo/đọc
-    SuCo --> TrangThaiSuCo
 ```
+
+`AuthInterceptor` (chặn truy cập theo vai trò trước khi vào Controller) và `XuLyLoiChung`
+(`@ControllerAdvice` xử lý lỗi chung) không có liên kết trực tiếp tới lớp nào khác vì Spring gọi chúng
+theo cấu hình, không qua tham chiếu trong code.
 
 *(Danh sách thuộc tính/phương thức đầy đủ của từng lớp xem trực tiếp trong `src/main/java/vn/utc/suco/`; sơ
 đồ trên chỉ chọn các thành viên liên quan tới 3 UC đã phân tích ở §3.2 để tránh sơ đồ quá tải.)*
@@ -635,27 +695,30 @@ classDiagram
 
 ```mermaid
 stateDiagram-v2
-    [*] --> MOI : báo sự cố (UC2)
+    direction LR
 
-    MOI --> DANG_XU_LY : tiếp nhận xử lý
-    DANG_XU_LY --> HOAN_THANH : hoàn thành\n[trigger: gán NGAY_HOAN_THANH]
-    HOAN_THANH --> DANG_XU_LY : mở lại xử lý\n[trigger: xóa NGAY_HOAN_THANH]
-    MOI --> HOAN_THANH : xử lý ngay, bỏ qua bước trung gian
-    HOAN_THANH --> MOI : đặt lại "mới" (hiếm dùng)
-    DANG_XU_LY --> MOI : đặt lại "mới" (hiếm dùng)
-
-    note right of HOAN_THANH
-        Chỉ ở trạng thái này người báo
-        mới gửi được PhanHoi (UC5),
-        và chỉ gửi được đúng 1 lần.
-    end note
-    note left of MOI
-        Mọi cạnh trong sơ đồ này (kể cả
-        2 cạnh "hiếm dùng") đều khiến
-        trigger TRG_SU_CO_LICH_SU ghi
-        thêm 1 dòng LanXuLy.
-    end note
+    [*] --> MOI : (1) báo sự cố
+    MOI --> DANG_XU_LY : (2) tiếp nhận
+    DANG_XU_LY --> HOAN_THANH : (3) hoàn thành
+    HOAN_THANH --> DANG_XU_LY : (4) mở lại
+    MOI --> HOAN_THANH : (5) xử lý ngay
+    DANG_XU_LY --> MOI : (6) đặt lại
+    HOAN_THANH --> MOI : (7) đặt lại
 ```
+
+| # | Chuyển trạng thái | Sự kiện / ý nghĩa | Hiệu ứng phụ (trigger CSDL) |
+|---|---|---|---|
+| (1) | → `MOI` | Người báo gửi sự cố (UC2) | — |
+| (2) | `MOI` → `DANG_XU_LY` | Cán bộ CNTT tiếp nhận xử lý | Ghi 1 dòng `LanXuLy` |
+| (3) | `DANG_XU_LY` → `HOAN_THANH` | Hoàn thành xử lý | Gán `NGAY_HOAN_THANH`; ghi 1 dòng `LanXuLy` |
+| (4) | `HOAN_THANH` → `DANG_XU_LY` | Mở lại xử lý | Xóa `NGAY_HOAN_THANH`; ghi 1 dòng `LanXuLy` |
+| (5) | `MOI` → `HOAN_THANH` | Xử lý ngay, bỏ qua bước trung gian | Gán `NGAY_HOAN_THANH`; ghi 1 dòng `LanXuLy` |
+| (6) | `DANG_XU_LY` → `MOI` | Đặt lại "mới" (hiếm dùng) | Ghi 1 dòng `LanXuLy` |
+| (7) | `HOAN_THANH` → `MOI` | Đặt lại "mới" (hiếm dùng) | Xóa `NGAY_HOAN_THANH`; ghi 1 dòng `LanXuLy` |
+
+Việc gán/xóa `NGAY_HOAN_THANH` do trigger `TRG_SU_CO_HOAN_THANH` đảm nhận, còn việc ghi dòng `LanXuLy` do
+trigger `TRG_SU_CO_LICH_SU` đảm nhận. Chỉ ở trạng thái `HOAN_THANH` người báo mới gửi được `PhanHoi` (UC5),
+và chỉ gửi được đúng 1 lần.
 
 Sơ đồ phản ánh **đúng những gì mã nguồn hiện cho phép** (`AdminController.capNhat` chỉ kiểm tra trạng thái
 gửi lên có nằm trong 3 giá trị hợp lệ, không kiểm tra trạng thái hiện tại), chứ không chỉ vẽ quy trình lý
