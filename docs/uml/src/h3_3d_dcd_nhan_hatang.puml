@@ -1,0 +1,57 @@
+@startuml h3_3d_dcd_nhan_hatang
+!include _style.iuml
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+hide empty members
+
+interface CoNhan {
+  +getNhan(): String
+  +getLopBadge(): String
+}
+enum VaiTro {
+  ADMIN
+  USER
+}
+enum TrangThaiNguoiDung {
+  HOAT_DONG
+  KHONG_HOAT_DONG
+}
+enum TrangThaiSuCo {
+  MOI
+  DANG_XU_LY
+  HOAN_THANH
+}
+enum MucUuTien {
+  THAP
+  TRUNG_BINH
+  CAO
+}
+enum TinhTrangThietBi {
+  HOAT_DONG
+  HONG
+  DANG_SUA
+}
+CoNhan <|.. VaiTro
+CoNhan <|.. TrangThaiNguoiDung
+CoNhan <|.. TrangThaiSuCo
+CoNhan <|.. MucUuTien
+CoNhan <|.. TinhTrangThietBi
+
+class WebConfig {
+  +addInterceptors(registry: InterceptorRegistry): void
+  +addResourceHandlers(registry: ResourceHandlerRegistry): void
+}
+class AuthInterceptor {
+  +preHandle(req: HttpServletRequest, resp: HttpServletResponse, handler: Object): boolean
+}
+class XuLyLoiChung <<ControllerAdvice>> {
+  +duLieuKhongHopLe(request: HttpServletRequest): String
+  +fileQuaLon(request: HttpServletRequest): String
+}
+interface WebMvcConfigurer
+interface HandlerInterceptor
+
+WebMvcConfigurer <|.. WebConfig
+HandlerInterceptor <|.. AuthInterceptor
+WebConfig --> "1" AuthInterceptor : -authInterceptor
+@enduml

@@ -1,0 +1,83 @@
+@startuml h2_1_khainiem
+!include _style.iuml
+!pragma layout smetana
+hide circle
+hide methods
+hide empty members
+skinparam classAttributeIconSize 0
+
+class NguoiDung {
+  họ tên
+  email
+  vai trò
+  đơn vị
+  số điện thoại
+  đang hoạt động?
+}
+class SuCo {
+  tiêu đề
+  mô tả
+  mức ưu tiên
+  trạng thái
+  nguyên nhân
+  cách khắc phục
+  ảnh đính kèm
+  ngày báo
+  ngày hoàn thành
+}
+class ThietBi {
+  tên thiết bị
+  loại thiết bị
+  tình trạng
+  nhà cung cấp
+  ngày lắp đặt
+}
+class Phong {
+  tên phòng
+  tòa nhà
+  tầng
+  loại phòng
+}
+class DanhMucSuCo {
+  tên danh mục
+  mô tả
+}
+class BaiKinhNghiem {
+  tiêu đề
+  triệu chứng
+  nguyên nhân
+  giải pháp
+  ngày viết
+}
+class LanXuLy {
+  trạng thái cũ
+  trạng thái mới
+  ghi chú
+  thời điểm
+}
+class PhanHoi {
+  mức hài lòng [1..5]
+  nội dung
+  ngày phản hồi
+}
+class TraoDoi {
+  nội dung
+  tệp đính kèm
+  thời điểm
+}
+
+Phong "1" o-- "0..*" ThietBi : chứa >
+ThietBi "0..1" -- "0..*" SuCo : liên quan >
+DanhMucSuCo "1" -- "0..*" SuCo : phân loại >
+DanhMucSuCo "1" -- "0..*" BaiKinhNghiem : phân loại >
+SuCo "0..*" -- "0..1" BaiKinhNghiem : tham chiếu >
+NguoiDung "1" -- "0..*" SuCo : báo >
+NguoiDung "0..1" -- "0..*" SuCo : xử lý >
+NguoiDung "1" -- "0..*" BaiKinhNghiem : viết >
+SuCo "1" *-- "0..*" LanXuLy : có lịch sử >
+SuCo "1" *-- "0..1" PhanHoi : được phản hồi >
+SuCo "1" *-- "0..*" TraoDoi : có trao đổi >
+NguoiDung "0..1" -- "0..*" LanXuLy : thực hiện >
+NguoiDung "1" -- "0..*" PhanHoi : gửi >
+NguoiDung "1" -- "0..*" TraoDoi : gửi >
+@enduml

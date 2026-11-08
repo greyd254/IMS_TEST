@@ -1,0 +1,51 @@
+@startuml h3_3a2_dcd_canbo
+!include _style.iuml
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+hide empty members
+top to bottom direction
+
+class AdminController <<control>> {
+  +danhSach(trangThai: String, q: String, trang: Integer): String
+  +chiTiet(maSc: Long): String
+  +capNhat(maSc: Long, trangThai: String, nguyenNhan: String,
+  {method}    cachKhacPhuc: String, maBaiKn: Long, luuKho: Boolean,
+  {method}    maDmKho: Long, ghiChu: String): String
+  +guiBinhLuan(maSc: Long, noiDung: String, tep: MultipartFile): String
+  +xuatExcel(trangThai: String, q: String): void
+  +xoa(maSc: Long): String
+}
+class SuCoRepo <<entity>> {
+  +timTrang(trangThai: String, q: String, so: int): List<SuCo>
+  +timTheoMa(maSc: Long): Optional<SuCo>
+  +capNhat(maSc: Long, trangThai: String, nguyenNhan: String,
+  {method}    cachKhacPhuc: String, maBaiKn: Long, maAdmin: Long,
+  {method}    ghiChu: String): boolean
+  +xoa(maSc: Long): void
+  +timLichSu(maSc: Long): List<LichSu>
+}
+class KinhNghiemRepo <<entity>> {
+  +taoMoi(tieuDe: String, maDm: Long, trieuChung: String,
+  {method}    nguyenNhan: String, giaiPhap: String, maNguoiViet: Long): long
+  +timTheoMa(maBai: Long): Optional<BaiKinhNghiem>
+}
+class PhanHoiRepo <<entity>> {
+  +timTheoSuCo(maSc: Long): Optional<PhanHoi>
+}
+class BinhLuanRepo <<entity>> {
+  +timMoiHon(maSc: Long, sauMa: Long): List<BinhLuan>
+  +taoMoi(maSc: Long, maNguoiGui: Long,
+  {method}    noiDung: String, tepDinhKem: String): void
+}
+class SuCo <<entity>> {
+  +getTieuDe(): String
+  +getMoTa(): String
+}
+
+AdminController --> "1" SuCoRepo : -suCoRepo
+AdminController --> "1" KinhNghiemRepo : -kinhNghiemRepo
+AdminController --> "1" PhanHoiRepo : -phanHoiRepo
+AdminController --> "1" BinhLuanRepo : -binhLuanRepo
+AdminController ..> SuCo : đọc tiêu đề, mô tả (UC7)
+SuCoRepo ..> SuCo : <<create>>
+@enduml

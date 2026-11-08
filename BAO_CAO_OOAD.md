@@ -25,8 +25,8 @@ xác nhận của giảng viên** trước khi nộp chính thức.
 
 ### Ghi chú sử dụng công cụ AI (theo Mục 6 của hướng dẫn)
 
-Bộ khung báo cáo này (cấu trúc chương, các sơ đồ UML dạng Mermaid, bảng CRC/test case) được soạn với sự hỗ
-trợ của Claude (Anthropic), dựa trên việc đọc trực tiếp mã nguồn ứng dụng đã có (`src/main/java/...`) và
+Bộ khung báo cáo này (cấu trúc chương, các sơ đồ UML vẽ bằng PlantUML trong `docs/uml/`, thẻ CRC, bảng test
+case) được soạn với sự hỗ trợ của Claude (Anthropic), dựa trên việc đọc trực tiếp mã nguồn ứng dụng đã có (`src/main/java/...`) và
 tài liệu `sql/`, `SO_DO_QUAN_HE.md` của chính dự án. **Đây là bản nháp có căn cứ, không phải bản hoàn
 chỉnh**: nhóm bắt buộc phải tự đọc lại toàn bộ, chạy thử ứng dụng để kiểm chứng các sơ đồ tương tác, điều
 chỉnh những chỗ chưa đúng ý đồ thiết kế ban đầu của nhóm, tự điền phần giả định/quyết định mang tính chủ
@@ -96,7 +96,7 @@ gặp trước đó.
 ### 1.3. Quy tắc nghiệp vụ quan trọng
 
 - **R1 — Vòng đời xử lý:** một sự cố có 3 trạng thái `MỚI`, `ĐANG_XỬ_LÝ`, `HOÀN_THÀNH`; theo quy ước nghiệp
-  vụ thì xử lý đi theo thứ tự `MỚI → ĐANG_XỬ_LÝ → HOÀN_THÀNH` (xem thảo luận ở §3.4 và §2.4 — hệ thống hiện
+  vụ thì xử lý đi theo thứ tự `MỚI → ĐANG_XỬ_LÝ → HOÀN_THÀNH` (xem thảo luận ở §3.4 và §2.6 — hệ thống hiện
   tại không ép buộc thứ tự này ở tầng ứng dụng).
 - **R2 — Tự động hóa khi đổi trạng thái:** mỗi lần trạng thái thực sự thay đổi, hệ thống tự ghi lại 1 dòng
   lịch sử xử lý; khi chuyển **sang** `HOÀN_THÀNH` thì tự gán ngày hoàn thành, khi chuyển **khỏi**
@@ -128,88 +128,25 @@ Hệ thống không có actor hệ thống ngoài (không tích hợp email/SMS/
 
 ### 1.5. Use Case Diagram
 
-> *Ghi chú: Mermaid không có ký hiệu actor hình que và hình ellipse UC chuẩn UML, nên sơ đồ dưới dùng hình
-> "viên thuốc" (stadium) cho cả actor lẫn use case; đường liền là association, đường nét đứt có nhãn
-> `«extend»` đúng ý nghĩa UML. Để sơ đồ không bị chồng chéo, actor **Người báo sự cố** đặt ở phía trên/trái,
-> **Cán bộ CNTT** ở bên phải; các UC xếp thành 3 cột: cột giữa trên là UC dùng chung của cả hai actor (UC1,
-> UC4, UC8), phía dưới là UC riêng của từng actor.*
+![Hình 1.1 — Sơ đồ Use Case của hệ thống](docs/uml/h1_5_usecase.png)
 
-```mermaid
-flowchart LR
-    NguoiBao(["👤 Người báo sự cố<br/>(USER)"])
+*Hình 1.1. Sơ đồ Use Case của hệ thống.*
 
-    subgraph HeThong["Hệ thống Quản lý sự cố CNTT"]
-        direction TB
-        subgraph RiengUser[" "]
-            direction TB
-            UC2([UC2. Báo sự cố])
-            UC3([UC3. Theo dõi sự cố của tôi])
-            UC5([UC5. Gửi phản hồi sau hoàn thành])
-        end
-        subgraph DungChung[" "]
-            direction TB
-            UC1([UC1. Đăng nhập / Đăng xuất])
-            UC4([UC4. Trao đổi về sự cố])
-            UC8([UC8. Tra cứu kho kinh nghiệm])
-        end
-        subgraph RiengAdmin[" "]
-            direction TB
-            UC6([UC6. Tiếp nhận và xử lý sự cố])
-            UC7([UC7. Lưu kinh nghiệm xử lý])
-            UC9([UC9. Quản lý kho kinh nghiệm])
-            UC10([UC10. Quản lý danh mục sự cố])
-            UC11([UC11. Quản lý phòng])
-            UC12([UC12. Quản lý thiết bị])
-            UC13([UC13. Nhập thiết bị từ Excel])
-            UC14([UC14. Quản lý người dùng])
-            UC15([UC15. Xem thống kê])
-            UC16([UC16. Xuất Excel danh sách sự cố])
-        end
-    end
+**Tổng quát hóa actor.** Hai actor **Người báo sự cố** và **Cán bộ CNTT** cùng dùng một nhóm chức năng chung
+(UC1, UC4, UC8) nhưng mỗi bên lại có chức năng riêng, đúng trường hợp dùng tổng quát hóa giữa các tác nhân
+(Bài 4). Vì vậy sơ đồ vẽ actor cha **Người dùng hệ thống** nối với 3 UC chung; hai actor con kế thừa (mũi tên
+tam giác rỗng trỏ về cha) nên đương nhiên được dùng 3 UC đó mà không phải vẽ thêm 6 đường nối.
 
-    Admin(["👤 Cán bộ CNTT<br/>(ADMIN)"])
-
-    NguoiBao --- UC2
-    NguoiBao --- UC3
-    NguoiBao --- UC5
-    NguoiBao --- UC1
-    NguoiBao --- UC4
-    NguoiBao --- UC8
-
-    UC1 --- Admin
-    UC4 --- Admin
-    UC8 --- Admin
-    UC6 --- Admin
-    UC9 --- Admin
-    UC10 --- Admin
-    UC11 --- Admin
-    UC12 --- Admin
-    UC14 --- Admin
-    UC15 --- Admin
-
-    UC7 -. "«extend»" .-> UC6
-    UC13 -. "«extend»" .-> UC12
-    UC16 -. "«extend»" .-> UC15
-
-    style RiengUser fill:none,stroke:none
-    style DungChung fill:none,stroke:none
-    style RiengAdmin fill:none,stroke:none
-```
-
-Điều kiện của các quan hệ `«extend»` (để trong ghi chú thay vì trên mũi tên cho sơ đồ gọn):
+Điều kiện của các quan hệ `«extend»`:
 
 | Use case mở rộng | Use case gốc | Điều kiện mở rộng |
 |---|---|---|
 | UC7. Lưu kinh nghiệm xử lý | UC6. Tiếp nhận và xử lý sự cố | `luuKho = true` và chưa chọn bài kinh nghiệm có sẵn |
-| UC13. Nhập thiết bị từ Excel | UC12. Quản lý thiết bị | Nhập hàng loạt thay vì thêm từng dòng |
-| UC16. Xuất Excel danh sách sự cố | UC15. Xem thống kê | Xuất ra file thay vì chỉ xem trên màn hình |
-
-Hai actor đều kế thừa từ actor trừu tượng **Người dùng hệ thống** (§1.4). Trên sơ đồ, quan hệ kế thừa này
-được thể hiện gián tiếp bằng việc cả hai actor cùng nối tới UC1 (Đăng nhập / Đăng xuất), UC dùng chung duy
-nhất mà actor cha sở hữu; cách này tránh thêm một actor và hai mũi tên kế thừa cắt ngang các UC khác.
+| UC16. Xuất Excel danh sách sự cố | UC6. Tiếp nhận và xử lý sự cố | Cán bộ CNTT bấm "Xuất Excel" trên danh sách sự cố đang lọc (`AdminController.xuatExcel`) |
+| UC13. Nhập thiết bị từ Excel | UC12. Quản lý thiết bị | Nhập hàng loạt từ file `.xlsx` thay vì thêm từng dòng |
 
 Không dùng `«include»` cho "Đăng nhập" trên từng UC còn lại để tránh làm sơ đồ rối (đăng nhập là **tiền
-điều kiện** của mọi UC khác, không phải một bước con lặp lại có ý nghĩa nghiệp vụ riêng — xem khuyến cáo ở
+điều kiện** của mọi UC khác, không phải một bước con lặp lại có ý nghĩa nghiệp vụ riêng, xem khuyến cáo ở
 Mục 4.1 của hướng dẫn BTL).
 
 ### 1.6. Danh sách Use Case
@@ -219,11 +156,11 @@ Mục 4.1 của hướng dẫn BTL).
 | UC1 | Đăng nhập / Đăng xuất | Người dùng hệ thống | Xác thực bằng email + mật khẩu, điều hướng theo vai trò. |
 | UC2 | Báo sự cố | Người báo | Gửi báo cáo sự cố mới, có thể kèm 1 ảnh. |
 | UC3 | Theo dõi sự cố của tôi | Người báo | Xem danh sách và chi tiết các sự cố mình đã báo, cùng lịch sử xử lý. |
-| UC4 | Trao đổi về sự cố | Người báo, Cán bộ CNTT | Nhắn qua lại không giới hạn số lần trên một sự cố, có thể kèm file. |
+| UC4 | Trao đổi về sự cố | Người dùng hệ thống (cả hai actor con) | Nhắn qua lại không giới hạn số lần trên một sự cố, có thể kèm file. |
 | UC5 | Gửi phản hồi sau hoàn thành | Người báo | Đánh giá mức hài lòng 1–5 sao sau khi sự cố `HOÀN_THÀNH`. |
 | UC6 | Tiếp nhận và xử lý sự cố | Cán bộ CNTT | Xem danh sách, đổi trạng thái, ghi nguyên nhân/cách khắc phục. |
 | UC7 | Lưu kinh nghiệm xử lý | Cán bộ CNTT | Tạo bài kinh nghiệm mới ngay từ nội dung xử lý vừa nhập (extend của UC6). |
-| UC8 | Tra cứu kho kinh nghiệm | Người báo, Cán bộ CNTT | Tìm và xem bài kinh nghiệm theo danh mục/từ khóa. |
+| UC8 | Tra cứu kho kinh nghiệm | Người dùng hệ thống (cả hai actor con) | Tìm và xem bài kinh nghiệm theo danh mục/từ khóa. |
 | UC9 | Quản lý kho kinh nghiệm | Cán bộ CNTT | Thêm/sửa/xóa bài kinh nghiệm. |
 | UC10 | Quản lý danh mục sự cố | Cán bộ CNTT | Thêm/sửa/xóa danh mục dùng chung cho sự cố và kinh nghiệm. |
 | UC11 | Quản lý phòng | Cán bộ CNTT | Thêm/sửa/xóa phòng. |
@@ -231,7 +168,7 @@ Mục 4.1 của hướng dẫn BTL).
 | UC13 | Nhập thiết bị từ Excel | Cán bộ CNTT | Nhập hàng loạt thiết bị từ file `.xlsx` (extend của UC12). |
 | UC14 | Quản lý người dùng | Cán bộ CNTT | Thêm/sửa tài khoản, đổi vai trò, đặt lại mật khẩu, vô hiệu hóa/kích hoạt lại. |
 | UC15 | Xem thống kê | Cán bộ CNTT | Xem số liệu và biểu đồ tổng quan tình hình xử lý sự cố. |
-| UC16 | Xuất Excel danh sách sự cố | Cán bộ CNTT | Xuất danh sách sự cố đang lọc ra file Excel (extend của UC15/UC6). |
+| UC16 | Xuất Excel danh sách sự cố | Cán bộ CNTT | Xuất danh sách sự cố đang lọc ra file Excel (extend của UC6). |
 
 ### 1.7. Đặc tả Use Case tiêu biểu
 
@@ -241,6 +178,8 @@ Mục 4.1 của hướng dẫn BTL).
 |---|---|
 | Actor | Người báo |
 | Mục tiêu | Ghi nhận một sự cố mới để cán bộ CNTT xử lý. |
+| Tổng quan | Người dùng mô tả sự cố gặp phải trên form; hệ thống kiểm tra rồi lưu thành sự cố mới ở trạng thái MỚI. |
+| Yêu cầu tham khảo | R1, R8; G1; Hình 1.2 (hoạt động), Hình 2.5 (SSD), Hình 3.3 (SD). |
 | Tiền điều kiện | Đã đăng nhập với vai trò USER. |
 | Luồng chính | 1. Người dùng chọn thiết bị liên quan (tùy chọn), danh mục sự cố, mức ưu tiên, nhập tiêu đề/mô tả, có thể đính kèm 1 ảnh. 2. Hệ thống kiểm tra dữ liệu hợp lệ. 3. Hệ thống lưu sự cố mới ở trạng thái `MỚI`, gắn người báo là người dùng hiện tại. 4. Hệ thống báo đã ghi nhận. |
 | Luồng thay thế/ngoại lệ | 2a. Thiếu tiêu đề hoặc mức ưu tiên không hợp lệ → báo lỗi, không lưu. 3a. File đính kèm sai định dạng (không phải JPG/PNG/GIF/WEBP) → báo lỗi, không lưu. 3b. File vượt 5MB → báo lỗi "File quá lớn", không lưu. |
@@ -252,6 +191,8 @@ Mục 4.1 của hướng dẫn BTL).
 |---|---|
 | Actor | Cán bộ CNTT |
 | Mục tiêu | Cập nhật tiến độ xử lý một sự cố, ghi lại nguyên nhân và cách khắc phục. |
+| Tổng quan | Cán bộ CNTT mở một sự cố, đổi trạng thái, ghi nguyên nhân/cách khắc phục; có thể gắn bài kinh nghiệm có sẵn hoặc lưu kết quả thành bài mới (UC7). |
+| Yêu cầu tham khảo | R1, R2, R5; G2; Hình 1.3 (hoạt động), Hình 2.6 (SSD), Hình 3.4 và 3.7 (SD, giao tiếp), Hình 3.13 (trạng thái). |
 | Tiền điều kiện | Đã đăng nhập với vai trò ADMIN; sự cố tồn tại. |
 | Luồng chính | 1. Cán bộ CNTT mở chi tiết một sự cố. 2. Chọn trạng thái mới, nhập nguyên nhân/cách khắc phục, có thể chọn 1 bài kinh nghiệm có sẵn để gắn vào. 3. Hệ thống lưu cập nhật; nếu trạng thái thực sự đổi thì tự ghi 1 dòng lịch sử; nếu chuyển sang `HOÀN_THÀNH` thì tự gán ngày hoàn thành. |
 | Luồng thay thế/ngoại lệ (UC7, extend) | 2a. Nếu tick "lưu vào kho kinh nghiệm" mà **không** chọn bài có sẵn: phải nhập đủ nguyên nhân, cách khắc phục và chọn danh mục kho; hệ thống tạo một bài kinh nghiệm mới (dùng chính tiêu đề/mô tả của sự cố) rồi tự gắn bài đó vào sự cố đang xử lý. 2b. Thiếu nguyên nhân/cách khắc phục/danh mục khi đã tick "lưu vào kho" → báo lỗi, không lưu cập nhật. |
@@ -264,6 +205,8 @@ Mục 4.1 của hướng dẫn BTL).
 |---|---|
 | Actor | Người báo |
 | Mục tiêu | Đánh giá mức độ hài lòng về cách xử lý sự cố của chính mình. |
+| Tổng quan | Sau khi sự cố hoàn thành, người báo chấm 1–5 sao và có thể để lại nhận xét. |
+| Yêu cầu tham khảo | R3; Hình 2.7 (SSD), Hình 3.5 (SD), Hình 3.13 (tự chuyển ở HOAN_THANH). |
 | Tiền điều kiện | Sự cố thuộc về người dùng hiện tại và đã ở trạng thái `HOÀN_THÀNH`. |
 | Luồng chính | 1. Người dùng chọn mức hài lòng (1–5), có thể nhập nhận xét. 2. Hệ thống lưu phản hồi, gắn với sự cố. |
 | Luồng thay thế/ngoại lệ | 1a. Sự cố chưa `HOÀN_THÀNH` → báo lỗi, không cho gửi. 1b. Mức hài lòng ngoài khoảng 1–5 → báo lỗi. 2a. Sự cố đã có phản hồi trước đó (ràng buộc duy nhất ở CSDL) → hệ thống bắt lỗi và báo "Sự cố này đã được phản hồi rồi" thay vì để lộ lỗi SQL. |
@@ -275,12 +218,45 @@ Mục 4.1 của hướng dẫn BTL).
 |---|---|
 | Actor | Người báo, Cán bộ CNTT |
 | Mục tiêu | Trao đổi thông tin bổ sung qua lại trên một sự cố cụ thể, không chờ xử lý xong. |
+| Tổng quan | Hai bên nhắn tin, gửi file qua lại ngay trên trang chi tiết sự cố; trang tự kiểm tra và hiển thị tin mới mà không cần tải lại. |
+| Yêu cầu tham khảo | R4, R8; Hình 2.8 (SSD), Hình 3.6 (SD). |
 | Tiền điều kiện | Đã đăng nhập; với Người báo, sự cố phải thuộc về mình. |
 | Luồng chính | 1. Người gửi nhập nội dung và/hoặc chọn 1 file đính kèm. 2. Hệ thống lưu tin nhắn kèm thời gian gửi. 3. Phía còn lại thấy tin nhắn mới khi mở lại trang chi tiết (trang tự kiểm tra tin mới định kỳ). |
 | Luồng thay thế/ngoại lệ | 1a. Không nhập nội dung và không chọn file → báo lỗi "Nhập nội dung hoặc chọn file để gửi". 1b. File sai định dạng hoặc vượt 5MB → báo lỗi tương ứng. |
 | Hậu điều kiện | Thêm 1 dòng trao đổi mới cho sự cố, sắp theo thời gian gửi. |
 
-### 1.8. Yêu cầu phi chức năng (NFR)
+### 1.8. Sơ đồ hoạt động (Activity Diagram)
+
+Sơ đồ hoạt động là cầu nối giữa đặc tả UC (§1.7) và sơ đồ tuần tự (§3.2): nó làm lộ ra các rẽ nhánh, vòng lặp
+và việc song song mà văn bản dạng "bước 1, 2, 3" dễ bỏ sót.
+
+**Quy trình nghiệp vụ tổng thể của một sự cố.** Mỗi làn (swimlane) cho biết ai chịu trách nhiệm hoạt động đó.
+
+![Hình 1.2 — Quy trình xử lý một sự cố, từ lúc báo đến khi phản hồi (có swimlane)](docs/uml/h1_8a_hoatdong_quytrinh.png)
+
+*Hình 1.2. Quy trình xử lý một sự cố, từ lúc báo đến khi phản hồi (có swimlane).*
+
+Các điểm cần đọc trên hình:
+
+- Vòng lặp ở đầu: dữ liệu không hợp lệ thì người dùng sửa và gửi lại (luồng ngoại lệ 2a, 3a, 3b của UC2).
+- Thanh fork/join thứ nhất: trong lúc cán bộ CNTT xử lý, hai bên vẫn trao đổi song song (quy tắc R4).
+- Rẽ nhánh lồng nhau "Lưu vào kho kinh nghiệm?" / "Đã có bài phù hợp?" chính là UC7 (quy tắc R5).
+- Thanh fork/join thứ hai: gán ngày hoàn thành và ghi lịch sử là hai việc độc lập, cùng xảy ra khi đổi
+  trạng thái (quy tắc R2, do 2 trigger đảm nhận).
+- Phản hồi chỉ có sau khi hoàn thành và là tùy chọn (quy tắc R3).
+
+**Chi tiết logic của UC6 + UC7** (`AdminController.capNhat` và `SuCoRepo.capNhat`). Phần UC7 được đóng gói
+thành một vùng riêng theo cách "phân hoạch sơ đồ" của Bài 5.
+
+![Hình 1.3 — Logic cập nhật xử lý sự cố, kèm nhánh lưu kinh nghiệm](docs/uml/h1_8b_hoatdong_xuly.png)
+
+*Hình 1.3. Logic cập nhật xử lý sự cố, kèm nhánh lưu kinh nghiệm.*
+
+Hình này cho thấy một chi tiết mà đặc tả bằng chữ ở §1.7 chưa nói: **khi giữ nguyên trạng thái nhưng sửa
+nguyên nhân, cách khắc phục hoặc ghi chú**, hệ thống vẫn ghi một dòng lịch sử (trạng thái cũ = mới) để không
+mất dấu vết lần sửa trước. Trigger chỉ chạy khi trạng thái đổi, nên trường hợp này do `SuCoRepo.capNhat` tự làm.
+
+### 1.9. Yêu cầu phi chức năng (NFR)
 
 | NFR | Mô tả | Thể hiện trong hệ thống |
 |---|---|---|
@@ -294,93 +270,53 @@ Mục 4.1 của hướng dẫn BTL).
 
 ## CHƯƠNG 2. MÔ HÌNH PHÂN TÍCH
 
-### 2.1. Mô hình khái niệm (Conceptual Model)
+### 2.1. Xác định lớp bằng phân tích danh từ
 
-Ở mức phân tích, mô hình chỉ thể hiện các khái niệm nghiệp vụ và quan hệ giữa chúng — **không** đưa khóa kỹ
-thuật (ID), kiểu dữ liệu CSDL hay chi tiết cài đặt vào đây (những thứ đó thuộc Chương 3). Tên lớp dùng thuật
-ngữ nghiệp vụ (ví dụ "Lần xử lý", "Trao đổi") thay vì tên bảng CSDL. Quan hệ vẽ bằng đường liên kết
-(association) không mũi tên, đúng ký hiệu của mô hình miền; dấu ▶ sau tên quan hệ chỉ chiều đọc (ví dụ
-"Phong *chứa ▶* ThietBi").
+Các lớp ứng viên được rút ra bằng cách gạch chân danh từ/cụm danh từ trong mô tả bài toán (§1.1), quy tắc
+nghiệp vụ (§1.3) và đặc tả UC (§1.7), rồi lọc theo tiêu chí giữ/bỏ của Bài 7:
 
-```mermaid
-classDiagram
-    direction TB
-    class NguoiDung {
-        Họ tên
-        Email
-        Vai trò
-        Đơn vị
-        Số điện thoại
-        Đang hoạt động?
-    }
-    class SuCo {
-        Tiêu đề
-        Mô tả
-        Mức ưu tiên
-        Trạng thái
-        Nguyên nhân
-        Cách khắc phục
-        Ngày báo
-        Ngày hoàn thành
-    }
-    class ThietBi {
-        Tên thiết bị
-        Loại thiết bị
-        Tình trạng
-        Nhà cung cấp
-        Ngày lắp đặt
-    }
-    class Phong {
-        Tên phòng
-        Tòa nhà
-        Tầng
-        Loại phòng
-    }
-    class DanhMucSuCo {
-        Tên danh mục
-        Mô tả
-    }
-    class BaiKinhNghiem {
-        Tiêu đề
-        Triệu chứng
-        Nguyên nhân
-        Giải pháp
-    }
-    class LanXuLy {
-        Trạng thái cũ
-        Trạng thái mới
-        Ghi chú
-        Thời điểm
-    }
-    class PhanHoi {
-        Mức hài lòng
-        Nội dung
-    }
-    class TraoDoi {
-        Nội dung
-        Tệp đính kèm
-        Thời điểm
-    }
-    Phong "1" -- "0..*" ThietBi : chứa ▶
-    ThietBi "0..1" -- "0..*" SuCo : liên quan ▶
-    DanhMucSuCo "1" -- "0..*" SuCo : phân loại ▶
-    DanhMucSuCo "1" -- "0..*" BaiKinhNghiem : phân loại ▶
-    BaiKinhNghiem "0..1" -- "0..*" SuCo : tham chiếu ▶
-    NguoiDung "1" -- "0..*" BaiKinhNghiem : viết ▶
-    NguoiDung "1" -- "0..*" SuCo : báo ▶
-    NguoiDung "0..1" -- "0..*" SuCo : xử lý ▶
-    SuCo "1" -- "0..*" LanXuLy : có lịch sử ▶
-    SuCo "1" -- "0..1" PhanHoi : được phản hồi ▶
-    SuCo "1" -- "0..*" TraoDoi : có trao đổi ▶
-    NguoiDung "1" -- "0..*" PhanHoi : gửi ▶
-    NguoiDung "1" -- "0..*" TraoDoi : gửi ▶
-```
+| Danh từ / cụm danh từ | Quyết định | Lý do |
+|---|---|---|
+| Hệ thống, trường đại học | Loại | Là toàn bộ hệ thống hoặc chỉ là bối cảnh, không phải khái niệm trong miền |
+| Sinh viên, giảng viên, cán bộ | Gộp thành lớp **NguoiDung** (vai trò USER) | Cùng dữ liệu, cùng hành vi trong hệ thống; khác biệt không ảnh hưởng nghiệp vụ |
+| Bộ phận CNTT, cán bộ CNTT | Gộp vào **NguoiDung** (vai trò ADMIN) | Tránh hai lớp trùng nghĩa; phân biệt bằng thuộc tính vai trò |
+| Sự cố | Lớp **SuCo** | Thực thể trung tâm, có vòng đời MỚI → ĐANG_XỬ_LÝ → HOÀN_THÀNH |
+| Phòng (phòng máy, phòng học, văn phòng) | Lớp **Phong**; "phòng máy/phòng học" là thuộc tính *loại phòng* | Có dữ liệu riêng, chứa thiết bị |
+| Thiết bị (máy tính, máy chiếu, máy in...) | Lớp **ThietBi**; "máy tính/máy chiếu" là thuộc tính *loại* | Có tình trạng riêng, được sự cố tham chiếu |
+| Loại sự cố (thiết bị, mạng, phần mềm, tài khoản) | Lớp **DanhMucSuCo** | Dùng chung cho sự cố và bài kinh nghiệm; cán bộ CNTT thêm/sửa được (UC10) nên không thể là enum cứng |
+| Cách xử lý, kinh nghiệm | Lớp **BaiKinhNghiem** | Bền vững theo thời gian, cần tra cứu lại |
+| Tiến độ xử lý, lịch sử xử lý | Lớp **LanXuLy** | Hành động cần lưu thời điểm và người thực hiện, một sự cố có nhiều lần → phải là lớp, không phải phương thức |
+| Trao đổi, tin nhắn | Lớp **TraoDoi** | Nhiều lần, có tệp đính kèm, có thời điểm |
+| Đánh giá, mức hài lòng | Lớp **PhanHoi** | Có dữ liệu riêng và quy tắc riêng (1 lần, chỉ sau khi hoàn thành) |
+| Mức ưu tiên, trạng thái, nguyên nhân, cách khắc phục | Thuộc tính của **SuCo** | Chỉ là giá trị đơn giản |
+| Ảnh, file đính kèm | Thuộc tính (đường dẫn tệp) | Không có hành vi riêng ở mức nghiệp vụ |
+| Email, mật khẩu, số điện thoại | Thuộc tính của **NguoiDung** | Giá trị đơn giản |
+| Thống kê, báo cáo Excel | Loại | Là kết quả tính toán khi xem, không lưu bền vững |
+| Email/SMS thông báo | Loại | Nằm ngoài phạm vi (§1.1) |
+
+Đối chiếu với cách phân loại của Coad & Yourdon: *vật thể* là ThietBi, Phong; *vai trò* là NguoiDung
+(USER/ADMIN); *sự kiện có vòng đời* là SuCo, LanXuLy, PhanHoi, TraoDoi; *khái niệm* là DanhMucSuCo, BaiKinhNghiem.
+
+### 2.2. Mô hình khái niệm (Conceptual Model)
+
+Ở mức phân tích, mô hình chỉ thể hiện các khái niệm nghiệp vụ và quan hệ giữa chúng: **không** đưa khóa kỹ
+thuật (ID), kiểu dữ liệu hay phương thức vào đây (những thứ đó thuộc Chương 3). Dấu `>` sau tên quan hệ chỉ
+chiều đọc (ví dụ "Phong *chứa >* ThietBi").
+
+![Hình 2.1 — Mô hình khái niệm](docs/uml/h2_1_khainiem.png)
+
+*Hình 2.1. Mô hình khái niệm.*
 
 **Giải thích các quyết định:**
 
-- `LanXuLy` là một khái niệm có ý nghĩa riêng (một lần đổi trạng thái, với thời điểm và người cập nhật),
-  không gộp vào `SuCo` vì một sự cố có **nhiều** lần đổi trạng thái theo thời gian — cần lưu thông tin riêng
-  (quan hệ "có lịch sử" là quan hệ 1-nhiều có dữ liệu riêng cho từng lần).
+- Dùng đủ các kiểu liên kết của Bài 6:
+  - **Gộp (composition, hình thoi đặc)** giữa `SuCo` và `LanXuLy`, `PhanHoi`, `TraoDoi`: các đối tượng này không
+    tồn tại độc lập nếu không có sự cố; xóa sự cố thì `SuCoRepo.xoa` xóa luôn lịch sử, phản hồi và trao đổi của nó.
+  - **Kết tập (aggregation, hình thoi rỗng)** giữa `Phong` và `ThietBi`: thiết bị là một phần của phòng nhưng vẫn
+    tồn tại độc lập (chuyển được sang phòng khác), và không xóa được phòng khi còn thiết bị (R7).
+  - Các quan hệ còn lại là **kết hợp (association)** thông thường.
+- `LanXuLy` là một khái niệm có ý nghĩa riêng (một lần cập nhật, với thời điểm và người thực hiện), không gộp
+  vào `SuCo` vì một sự cố có **nhiều** lần cập nhật theo thời gian, mỗi lần có dữ liệu riêng.
 - `PhanHoi` và `TraoDoi` tách thành 2 lớp riêng dù cùng là "phản ứng của người báo trên một sự cố", vì quy
   tắc nghiệp vụ khác hẳn nhau: `PhanHoi` chỉ 1 lần/sự cố và chỉ sau khi hoàn thành (bội số `0..1`), còn
   `TraoDoi` không giới hạn số lần và không ràng buộc trạng thái (bội số `0..*`).
@@ -388,51 +324,70 @@ classDiagram
   sự cố quên mật khẩu không liên quan thiết bị vật lý nào).
 - Không đưa "Tài khoản AI/hệ thống ngoài" vào mô hình vì nằm ngoài phạm vi (§1.1).
 
-### 2.2. Phân bổ trách nhiệm (CRC)
+### 2.3. Phân bổ trách nhiệm (thẻ CRC)
 
-| Lớp | Trách nhiệm (Responsibility) | Cộng tác (Collaborator) |
-|---|---|---|
-| **SuCo** | Biết trạng thái, mức ưu tiên, nguyên nhân/cách khắc phục của chính nó; biết liệu đã `HOÀN_THÀNH` hay chưa (điều kiện để cho phép `PhanHoi`). | `NguoiDung` (người báo, người xử lý), `ThietBi`, `DanhMucSuCo`, `BaiKinhNghiem`, `LanXuLy`, `PhanHoi`, `TraoDoi` |
-| **NguoiDung** | Biết vai trò của mình (USER/ADMIN) để hệ thống quyết định được đi tới màn hình nào; là Information Expert cho dữ liệu đăng nhập. | `SuCo` (báo/xử lý), `BaiKinhNghiem` (viết), `PhanHoi`/`TraoDoi` (gửi) |
-| **BaiKinhNghiem** | Lưu lại một cách xử lý đã được tổng kết (triệu chứng → nguyên nhân → giải pháp) theo danh mục, để tra cứu lại. | `DanhMucSuCo`, `NguoiDung` (người viết), `SuCo` (sự cố tham chiếu tới nó) |
-| **LanXuLy** | Ghi lại một lần đổi trạng thái: trạng thái cũ, trạng thái mới, thời điểm — phục vụ xem lại lịch sử và thống kê thời gian xử lý. | `SuCo` |
-| **ThietBi** | Biết tình trạng hoạt động của chính nó; thuộc về đúng 1 `Phong`. | `Phong`, `SuCo` |
-| **DanhMucSuCo** | Phân loại dùng chung cho cả `SuCo` lẫn `BaiKinhNghiem`, giúp liên kết "sự cố loại X" với "kinh nghiệm xử lý loại X". | `SuCo`, `BaiKinhNghiem` |
+Mỗi lớp là một thẻ riêng gồm 3 phần Class, Responsibility, Collaborator (Bài 8). Trách nhiệm được ghi ở mức
+"cái gì" theo hai loại: **biết** (dữ liệu lớp nắm giữ) và **làm** (dịch vụ lớp cung cấp). Hai thẻ cuối là lớp
+điều khiển, chuẩn bị cho mô hình BCE (§2.4); trong mã nguồn chúng tương ứng `SuCoController` và `AdminController`.
 
-Nguyên tắc GRASP áp dụng rõ nhất ở đây là **Information Expert**: `SuCo` được giao trách nhiệm tự biết
-mình đã hoàn thành hay chưa (thay vì để Controller so sánh chuỗi trạng thái), vì chính `SuCo` là nơi nắm dữ
-liệu `trangThai` — chi tiết cài đặt tương ứng (`SuCo.daHoanThanh()`) trình bày ở §3.5.
+![Hình 2.2 — Thẻ CRC của các lớp chính](docs/uml/h2_3_crc.png)
 
-### 2.3. System Sequence Diagram (SSD)
+*Hình 2.2. Thẻ CRC của các lớp chính.*
 
-SSD chỉ thể hiện tương tác **Actor ↔ Hệ thống** như một hộp đen, chưa phân rã nội bộ (phần phân rã nội bộ
-thuộc Chương 3).
+Nguyên tắc GRASP áp dụng rõ nhất ở đây là **Information Expert**: `SuCo` được giao trách nhiệm tự biết mình đã
+hoàn thành hay chưa (thay vì để Controller so sánh chuỗi trạng thái), vì chính `SuCo` nắm dữ liệu
+`trangThai`. Chi tiết cài đặt tương ứng (`SuCo.daHoanThanh()`) xem ở §3.2 (Hình 3.5) và §3.5.
 
-**UC2 — Báo sự cố:**
+Tinh chỉnh lớp sau khi viết thẻ (Bài 8):
 
-```mermaid
-sequenceDiagram
-    actor U as Người báo
-    participant S as :HệThống
-    U->>S: baoSuCo(tieuDe, moTa, maThietBi, maDanhMuc, mucUuTien, anh)
-    S-->>U: xácNhận("Đã gửi báo cáo sự cố")
-```
+- **Không gộp** `PhanHoi` với `TraoDoi`: hai thẻ có trách nhiệm khác nhau (1 lần sau hoàn thành và nhiều lần bất kỳ lúc nào).
+- **Không tạo** lớp `ThongKe` trong miền: thẻ của nó sẽ không có trách nhiệm "biết" nào riêng (lazy class); số
+  liệu thống kê được tính bằng truy vấn tổng hợp ở `ThongKeRepo` khi cần.
+- Cột Collaborator của `SuCo` dài nhất vì đây là thực thể trung tâm; các lớp khác chỉ cộng tác với 1–2 lớp,
+  cho thấy độ phụ thuộc giữa các lớp thấp (Low Coupling).
 
-**UC6 — Tiếp nhận và xử lý sự cố:**
+### 2.4. Mô hình phân tích BCE (Boundary – Control – Entity)
 
-```mermaid
-sequenceDiagram
-    actor A as Cán bộ CNTT
-    participant S as :HệThống
-    A->>S: xemDanhSáchSựCố(lọcTrạngThái?, từKhóa?)
-    S-->>A: danhSáchSựCố
-    A->>S: xemChiTiết(maSuCo)
-    S-->>A: chiTiếtSựCố, lịchSửXửLý
-    A->>S: capNhatXuLy(maSuCo, trangThaiMoi, nguyenNhan, cachKhacPhuc, luuKho?)
-    S-->>A: xácNhận("Đã lưu cập nhật sự cố")
-```
+Bổ sung lớp biên (Boundary) và lớp điều khiển (Control) cho từng nhóm UC (Bài 6, Bài 7): mỗi actor có ít nhất
+một lớp biên, mỗi nhóm UC phức tạp có một lớp điều khiển, còn lớp thực thể lấy từ mô hình khái niệm. Các quy
+tắc tương tác: actor chỉ làm việc với Boundary; Boundary chỉ gửi yêu cầu cho Control, không gọi thẳng Entity;
+Control điều phối Entity; Entity không chủ động gọi Boundary hay Control.
 
-### 2.4. Điểm mơ hồ và cách nhóm quyết định xử lý
+![Hình 2.3 — Lớp phân tích BCE phía Người báo sự cố (UC2, UC3, UC4, UC5)](docs/uml/h2_4a_bce_nguoibao.png)
+
+*Hình 2.3. Lớp phân tích BCE phía Người báo sự cố (UC2, UC3, UC4, UC5).*
+
+![Hình 2.4 — Lớp phân tích BCE phía Cán bộ CNTT (UC4, UC6, UC7, UC16)](docs/uml/h2_4b_bce_canbo.png)
+
+*Hình 2.4. Lớp phân tích BCE phía Cán bộ CNTT (UC4, UC6, UC7, UC16).*
+
+Ánh xạ sang công nghệ: Boundary là template Thymeleaf, Control là các lớp `*Controller` của Spring MVC, Entity
+là lớp model cùng `*Repo` đọc/ghi CSDL (xem §3.1).
+
+### 2.5. System Sequence Diagram (SSD)
+
+SSD chỉ thể hiện tương tác **Actor ↔ Hệ thống** như một hộp đen, chưa phân rã nội bộ (phần phân rã thuộc
+§3.2). Thông điệp được đánh số theo đúng thứ tự trong kịch bản; khung `alt` là các luồng thay thế/ngoại lệ đã
+đặc tả ở §1.7.
+
+![Hình 2.5 — SSD của UC2 Báo sự cố](docs/uml/h2_5a_ssd_uc2.png)
+
+*Hình 2.5. SSD của UC2 Báo sự cố.*
+
+![Hình 2.6 — SSD của UC6 Tiếp nhận và xử lý sự cố (kèm UC7, UC16)](docs/uml/h2_5b_ssd_uc6.png)
+
+*Hình 2.6. SSD của UC6 Tiếp nhận và xử lý sự cố (kèm UC7, UC16).*
+
+![Hình 2.7 — SSD của UC5 Gửi phản hồi](docs/uml/h2_5c_ssd_uc5.png)
+
+*Hình 2.7. SSD của UC5 Gửi phản hồi.*
+
+![Hình 2.8 — SSD của UC4 Trao đổi về sự cố](docs/uml/h2_5d_ssd_uc4.png)
+
+*Hình 2.8. SSD của UC4 Trao đổi về sự cố.*
+
+
+### 2.6. Điểm mơ hồ và cách nhóm quyết định xử lý
 
 - **Thứ tự trạng thái không bị ép buộc:** đề bài gốc không nói rõ việc đổi trạng thái có phải đi tuần tự
   `MỚI → ĐANG_XỬ_LÝ → HOÀN_THÀNH` hay không. Nhóm **giả định** quy trình thực tế là tuần tự (R1), nhưng
@@ -462,270 +417,162 @@ chưa đủ phức tạp để tách thêm một tầng; đây là lựa chọn 
 | Entity (miền nghiệp vụ) | `model/*` (`SuCo`, `NguoiDung`...) + `*Repo` (`SuCoRepo`...) | Model giữ dữ liệu và một số quy tắc gắn liền với chính nó (`SuCo.daHoanThanh()`); Repo là nơi duy nhất biết cấu trúc bảng/CSDL (Information Expert cho việc đọc/ghi dữ liệu). |
 | Cắt ngang (cross-cutting) | `AuthInterceptor`, `XuLyLoiChung` | Xác thực/phân quyền và xử lý lỗi tập trung cho **mọi** controller, tách khỏi từng Controller cụ thể (Pure Fabrication — xem §3.5). |
 
+**Phân hoạch (partition): chia theo chức năng.** Các controller được nhóm thành 5 gói nghiệp vụ; mũi tên nét
+đứt là phụ thuộc giữa các gói (gói nguồn dùng thông tin/dịch vụ của gói đích).
+
+![Hình 3.1 — Phân hoạch hệ thống theo chức năng nghiệp vụ](docs/uml/h3_1a_phanhoach.png)
+
+*Hình 3.1. Phân hoạch hệ thống theo chức năng nghiệp vụ.*
+
+Gói "Quản lý sự cố" phụ thuộc nhiều nhất (cần thiết bị, danh mục, người dùng, kho kinh nghiệm), còn "Danh mục
+& tài sản" không phụ thuộc gói nào: thay đổi ở gói lõi này sẽ ảnh hưởng các gói khác, nên cần giữ ổn định.
+
+**Phân tầng (layering): chia theo trách nhiệm kỹ thuật.** Phụ thuộc chỉ đi một chiều từ trên xuống, giao diện
+không gọi thẳng Repo hay CSDL.
+
+![Hình 3.2 — Phân tầng hệ thống và ánh xạ sang các package Java](docs/uml/h3_1b_phantang.png)
+
+*Hình 3.2. Phân tầng hệ thống và ánh xạ sang các package Java.*
+
+
 ### 3.2. Sequence Diagram (mức thiết kế)
 
-**UC2 — Báo sự cố:**
+Các sơ đồ tuần tự mở "hộp đen" của SSD (§2.5) theo đúng thứ tự **Actor → Boundary → Control → Entity**
+(Bài 10). Quy ước trên hình:
 
-```mermaid
-sequenceDiagram
-    actor U as Người báo
-    participant C as sc:SuCoController
-    participant L as anh:LuuAnhSuCo
-    participant R as repo:SuCoRepo
-    participant DB as Oracle (SU_CO)
+- Icon hình tròn có vạch đứng bên trái là Boundary (template Thymeleaf); hình tròn có mũi tên là Control
+  (`*Controller`); hình tròn có gạch dưới là Entity (`*Repo` và đối tượng model); hình trụ là CSDL Oracle.
+- Thông điệp được đánh số theo thời gian; thanh dọc là activation bar; `«create»` là lúc một đối tượng được tạo
+  ra (lifeline của nó bắt đầu từ giữa hình).
+- Tên thông điệp là tên phương thức thật trong mã nguồn; tham số hạ tầng của Spring (`HttpSession`, `Model`,
+  `RedirectAttributes`) được lược bỏ.
 
-    U->>C: POST /user/bao-cao(tieuDe, moTa, maTb, maDm, mucUuTien, anh)
-    alt tiêu đề rỗng hoặc mức ưu tiên không hợp lệ
-        C-->>U: redirect /user (flash "loi")
-    else hợp lệ
-        C->>L: luu(anh)
-        alt loại file không hợp lệ
-            L-->>C: throw FileKhongHopLeException
-            C-->>U: redirect /user (flash "loi")
-        else hợp lệ
-            L-->>C: duongDanAnh
-            C->>R: taoMoi(tieuDe, moTa, maNguoiBao, maTb, maDm, mucUuTien, duongDanAnh)
-            R->>DB: INSERT INTO SU_CO (...) VALUES (..., 'MOI', ...)
-            DB-->>R: OK
-            R-->>C: void
-            C-->>U: redirect /user (flash "thongBao")
-        end
-    end
-```
+![Hình 3.3 — Sơ đồ tuần tự UC2 Báo sự cố](docs/uml/h3_2a_sd_uc2.png)
 
-**UC6 + UC7 — Xử lý sự cố, kèm nhánh tự tạo bài kinh nghiệm:**
+*Hình 3.3. Sơ đồ tuần tự UC2 Báo sự cố.*
 
-```mermaid
-sequenceDiagram
-    actor Ad as Cán bộ CNTT
-    participant C as admin:AdminController
-    participant KR as kn:KinhNghiemRepo
-    participant SR as repo:SuCoRepo
-    participant DB as Oracle
+Kiểm tra bề mặt (tiêu đề, mức ưu tiên) do Controller làm; kiểm tra loại file giao cho `LuuAnhSuCo` (lớp con của
+`BoLuuTru`, xem §3.3). Controller chỉ bắt `FileKhongHopLeException` để chọn thông báo hiển thị.
 
-    Ad->>C: POST /admin/{maSc}(trangThai, nguyenNhan, cachKhacPhuc, maBaiKn?, luuKho?, maDmKho?)
-    alt trạng thái không hợp lệ
-        C-->>Ad: redirect /admin/{maSc} (flash "loi")
-    else hợp lệ
-        opt luuKho = true và chưa chọn bài có sẵn
-            C->>SR: timTheoMa(maSc)
-            SR->>DB: SELECT ... FROM V_SU_CO_CHI_TIET WHERE MA_SC = ?
-            DB-->>SR: dòng sự cố
-            SR-->>C: suCo
-            C->>KR: taoMoi(tieuDe, maDmKho, moTa, nguyenNhan, cachKhacPhuc, maNguoiViet)
-            KR->>DB: INSERT INTO BAI_KINH_NGHIEM (...)
-            DB-->>KR: maBai (IDENTITY tự sinh)
-            KR-->>C: maBaiGan
-        end
-        C->>SR: capNhat(maSc, trangThai, nguyenNhan, cachKhacPhuc, maBaiGan, maAdminXuLy, ghiChu)
-        SR->>DB: UPDATE SU_CO SET TRANG_THAI=?, NGUYEN_NHAN=?, ...
-        DB->>DB: trigger TRG_SU_CO_HOAN_THANH (gán/xóa NGAY_HOAN_THANH)
-        DB->>DB: trigger TRG_SU_CO_LICH_SU (INSERT LICH_SU_XU_LY)
-        DB-->>SR: OK
-        SR-->>C: true
-        C-->>Ad: redirect /admin/{maSc} (flash "thongBao")
-    end
-```
+![Hình 3.4 — Sơ đồ tuần tự UC6 Xử lý sự cố, kèm nhánh UC7 tự tạo bài kinh nghiệm](docs/uml/h3_2b_sd_uc6_uc7.png)
 
-**UC5 — Gửi phản hồi (minh họa biến ràng buộc CSDL thành thông báo dễ hiểu):**
+*Hình 3.4. Sơ đồ tuần tự UC6 Xử lý sự cố, kèm nhánh UC7 tự tạo bài kinh nghiệm.*
 
-```mermaid
-sequenceDiagram
-    actor U as Người báo
-    participant C as sc:SuCoController
-    participant PR as ph:PhanHoiRepo
-    participant DB as Oracle (PHAN_HOI)
+Khung `opt` chính là quan hệ `«extend»` UC7 → UC6 trên sơ đồ Use Case. Hai trigger là thông điệp tự gọi trên
+lifeline Oracle, cho thấy trách nhiệm ghi lịch sử và gán ngày hoàn thành được đẩy xuống tầng dữ liệu (xem §3.6).
 
-    U->>C: POST /user/{maSc}/phan-hoi(mucHaiLong, noiDung)
-    C->>C: kiểm tra suCo.daHoanThanh() và 1 <= mucHaiLong <= 5
-    alt chưa hoàn thành hoặc mức không hợp lệ
-        C-->>U: redirect /user/{maSc} (flash "loi")
-    else hợp lệ
-        C->>PR: taoMoi(maSc, maNguoiPhanHoi, mucHaiLong, noiDung)
-        PR->>DB: INSERT INTO PHAN_HOI (...)
-        alt đã có phản hồi trước đó (UQ_PHAN_HOI_SU_CO)
-            DB-->>PR: ORA-00001 (vi phạm ràng buộc duy nhất)
-            PR-->>C: throw DuplicateKeyException
-            C-->>U: redirect /user/{maSc} (flash "Sự cố này đã được phản hồi rồi")
-        else chưa có
-            DB-->>PR: OK
-            PR-->>C: void
-            C-->>U: redirect /user/{maSc} (flash "thongBao")
-        end
-    end
-```
+![Hình 3.5 — Sơ đồ tuần tự UC5 Gửi phản hồi](docs/uml/h3_2c_sd_uc5.png)
+
+*Hình 3.5. Sơ đồ tuần tự UC5 Gửi phản hồi.*
+
+Controller không tự so sánh chuỗi `"HOAN_THANH"` mà **hỏi chính đối tượng** `sc:SuCo` qua `daHoanThanh()` (thông
+điệp 8): `SuCo` là Information Expert vì nó giữ `trangThai`. Quy tắc "mỗi sự cố chỉ 1 phản hồi" được bảo đảm lần
+cuối bởi ràng buộc `UQ_PHAN_HOI_SU_CO`; Controller bắt `DuplicateKeyException` để hiện thông báo dễ hiểu thay vì
+để lộ mã lỗi ORA-00001.
+
+![Hình 3.6 — Sơ đồ tuần tự UC4 Trao đổi về sự cố (gửi tin và tự cập nhật tin mới)](docs/uml/h3_2d_sd_uc4.png)
+
+*Hình 3.6. Sơ đồ tuần tự UC4 Trao đổi về sự cố (gửi tin và tự cập nhật tin mới).*
+
+Khung `loop` là việc trang chi tiết (`app.js`) cứ 4 giây gọi `binhLuanMoi(maSc, sauMa)` để chỉ lấy những tin có mã
+lớn hơn tin mới nhất đang hiển thị, nhờ đó phía bên kia thấy tin trả lời mà không phải tải lại trang.
+
+![Hình 3.7 — Sơ đồ giao tiếp (Communication Diagram) cho UC6 + UC7](docs/uml/h3_2e_gt_uc6_uc7.png)
+
+*Hình 3.7. Sơ đồ giao tiếp (Communication Diagram) cho UC6 + UC7.*
+
+Cùng nội dung với Hình 3.4 nhưng nhìn theo **cấu trúc cộng tác** ("ai nói chuyện với ai") thay vì theo thời gian.
+Hình cho thấy ngay `:AdminController` là đầu mối duy nhất nối giao diện với các đối tượng phía sau (Low
+Coupling), còn `:TrangXuLySuCo` không gọi thẳng Repo nào. Số thứ tự phân cấp (2.1, 2.1.1...) cho biết thông
+điệp nào được gửi trong lúc đang xử lý thông điệp nào.
 
 ### 3.3. Design Class Diagram (DCD)
 
-DCD được tách thành 3 hình nhỏ theo từng nhóm trách nhiệm thay vì dồn vào 1 hình (Mermaid tự dàn trang, và
-khi gộp chung thì các mũi tên đi xuyên qua lớp khác, gây hiểu nhầm về phụ thuộc). Quy ước chung cho cả 3
-hình:
+Khác với mô hình khái niệm (§2.2), DCD ghi đủ **kiểu dữ liệu**, **mức truy cập** (`+` public, `-` private,
+`#` protected), **chiều điều hướng** (mũi tên) và **bội số**, đủ chi tiết để lập trình (Bài 11). Quy ước:
 
-- Một mũi tên liền `-->` có bội số `1` nghĩa là lớp nguồn giữ một thuộc tính `private final` kiểu lớp đích,
-  được Spring tiêm qua constructor. Thuộc tính đó không lặp lại trong ô thuộc tính; ô thuộc tính chỉ liệt kê
-  các repo không có mặt trên hình.
-- Chữ ký phương thức của Controller lược bỏ tham số hạ tầng của Spring (`HttpSession`, `Model`,
-  `RedirectAttributes`) để dòng không quá dài; chữ ký đầy đủ xem trong mã nguồn.
+- Mũi tên liền có tên vai trò (ví dụ `-suCoRepo`) và bội số `1`: lớp nguồn giữ một thuộc tính `private final`
+  kiểu lớp đích, do Spring tiêm qua constructor, nên thuộc tính đó không lặp lại trong ô thuộc tính.
+- Mũi tên nét đứt `«create»`: lớp nguồn tạo ra đối tượng lớp đích (Repo dựng đối tượng model từ dòng dữ liệu).
+- Chỉ liệt kê các phương thức tham gia các UC đã phân tích; danh sách đầy đủ xem `src/main/java/vn/utc/suco/`.
 
-**Hình 3.3a — Luồng Controller → Repository → đối tượng nghiệp vụ:**
+DCD được tách thành nhiều hình theo nhóm trách nhiệm để không quá rộng khi in.
 
-```mermaid
-classDiagram
-    direction LR
-    class SuCoController {
-        -ThietBiRepo thietBiRepo
-        -DanhMucRepo danhMucRepo
-        -BinhLuanRepo binhLuanRepo
-        +trangNguoiDung() String
-        +chiTietCuaToi(maSc) String
-        +baoSuCo(tieuDe, moTa, maTb, maDm, mucUuTien, anh) String
-        +guiBinhLuan(maSc, noiDung, tep) String
-        +guiPhanHoi(maSc, mucHaiLong, noiDung) String
-    }
-    class AdminController {
-        -DanhMucRepo danhMucRepo
-        -PhanHoiRepo phanHoiRepo
-        -BinhLuanRepo binhLuanRepo
-        +danhSach(trangThai, q, trang) String
-        +chiTiet(maSc) String
-        +capNhat(maSc, trangThai, nguyenNhan, cachKhacPhuc, maBaiKn, luuKho, maDmKho, ghiChu) String
-        +xoa(maSc) String
-    }
-    class SuCoRepo {
-        +taoMoi(tieuDe, moTa, maNguoiBao, maTb, maDm, mucUuTien, anh) void
-        +timTheoNguoiBao(maNd) List~SuCo~
-        +timTheoMa(maSc) Optional~SuCo~
-        +capNhat(maSc, trangThai, nguyenNhan, cachKhacPhuc, maBaiKn, maAdmin, ghiChu) boolean
-        +xoa(maSc) void
-        +timSuCoHayGap() List~SuCoHayGap~
-        +timLichSu(maSc) List~LichSu~
-    }
-    class KinhNghiemRepo {
-        +taoMoi(tieuDe, maDm, trieuChung, nguyenNhan, giaiPhap, maNguoiViet) long
-        +capNhat(maBai, tieuDe, maDm, trieuChung, nguyenNhan, giaiPhap) void
-        +xoa(maBai) void
-    }
-    class PhanHoiRepo {
-        +timTheoSuCo(maSc) Optional~PhanHoi~
-        +taoMoi(maSc, maNguoiPhanHoi, mucHaiLong, noiDung) void
-    }
-    class SuCo {
-        -Long maSc
-        -String tieuDe
-        -MucUuTien mucUuTien
-        +daHoanThanh() boolean
-    }
-    class TrangThaiSuCo {
-        <<enumeration>>
-        MOI
-        DANG_XU_LY
-        HOAN_THANH
-    }
-    SuCoController --> "1" PhanHoiRepo
-    SuCoController --> "1" SuCoRepo
-    AdminController --> "1" SuCoRepo
-    AdminController --> "1" KinhNghiemRepo
-    SuCoRepo ..> SuCo : «create»
-    SuCo --> "1" TrangThaiSuCo
-```
+![Hình 3.8 — DCD phía Người báo sự cố (UC2, UC3, UC4, UC5)](docs/uml/h3_3a1_dcd_nguoibao.png)
 
-**Hình 3.3b — Lưu tệp tải lên (Template Method):**
+*Hình 3.8. DCD phía Người báo sự cố (UC2, UC3, UC4, UC5).*
 
-```mermaid
-classDiagram
-    direction TB
-    class SuCoController
-    class AdminController
-    class BoLuuTru {
-        <<abstract>>
-        -Path thuMuc
-        +luu(file) String
-        #duoiHopLe()* Map~String,String~
-        #thongBaoLoiLoai()* String
-    }
-    class LuuAnhSuCo {
-        #duoiHopLe() Map~String,String~
-        #thongBaoLoiLoai() String
-    }
-    class LuuTepTraoDoi {
-        #duoiHopLe() Map~String,String~
-        #thongBaoLoiLoai() String
-    }
-    SuCoController --> "1" LuuAnhSuCo
-    SuCoController --> "1" LuuTepTraoDoi
-    AdminController --> "1" LuuTepTraoDoi
-    BoLuuTru <|-- LuuAnhSuCo
-    BoLuuTru <|-- LuuTepTraoDoi
-```
+![Hình 3.9 — DCD phía Cán bộ CNTT (UC6, UC7, UC16)](docs/uml/h3_3a2_dcd_canbo.png)
 
-**Hình 3.3c — Kiểu nhãn dùng chung và lớp hạ tầng web:**
+*Hình 3.9. DCD phía Cán bộ CNTT (UC6, UC7, UC16).*
 
-```mermaid
-classDiagram
-    direction TB
-    class CoNhan {
-        <<interface>>
-        +getNhan() String
-        +getLopBadge() String
-    }
-    class TrangThaiSuCo {
-        <<enumeration>>
-        MOI
-        DANG_XU_LY
-        HOAN_THANH
-    }
-    class AuthInterceptor {
-        +preHandle(req, resp, handler) boolean
-    }
-    class XuLyLoiChung {
-        +duLieuKhongHopLe(request) String
-        +fileQuaLon(request) String
-    }
-    CoNhan <|.. TrangThaiSuCo
-```
+![Hình 3.10 — Các lớp thực thể (package model)](docs/uml/h3_3b_dcd_thucthe.png)
 
-`AuthInterceptor` (chặn truy cập theo vai trò trước khi vào Controller) và `XuLyLoiChung`
-(`@ControllerAdvice` xử lý lỗi chung) không có liên kết trực tiếp tới lớp nào khác vì Spring gọi chúng
-theo cấu hình, không qua tham chiếu trong code.
+*Hình 3.10. Các lớp thực thể (package model).*
 
-*(Danh sách thuộc tính/phương thức đầy đủ của từng lớp xem trực tiếp trong `src/main/java/vn/utc/suco/`; sơ
-đồ trên chỉ chọn các thành viên liên quan tới 3 UC đã phân tích ở §3.2 để tránh sơ đồ quá tải.)*
+Ở tầng cài đặt, liên kết giữa các thực thể được hiện thực bằng **thuộc tính khóa** (`maTb: Long`, `maDm: Long`...)
+chứ không giữ tham chiếu đối tượng; tên trên mũi tên là thuộc tính hiện thực liên kết đó, chiều mũi tên là
+chiều điều hướng (từ `SuCo` biết được `ThietBi`, chiều ngược lại phải truy vấn). Cách này phù hợp với
+JdbcTemplate, vì dự án không dùng ORM.
 
-### 3.4. State Machine — vòng đời `SuCo.trangThai`
+![Hình 3.11 — Lưu tệp tải lên theo mẫu Template Method](docs/uml/h3_3c_dcd_luutru.png)
 
-```mermaid
-stateDiagram-v2
-    direction LR
+*Hình 3.11. Lưu tệp tải lên theo mẫu Template Method.*
 
-    [*] --> MOI : (1) báo sự cố
-    MOI --> DANG_XU_LY : (2) tiếp nhận
-    DANG_XU_LY --> HOAN_THANH : (3) hoàn thành
-    HOAN_THANH --> DANG_XU_LY : (4) mở lại
-    MOI --> HOAN_THANH : (5) xử lý ngay
-    DANG_XU_LY --> MOI : (6) đặt lại
-    HOAN_THANH --> MOI : (7) đặt lại
-```
+`luu()` là phương thức `final` của lớp trừu tượng `BoLuuTru`: bước kiểm tra loại file, sinh tên UUID và ghi đĩa là
+chung; hai lớp con chỉ cài lại `duoiHopLe()` và `thongBaoLoiLoai()` (xem Polymorphism + OCP ở §3.5).
 
-| # | Chuyển trạng thái | Sự kiện / ý nghĩa | Hiệu ứng phụ (trigger CSDL) |
-|---|---|---|---|
-| (1) | → `MOI` | Người báo gửi sự cố (UC2) | — |
-| (2) | `MOI` → `DANG_XU_LY` | Cán bộ CNTT tiếp nhận xử lý | Ghi 1 dòng `LanXuLy` |
-| (3) | `DANG_XU_LY` → `HOAN_THANH` | Hoàn thành xử lý | Gán `NGAY_HOAN_THANH`; ghi 1 dòng `LanXuLy` |
-| (4) | `HOAN_THANH` → `DANG_XU_LY` | Mở lại xử lý | Xóa `NGAY_HOAN_THANH`; ghi 1 dòng `LanXuLy` |
-| (5) | `MOI` → `HOAN_THANH` | Xử lý ngay, bỏ qua bước trung gian | Gán `NGAY_HOAN_THANH`; ghi 1 dòng `LanXuLy` |
-| (6) | `DANG_XU_LY` → `MOI` | Đặt lại "mới" (hiếm dùng) | Ghi 1 dòng `LanXuLy` |
-| (7) | `HOAN_THANH` → `MOI` | Đặt lại "mới" (hiếm dùng) | Xóa `NGAY_HOAN_THANH`; ghi 1 dòng `LanXuLy` |
+![Hình 3.12 — Kiểu nhãn dùng chung và lớp hạ tầng web](docs/uml/h3_3d_dcd_nhan_hatang.png)
 
-Việc gán/xóa `NGAY_HOAN_THANH` do trigger `TRG_SU_CO_HOAN_THANH` đảm nhận, còn việc ghi dòng `LanXuLy` do
-trigger `TRG_SU_CO_LICH_SU` đảm nhận. Chỉ ở trạng thái `HOAN_THANH` người báo mới gửi được `PhanHoi` (UC5),
-và chỉ gửi được đúng 1 lần.
+*Hình 3.12. Kiểu nhãn dùng chung và lớp hạ tầng web.*
 
-Sơ đồ phản ánh **đúng những gì mã nguồn hiện cho phép** (`AdminController.capNhat` chỉ kiểm tra trạng thái
-gửi lên có nằm trong 3 giá trị hợp lệ, không kiểm tra trạng thái hiện tại), chứ không chỉ vẽ quy trình lý
-tưởng tuyến tính — đây chính là điểm mơ hồ đã nêu ở §2.4. Nếu nhóm muốn siết lại (chỉ cho phép đi theo đúng
-thứ tự `MỚI → ĐANG_XỬ_LÝ → HOÀN_THÀNH`), cách làm hợp lý là thêm điều kiện kiểm tra trạng thái hiện tại
-ngay trong `SuCoRepo.capNhat` hoặc một lớp kiểm tra chuyển trạng thái riêng — nên nêu đây là hướng cải tiến
-ở Chương 4 (giới hạn sản phẩm) nếu nhóm chưa kịp làm.
+`WebConfig` giữ tham chiếu tới `AuthInterceptor` để đăng ký nó chặn mọi request trước khi vào Controller.
+`XuLyLoiChung` (`@ControllerAdvice`) không có liên kết tới lớp nào vì Spring gọi nó theo cấu hình khi có ngoại lệ,
+không qua tham chiếu trong code.
+
+### 3.4. State Machine
+
+![Hình 3.13 — Sơ đồ trạng thái của SuCo (thuộc tính trangThai)](docs/uml/h3_4a_trangthai_suco.png)
+
+*Hình 3.13. Sơ đồ trạng thái của SuCo (thuộc tính trangThai).*
+
+Nhãn trên mũi tên theo dạng `sự kiện [điều kiện] / hành động` (Bài 9):
+
+- Siêu trạng thái **Chưa hoàn thành** gom `MOI` và `DANG_XU_LY`. Mũi tên "hoàn thành" đi ra từ khung lớn nghĩa là
+  từ *bất kỳ* trạng thái con nào cũng chuyển thẳng được sang `HOAN_THANH`, gộp hai chuyển MOI → HOAN_THANH và
+  DANG_XU_LY → HOAN_THANH thành một.
+- `HOAN_THANH` có hành động **entry/exit**: vào trạng thái thì gán `NGAY_HOAN_THANH`, rời trạng thái thì xóa,
+  đúng ngữ nghĩa trigger `TRG_SU_CO_HOAN_THANH`. Nhờ dùng entry/exit nên không phải lặp lại hành động này trên
+  từng mũi tên.
+- Mọi chuyển giữa hai trạng thái khác nhau đều kèm hành động `ghi LanXuLy` (trigger `TRG_SU_CO_LICH_SU`).
+- Hai **tự chuyển (self-transition)**: sửa nội dung mà giữ nguyên trạng thái vẫn ghi `LanXuLy` (do
+  `SuCoRepo.capNhat` tự làm); ở `HOAN_THANH`, người báo gửi phản hồi được đúng 1 lần (điều kiện `[chưa có phản hồi]`).
+- Trạng thái kết thúc: cán bộ CNTT xóa sự cố (`AdminController.xoa`) ở bất kỳ trạng thái nào.
+
+| Sự kiện | Chuyển trạng thái | Nơi xảy ra trong mã nguồn |
+|---|---|---|
+| `baoSuCo()` | bắt đầu → `MOI` | `SuCoController.baoSuCo` → `SuCoRepo.taoMoi` |
+| tiếp nhận | `MOI` → `DANG_XU_LY` | `AdminController.capNhat` |
+| hoàn thành | `MOI` / `DANG_XU_LY` → `HOAN_THANH` | `AdminController.capNhat` |
+| mở lại | `HOAN_THANH` → `DANG_XU_LY` | `AdminController.capNhat` |
+| đặt lại | `DANG_XU_LY` / `HOAN_THANH` → `MOI` | `AdminController.capNhat` |
+| cập nhật nội dung | giữ nguyên trạng thái | `SuCoRepo.capNhat` (tự thêm 1 dòng `LICH_SU_XU_LY`) |
+| `guiPhanHoi` | `HOAN_THANH` (giữ nguyên) | `SuCoController.guiPhanHoi` |
+| xóa sự cố | bất kỳ → kết thúc | `AdminController.xoa` |
+
+Sơ đồ phản ánh **đúng những gì mã nguồn hiện cho phép** (`AdminController.capNhat` chỉ kiểm tra trạng thái gửi
+lên có nằm trong 3 giá trị hợp lệ, không kiểm tra trạng thái hiện tại), chứ không chỉ vẽ quy trình lý tưởng
+tuyến tính; đây chính là điểm mơ hồ đã nêu ở §2.6. Nếu nhóm muốn siết lại (chỉ cho đi đúng thứ tự
+`MỚI → ĐANG_XỬ_LÝ → HOÀN_THÀNH`), cách làm hợp lý là thêm điều kiện kiểm tra trạng thái hiện tại ngay trong
+`SuCoRepo.capNhat` hoặc trong một lớp kiểm tra chuyển trạng thái riêng, và nêu đây là hướng cải tiến ở §4.4.
+
+![Hình 3.14 — Sơ đồ trạng thái của tài khoản NguoiDung](docs/uml/h3_4b_trangthai_nguoidung.png)
+
+*Hình 3.14. Sơ đồ trạng thái của tài khoản NguoiDung.*
+
+Đây là cách hiện thực giả định G5 ("xóa" người dùng nghĩa là vô hiệu hóa). Điều kiện
+`[không phải tài khoản đang đăng nhập]` ứng với test T10. Tình trạng `ThietBi` (HOẠT_ĐỘNG/HỎNG/ĐANG_SỬA) chỉ do
+cán bộ CNTT sửa tay, không có sự kiện hay quy tắc tự động nào, nên không cần vẽ sơ đồ trạng thái cho nó.
 
 ### 3.5. Giải thích quyết định thiết kế theo GRASP/SOLID
 
@@ -743,9 +590,16 @@ ngay trong `SuCoRepo.capNhat` hoặc một lớp kiểm tra chuyển trạng th�
 
 ### 3.6. Thiết kế dữ liệu (ERD)
 
-Sơ đồ ER đầy đủ (9 bảng, kèm bảng mô tả khóa chính/khóa ngoại và các ràng buộc) đã có sẵn ở
-[SO_DO_QUAN_HE.md](SO_DO_QUAN_HE.md) — không lặp lại ở đây. Phần này chỉ nêu các điểm **ánh xạ không phải
-1-1** từ mô hình khái niệm (§2.1) sang thiết kế dữ liệu, đúng tinh thần Mục 4.6 của hướng dẫn BTL:
+Sơ đồ ER đầy đủ 9 bảng ở Hình 3.15; bảng mô tả khóa chính/khóa ngoại và các ràng buộc chi tiết xem
+[SO_DO_QUAN_HE.md](SO_DO_QUAN_HE.md). Ký hiệu chân chim: `||` đúng một, `|o` không hoặc một, `o{` không hoặc
+nhiều; dấu chấm trước tên cột là cột `NOT NULL`.
+
+![Hình 3.15 — Sơ đồ thực thể – liên kết (ERD) của CSDL Oracle](docs/uml/h3_6_erd.png)
+
+*Hình 3.15. Sơ đồ thực thể – liên kết (ERD) của CSDL Oracle.*
+
+Phần dưới chỉ nêu các điểm **ánh xạ không phải 1-1** từ mô hình khái niệm (§2.2) sang thiết kế dữ liệu, đúng
+tinh thần Mục 4.6 của hướng dẫn BTL:
 
 - **`LanXuLy` → bảng `LICH_SU_XU_LY`, nhưng không có "LichSuController"/Repo nào ghi trực tiếp.** Đối
   tượng này được **CSDL tự sinh ra** (trigger `TRG_SU_CO_LICH_SU`), không phải tầng Java tạo — một ví dụ rõ
@@ -757,7 +611,7 @@ Sơ đồ ER đầy đủ (9 bảng, kèm bảng mô tả khóa chính/khóa ngo
   phải tự đồng bộ một cột tần suất mỗi khi có sự cố mới (đúng khuyến cáo "không phải mọi lớp cần trở thành
   bảng").
 - **Quan hệ phản thân của `NguoiDung`** (`MA_NGUOI_TAO`, `MA_NGUOI_XOA` — ai tạo/ai vô hiệu hóa tài khoản
-  này) không xuất hiện trong mô hình khái niệm ở §2.1 vì đây là chi tiết vận hành/kiểm toán (audit), không
+  này) không xuất hiện trong mô hình khái niệm ở §2.2 vì đây là chi tiết vận hành/kiểm toán (audit), không
   phải khái niệm nghiệp vụ cốt lõi mà người dùng cuối quan tâm — chỉ được thêm vào ở mức thiết kế dữ liệu.
 - **Bội số `0..1`/`1` ở mô hình khái niệm được hiện thực bằng ràng buộc `NOT NULL`/cho phép `NULL`** ở cột
   khóa ngoại tương ứng (ví dụ `SU_CO.MA_TB` cho phép NULL vì quan hệ ThietBi–SuCo là `0..1`), và bội số
@@ -820,7 +674,7 @@ yêu cầu "không chỉ chụp giao diện; cần chứng minh quy tắc nghi�
 
 ### 4.4. Giới hạn sản phẩm
 
-- Vòng đời trạng thái sự cố chưa bị ép buộc đi đúng thứ tự ở tầng ứng dụng (xem §2.4, §3.4) — có thể bổ
+- Vòng đời trạng thái sự cố chưa bị ép buộc đi đúng thứ tự ở tầng ứng dụng (xem §2.6, §3.4) — có thể bổ
   sung guard nếu muốn chặt chẽ hơn.
 - Chưa có thông báo chủ động (email/SMS) khi sự cố đổi trạng thái — người dùng phải tự vào xem.
 - Một sự cố chỉ gắn được tối đa 1 thiết bị; chưa hỗ trợ sự cố liên quan nhiều thiết bị cùng lúc.
@@ -855,3 +709,13 @@ không ảnh hưởng tới luồng nghiệp vụ chính.
 | *(điền)* | *(điền)* | *(điền — ví dụ: Chương 2 + Conceptual Model/CRC)* | *(điền)* |
 | *(điền)* | *(điền)* | *(điền — ví dụ: Chương 3 + Sequence/DCD/State Machine)* | *(điền)* |
 | *(điền)* | *(điền)* | *(điền — ví dụ: Chương 4 + kiểm thử)* | *(điền)* |
+
+### Mã nguồn các sơ đồ UML
+
+Toàn bộ 26 hình trong báo cáo được vẽ bằng PlantUML. Mã nguồn nằm ở `docs/uml/src/*.puml` (kiểu dáng dùng chung ở `docs/uml/src/_style.iuml`), ảnh PNG đã xuất nằm ở `docs/uml/`. Tên file khớp với số hình, ví dụ `h3_2b_sd_uc6_uc7.puml` là Hình 3.4.
+
+Khi sửa một sơ đồ, xuất lại ảnh bằng lệnh sau (cần Java và `plantuml.jar` tải từ https://plantuml.com/download, không cần Graphviz):
+
+```sh
+sh docs/uml/render.sh /duong/dan/plantuml.jar
+```

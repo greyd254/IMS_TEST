@@ -1,0 +1,46 @@
+@startuml h3_3a1_dcd_nguoibao
+!include _style.iuml
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+hide empty members
+top to bottom direction
+
+class SuCoController <<control>> {
+  +trangNguoiDung(): String
+  +chiTietCuaToi(maSc: Long): String
+  +baoSuCo(tieuDe: String, moTa: String, maTb: Long,
+  {method}    maDm: Long, mucUuTien: String, anh: MultipartFile): String
+  +guiBinhLuan(maSc: Long, noiDung: String, tep: MultipartFile): String
+  +binhLuanMoi(maSc: Long, sauMa: Long): List<Map<String,Object>>
+  +guiPhanHoi(maSc: Long, mucHaiLong: int, noiDung: String): String
+}
+class SuCoRepo <<entity>> {
+  +taoMoi(tieuDe: String, moTa: String, maNguoiBao: Long, maTb: Long,
+  {method}    maDm: Long, mucUuTien: String, anh: String): void
+  +timTheoMa(maSc: Long): Optional<SuCo>
+  +timTheoNguoiBao(maNd: Long): List<SuCo>
+  +timLichSu(maSc: Long): List<LichSu>
+}
+class PhanHoiRepo <<entity>> {
+  +timTheoSuCo(maSc: Long): Optional<PhanHoi>
+  +taoMoi(maSc: Long, maNguoiPhanHoi: Long,
+  {method}    mucHaiLong: int, noiDung: String): void
+}
+class BinhLuanRepo <<entity>> {
+  +timTheoSuCo(maSc: Long): List<BinhLuan>
+  +timMoiHon(maSc: Long, sauMa: Long): List<BinhLuan>
+  +taoMoi(maSc: Long, maNguoiGui: Long,
+  {method}    noiDung: String, tepDinhKem: String): void
+}
+class SuCo <<entity>> {
+  +daHoanThanh(): boolean
+}
+class LichSu <<entity>>
+
+SuCoController --> "1" SuCoRepo : -suCoRepo
+SuCoController --> "1" PhanHoiRepo : -phanHoiRepo
+SuCoController --> "1" BinhLuanRepo : -binhLuanRepo
+SuCoController ..> SuCo : gọi daHoanThanh()
+SuCoRepo ..> SuCo : <<create>>
+SuCoRepo ..> LichSu : <<create>>
+@enduml

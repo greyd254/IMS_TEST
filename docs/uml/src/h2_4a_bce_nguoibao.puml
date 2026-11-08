@@ -1,0 +1,30 @@
+@startuml h2_4a_bce_nguoibao
+!include _style.iuml
+!pragma layout smetana
+top to bottom direction
+
+actor "Người báo sự cố" as NB
+
+boundary "TrangBaoSuCo\n(user.html)" as B1
+boundary "TrangChiTietCuaToi\n(user-chi-tiet.html)" as B2
+
+control "SuCoController" as C1
+
+entity "SuCo" as E1
+entity "ThietBi" as E2
+entity "DanhMucSuCo" as E3
+entity "LanXuLy" as E4
+entity "PhanHoi" as E5
+entity "TraoDoi" as E6
+
+NB --> B1 : UC2, UC3
+NB --> B2 : UC3, UC4, UC5
+B1 --> C1 : baoSuCo()
+B2 --> C1 : guiPhanHoi()\nguiBinhLuan()
+C1 --> E1
+C1 --> E2
+C1 --> E3
+C1 --> E4
+C1 --> E5
+C1 --> E6
+@enduml

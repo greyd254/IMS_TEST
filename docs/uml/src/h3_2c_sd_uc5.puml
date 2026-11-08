@@ -1,0 +1,54 @@
+@startuml h3_2c_sd_uc5
+!include _style.iuml
+hide footbox
+autonumber
+actor "Người báo sự cố" as U
+boundary ":TrangChiTietCuaToi\n(user-chi-tiet.html)" as B
+control ":SuCoController" as C
+entity ":SuCoRepo" as SR
+entity "sc:SuCo" as SC
+entity ":PhanHoiRepo" as PR
+database "Oracle" as DB
+
+U -> B : chọnMứcHàiLòng(1..5), nhậpNhậnXét
+activate B
+B -> C : guiPhanHoi(maSc, mucHaiLong, noiDung)
+activate C
+C -> SR : timTheoMa(maSc)
+activate SR
+SR -> DB : đọc V_SU_CO_CHI_TIET
+create SC
+SR -> SC : «create»
+SR --> C : sc
+deactivate SR
+alt sc không tồn tại hoặc sc.maNguoiBao ≠ người dùng hiện tại
+  C --> B : redirect /user
+else là sự cố của mình
+  C -> SC : daHoanThanh()
+  activate SC
+  SC --> C : daXong
+  deactivate SC
+  alt daXong = false
+    C --> B : lỗi "Chỉ gửi phản hồi được khi sự cố đã hoàn thành"
+  else mucHaiLong không thuộc [1, 5]
+    C --> B : lỗi "Mức hài lòng phải từ 1 đến 5"
+  else hợp lệ
+    C -> PR : taoMoi(maSc, maNguoiPhanHoi, mucHaiLong, noiDung)
+    activate PR
+    PR -> DB : thêm PHAN_HOI
+    alt vi phạm UQ_PHAN_HOI_SU_CO (đã có phản hồi)
+      DB --> PR : ORA-00001
+      PR --> C : DuplicateKeyException
+      C --> B : lỗi "Sự cố này đã được phản hồi rồi"
+    else chưa có phản hồi
+      DB --> PR : OK
+      PR --> C
+      C --> B : "Đã gửi phản hồi, cảm ơn bạn"
+    end
+    deactivate PR
+  end
+end
+deactivate C
+B --> U : hiển thị thông báo
+deactivate B
+@enduml

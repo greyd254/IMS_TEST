@@ -1,0 +1,31 @@
+@startuml h3_1a_phanhoach
+!include _style.iuml
+!pragma layout smetana
+skinparam packageStyle folder
+
+package "Quản lý sự cố\n(UC2–UC7, UC16)" as QLSC {
+  [SuCoController]
+  [AdminController]
+}
+package "Kho kinh nghiệm\n(UC8, UC9)" as KKN {
+  [KinhNghiemController]
+}
+package "Danh mục & tài sản\n(UC10–UC13)" as DMTS {
+  [DanhMucController]
+  [PhongController]
+  [ThietBiController]
+}
+package "Tài khoản\n(UC1, UC14)" as TK {
+  [AuthController]
+  [NguoiDungController]
+}
+package "Thống kê\n(UC15)" as TKE {
+  [ThongKeController]
+}
+
+QLSC ..> KKN : tạo / gắn bài kinh nghiệm
+QLSC ..> DMTS : chọn thiết bị, danh mục
+QLSC ..> TK : người báo, người xử lý
+KKN ..> DMTS : danh mục bài viết
+TKE ..> QLSC : số liệu sự cố
+@enduml

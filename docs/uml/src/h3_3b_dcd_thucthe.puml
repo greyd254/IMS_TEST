@@ -1,0 +1,108 @@
+@startuml h3_3b_dcd_thucthe
+!include _style.iuml
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+hide empty members
+
+class NguoiDung <<entity>> {
+  -maNd: Long
+  -hoTen: String
+  -email: String
+  -donVi: String
+  -vaiTro: VaiTro
+  -sdt: String
+  -trangThai: TrangThaiNguoiDung
+  +laAdmin(): boolean
+  +dangHoatDong(): boolean
+}
+class SuCo <<entity>> {
+  -maSc: Long
+  -tieuDe: String
+  -moTa: String
+  -maNguoiBao: Long
+  -maTb: Long
+  -maDm: Long
+  -mucUuTien: MucUuTien
+  -trangThai: TrangThaiSuCo
+  -nguyenNhan: String
+  -cachKhacPhuc: String
+  -maBaiKn: Long
+  -anhDinhKem: String
+  -ngayTao: LocalDateTime
+  -ngayHoanThanh: LocalDateTime
+  +daHoanThanh(): boolean
+}
+class ThietBi <<entity>> {
+  -maTb: Long
+  -tenTb: String
+  -loaiTb: String
+  -tinhTrang: TinhTrangThietBi
+  -maPhong: Long
+  -nhaCungCap: String
+  -ngayLapDat: LocalDate
+}
+class Phong <<entity>> {
+  -maPhong: Long
+  -tenPhong: String
+  -toaNha: String
+  -tang: Integer
+  -loaiPhong: String
+}
+class DanhMuc <<entity>> {
+  -maDm: Long
+  -tenDm: String
+  -moTa: String
+}
+class BaiKinhNghiem <<entity>> {
+  -maBai: Long
+  -tieuDe: String
+  -maDm: Long
+  -trieuChung: String
+  -nguyenNhan: String
+  -giaiPhap: String
+  -ngayTao: LocalDateTime
+}
+class LichSu <<entity>> {
+  -thoiGian: LocalDateTime
+  -tenNguoiCapNhat: String
+  -trangThaiCu: TrangThaiSuCo
+  -trangThaiMoi: TrangThaiSuCo
+  -ghiChu: String
+}
+class PhanHoi <<entity>> {
+  -maPh: Long
+  -maSc: Long
+  -maNguoiPhanHoi: Long
+  -mucHaiLong: int
+  -noiDung: String
+  -ngayPhanHoi: LocalDate
+}
+class BinhLuan <<entity>> {
+  -maBl: Long
+  -maSc: Long
+  -maNguoiGui: Long
+  -vaiTroNguoiGui: VaiTro
+  -noiDung: String
+  -tepDinhKem: String
+  -thoiGian: LocalDateTime
+  +cuaAdmin(): boolean
+  +dangJson(): Map<String,Object>
+}
+
+note bottom of LichSu
+  Bản chiếu chỉ-đọc của bảng LICH_SU_XU_LY,
+  chỉ lấy ra qua SuCoRepo.timLichSu(maSc);
+  dòng lịch sử do trigger/SuCoRepo.capNhat ghi.
+end note
+
+SuCo "0..*" --> "1" NguoiDung : maNguoiBao
+SuCo "0..*" --> "0..1" ThietBi : maTb
+SuCo "0..*" --> "1" DanhMuc : maDm
+SuCo "0..*" --> "0..1" BaiKinhNghiem : maBaiKn
+ThietBi "0..*" --> "1" Phong : maPhong
+BaiKinhNghiem "0..*" --> "1" DanhMuc : maDm
+PhanHoi "0..1" --> "1" SuCo : maSc
+BinhLuan "0..*" --> "1" SuCo : maSc
+PhanHoi "0..*" --> "1" NguoiDung : maNguoiPhanHoi
+BinhLuan "0..*" --> "1" NguoiDung : maNguoiGui
+@enduml

@@ -1,0 +1,53 @@
+@startuml h1_8b_hoatdong_xuly
+!include _style.iuml
+
+start
+:Nhận form cập nhật sự cố
+(trạng thái, nguyên nhân, cách khắc phục,
+bài kinh nghiệm có sẵn?, lưu kho?, danh mục kho, ghi chú);
+if (Trạng thái thuộc {MỚI, ĐANG_XỬ_LÝ, HOÀN_THÀNH}?) then (không)
+  :Báo "Trạng thái không hợp lệ";
+  stop
+else (có)
+endif
+
+partition "UC7. Lưu kinh nghiệm xử lý (extend)" {
+  if (Tick "lưu kho" và chưa chọn bài có sẵn?) then (có)
+    if (Đủ nguyên nhân, cách khắc phục, danh mục kho?) then (không)
+      :Báo lỗi thiếu thông tin,
+      không lưu gì;
+      stop
+    else (có)
+    endif
+    :Tạo bài kinh nghiệm mới
+    (tiêu đề, mô tả lấy từ sự cố);
+    :Dùng bài vừa tạo làm bài gắn với sự cố;
+  else (không)
+  endif
+}
+
+:Khóa dòng sự cố, đọc trạng thái
+và nội dung cũ;
+:Ghi trạng thái, nguyên nhân, cách khắc phục,
+bài kinh nghiệm, người xử lý mới;
+if (Trạng thái thay đổi?) then (có)
+  fork
+    :Trigger gán ngày hoàn thành
+    (vào HOÀN_THÀNH) hoặc xóa
+    (rời HOÀN_THÀNH);
+  fork again
+    :Trigger ghi 1 dòng lịch sử
+    (trạng thái cũ → mới);
+  end fork
+  :Bổ sung ghi chú/nội dung thay đổi
+  vào dòng lịch sử vừa tạo (nếu có);
+else (không)
+  if (Nội dung hoặc ghi chú thay đổi?) then (có)
+    :Ghi 1 dòng lịch sử
+    (trạng thái cũ = mới);
+  else (không)
+  endif
+endif
+:Báo "Đã lưu cập nhật sự cố";
+stop
+@enduml

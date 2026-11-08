@@ -1,0 +1,20 @@
+@startuml h2_5c_ssd_uc5
+!include _style.iuml
+hide footbox
+autonumber
+actor "Người báo sự cố" as U
+participant ":HệThốngQuảnLýSựCố" as S
+
+U -> S : xemChiTietSuCoCuaToi(maSc)
+S --> U : chiTiếtSựCố, lịchSửXửLý, phảnHồi (nếu đã có)
+U -> S : guiPhanHoi(maSc, mucHaiLong, noiDung)
+alt sự cố chưa HOÀN_THÀNH
+  S --> U : lỗi("Chỉ gửi phản hồi được khi sự cố đã hoàn thành")
+else mức hài lòng ngoài 1..5
+  S --> U : lỗi("Mức hài lòng phải từ 1 đến 5")
+else sự cố đã có phản hồi
+  S --> U : lỗi("Sự cố này đã được phản hồi rồi")
+else hợp lệ
+  S --> U : xácNhận("Đã gửi phản hồi, cảm ơn bạn")
+end
+@enduml

@@ -1,0 +1,61 @@
+@startuml h1_8a_hoatdong_quytrinh
+!include _style.iuml
+
+|Người báo sự cố|
+start
+repeat
+  :Nhập thông tin sự cố
+  (thiết bị, danh mục, mức ưu tiên,
+  tiêu đề, mô tả, ảnh đính kèm);
+  |Hệ thống|
+  :Kiểm tra tiêu đề, mức ưu tiên,
+  loại và dung lượng ảnh;
+repeat while (Dữ liệu hợp lệ?) is (không) not (có)
+:Lưu sự cố với trạng thái MỚI;
+
+|Cán bộ CNTT|
+:Xem danh sách sự cố mới;
+:Tiếp nhận sự cố
+(MỚI → ĐANG_XỬ_LÝ);
+
+fork
+  :Kiểm tra, khắc phục sự cố;
+fork again
+  |Người báo sự cố|
+  :Trao đổi thêm thông tin
+  với cán bộ CNTT (nếu cần);
+end fork
+
+|Cán bộ CNTT|
+:Nhập nguyên nhân và cách khắc phục;
+if (Lưu vào kho kinh nghiệm?) then (có)
+  if (Đã có bài phù hợp?) then (có)
+    :Chọn bài kinh nghiệm có sẵn;
+  else (không)
+    |Hệ thống|
+    :Tạo bài kinh nghiệm mới
+    từ nội dung xử lý vừa nhập;
+  endif
+else (không)
+endif
+
+|Hệ thống|
+:Cập nhật trạng thái HOÀN_THÀNH;
+fork
+  :Gán ngày hoàn thành;
+fork again
+  :Ghi một dòng lịch sử xử lý;
+end fork
+
+|Người báo sự cố|
+:Xem kết quả xử lý;
+if (Muốn đánh giá?) then (có)
+  :Chọn mức hài lòng 1–5 sao,
+  nhập nhận xét;
+  |Hệ thống|
+  :Lưu phản hồi
+  (mỗi sự cố chỉ 1 lần);
+else (không)
+endif
+stop
+@enduml

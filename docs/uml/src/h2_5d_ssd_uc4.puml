@@ -1,0 +1,23 @@
+@startuml h2_5d_ssd_uc4
+!include _style.iuml
+hide footbox
+autonumber
+actor "Người báo sự cố" as U
+participant ":HệThốngQuảnLýSựCố" as S
+actor "Cán bộ CNTT" as A
+
+U -> S : guiTraoDoi(maSc, noiDung?, tep?)
+alt không có nội dung và không có tệp
+  S --> U : lỗi("Nhập nội dung hoặc chọn file để gửi")
+else tệp sai định dạng hoặc vượt 5MB
+  S --> U : lỗi(thông báo tương ứng)
+else hợp lệ
+  S --> U : danhSáchTraoĐổi (có tin vừa gửi)
+end
+loop mỗi 4 giây khi trang chi tiết đang mở
+  A -> S : layTinMoi(maSc, sauMa)
+  S --> A : dsTinMới
+end
+A -> S : guiTraoDoi(maSc, noiDung?, tep?)
+S --> A : danhSáchTraoĐổi (có tin vừa gửi)
+@enduml

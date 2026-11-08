@@ -1,0 +1,24 @@
+@startuml h2_5b_ssd_uc6
+!include _style.iuml
+hide footbox
+autonumber
+actor "Cán bộ CNTT" as A
+participant ":HệThốngQuảnLýSựCố" as S
+
+A -> S : xemDanhSachSuCo(trangThai?, tuKhoa?, trang)
+S --> A : dsSựCố (phân trang)
+A -> S : xemChiTiet(maSc)
+S --> A : chiTiếtSựCố, lịchSửXửLý, dsTraoĐổi, phảnHồi
+A -> S : capNhatXuLy(maSc, trangThai, nguyenNhan, cachKhacPhuc,\n                     maBaiKn?, luuKho?, maDmKho?, ghiChu?)
+alt trạng thái không hợp lệ
+  S --> A : lỗi("Trạng thái không hợp lệ")
+else luuKho = true, chưa chọn bài, thiếu nguyên nhân / cách khắc phục / danh mục
+  S --> A : lỗi("Cần nhập nguyên nhân, cách khắc phục và chọn lĩnh vực")
+else hợp lệ
+  S --> A : xácNhận("Đã lưu cập nhật sự cố")
+end
+opt cần xuất báo cáo (UC16)
+  A -> S : xuatExcel(trangThai?, tuKhoa?)
+  S --> A : tệp .xlsx
+end
+@enduml

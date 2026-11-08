@@ -1,0 +1,17 @@
+' Kiểu dùng chung cho mọi sơ đồ của báo cáo OOAD (giữ gần với kiểu mặc định của PlantUML như trong bài giảng)
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam dpi 110
+skinparam shadowing false
+skinparam roundCorner 8
+skinparam ArrowColor #333333
+skinparam sequenceMessageAlign left
+skinparam sequenceReferenceBackgroundColor #F7F7F7
+skinparam ParticipantPadding 12
+skinparam BoxPadding 8
+skinparam ActivityBackgroundColor #FEFECE
+skinparam ActivityBorderColor #A80036
+skinparam StateBackgroundColor #FEFECE
+skinparam StateBorderColor #A80036
+skinparam NoteBackgroundColor #FFFBE6
+skinparam NoteBorderColor #C9B458

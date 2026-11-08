@@ -1,0 +1,26 @@
+@startuml h3_4a_trangthai_suco
+!include _style.iuml
+!pragma layout smetana
+hide empty description
+
+[*] --> ChuaHoanThanh : baoSuCo()
+
+state "Chưa hoàn thành" as ChuaHoanThanh {
+  [*] --> MOI
+  MOI --> DANG_XU_LY : tiếp nhận / ghi LanXuLy
+  DANG_XU_LY --> MOI : đặt lại / ghi LanXuLy
+}
+
+state HOAN_THANH : entry / gán ngàyHoànThành
+state HOAN_THANH : exit / xóa ngàyHoànThành
+
+ChuaHoanThanh --> HOAN_THANH : hoàn thành / ghi LanXuLy
+HOAN_THANH --> DANG_XU_LY : mở lại / ghi LanXuLy
+HOAN_THANH --> MOI : đặt lại / ghi LanXuLy
+
+ChuaHoanThanh --> ChuaHoanThanh : cập nhật nội dung\n[trạng thái giữ nguyên] / ghi LanXuLy
+HOAN_THANH --> HOAN_THANH : guiPhanHoi\n[chưa có phản hồi] / tạo PhanHoi
+
+ChuaHoanThanh --> [*] : xóa sự cố
+HOAN_THANH --> [*] : xóa sự cố
+@enduml

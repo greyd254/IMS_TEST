@@ -1,0 +1,42 @@
+@startuml h3_3c_dcd_luutru
+!include _style.iuml
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+hide empty members
+
+class SuCoController <<control>>
+class AdminController <<control>>
+
+abstract class BoLuuTru {
+  -thuMuc: Path
+  #BoLuuTru(thuMucConfig: String)
+  +{method} luu(file: MultipartFile): String {final}
+  #{abstract} duoiHopLe(): Map<String,String>
+  #{abstract} thongBaoLoiLoai(): String
+}
+class LuuAnhSuCo {
+  -{static} DUOI_ANH: Map<String,String>
+  #duoiHopLe(): Map<String,String>
+  #thongBaoLoiLoai(): String
+}
+class LuuTepTraoDoi {
+  #duoiHopLe(): Map<String,String>
+  #thongBaoLoiLoai(): String
+}
+class FileKhongHopLeException
+class RuntimeException
+
+note right of BoLuuTru::luu
+  Template Method: kiểm tra loại file
+  qua duoiHopLe(), sinh tên UUID,
+  ghi xuống đĩa, trả về "/uploads/..."
+end note
+
+BoLuuTru <|-- LuuAnhSuCo
+BoLuuTru <|-- LuuTepTraoDoi
+RuntimeException <|-- FileKhongHopLeException
+BoLuuTru ..> FileKhongHopLeException : «throw»
+SuCoController --> "1" LuuAnhSuCo : -luuAnhSuCo
+SuCoController --> "1" LuuTepTraoDoi : -luuTep
+AdminController --> "1" LuuTepTraoDoi : -luuTep
+@enduml

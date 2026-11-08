@@ -1,0 +1,18 @@
+@startuml h2_5a_ssd_uc2
+!include _style.iuml
+hide footbox
+autonumber
+actor "Người báo sự cố" as U
+participant ":HệThốngQuảnLýSựCố" as S
+
+U -> S : moTrangBaoSuCo()
+S --> U : dsThiếtBị, dsDanhMục, dsSựCốHayGặp
+U -> S : baoSuCo(tieuDe, moTa, maTb, maDm, mucUuTien, anh)
+alt tiêu đề rỗng hoặc mức ưu tiên không hợp lệ
+  S --> U : lỗi("Vui lòng nhập tiêu đề và chọn mức ưu tiên hợp lệ")
+else ảnh sai định dạng hoặc vượt 5MB
+  S --> U : lỗi("Chỉ nhận ảnh JPG, PNG, GIF hoặc WEBP" / "File quá lớn")
+else hợp lệ
+  S --> U : xácNhận("Đã gửi báo cáo sự cố")
+end
+@enduml

@@ -1,0 +1,117 @@
+@startuml h2_3_crc
+!include _style.iuml
+!pragma layout smetana
+skinparam rectangle {
+  BackgroundColor transparent
+  BorderColor transparent
+}
+!define HEAD(t) |<#222222><color:white><size:15><b>t</b></size></color>|<#222222> |
+!define COLS |<#DDDDDD><b>Trách nhiệm (Responsibility)</b>|<#DDDDDD><b>Cộng tác (Collaborator)</b>|
+
+rectangle SuCo [
+HEAD(SuCo)
+COLS
+| Biết tiêu đề, mô tả, mức ưu tiên, trạng thái,\nnguyên nhân, cách khắc phục | |
+| Biết mình đã hoàn thành hay chưa\n(điều kiện để cho phép phản hồi) | |
+| Biết ai báo, ai đang xử lý | NguoiDung |
+| Biết thiết bị, danh mục liên quan | ThietBi, DanhMucSuCo |
+| Biết bài kinh nghiệm được tham chiếu | BaiKinhNghiem |
+| Lưu lịch sử mỗi lần cập nhật | LanXuLy |
+| Giữ phản hồi (tối đa 1) và các trao đổi | PhanHoi, TraoDoi |
+]
+
+rectangle NguoiDung [
+HEAD(NguoiDung)
+COLS
+| Biết thông tin cá nhân, email đăng nhập | |
+| Biết vai trò USER/ADMIN để quyết định\nđược vào màn hình nào | |
+| Biết đang hoạt động hay đã bị vô hiệu hóa | |
+| Báo sự cố, xử lý sự cố | SuCo |
+| Viết bài kinh nghiệm | BaiKinhNghiem |
+| Gửi phản hồi, gửi trao đổi | PhanHoi, TraoDoi |
+]
+
+rectangle BaiKN [
+HEAD(BaiKinhNghiem)
+COLS
+| Biết triệu chứng → nguyên nhân → giải pháp | |
+| Thuộc một danh mục để tra cứu theo loại | DanhMucSuCo |
+| Biết người viết | NguoiDung |
+| Được sự cố tham chiếu tới\n(không cho xóa khi đang được tham chiếu) | SuCo |
+]
+
+rectangle LanXuLy [
+HEAD(LanXuLy)
+COLS
+| Ghi trạng thái cũ, mới, ghi chú, thời điểm\ncủa một lần cập nhật | SuCo |
+| Biết người thực hiện cập nhật | NguoiDung |
+| Cung cấp dữ liệu xem lại lịch sử\nvà thống kê thời gian xử lý | |
+]
+
+rectangle PhanHoi [
+HEAD(PhanHoi)
+COLS
+| Biết mức hài lòng (1–5) và nhận xét | |
+| Thuộc đúng 1 sự cố đã hoàn thành | SuCo |
+| Biết người gửi | NguoiDung |
+]
+
+rectangle TraoDoi [
+HEAD(TraoDoi)
+COLS
+| Biết nội dung, tệp đính kèm, thời điểm | |
+| Thuộc 1 sự cố | SuCo |
+| Biết người gửi và vai trò người gửi | NguoiDung |
+]
+
+rectangle ThietBi [
+HEAD(ThietBi)
+COLS
+| Biết tên, loại, tình trạng hoạt động | |
+| Thuộc đúng 1 phòng | Phong |
+| Được sự cố tham chiếu tới | SuCo |
+]
+
+rectangle Phong [
+HEAD(Phong)
+COLS
+| Biết tên, tòa nhà, tầng, loại phòng | |
+| Chứa các thiết bị\n(không cho xóa khi còn thiết bị) | ThietBi |
+]
+
+rectangle DanhMuc [
+HEAD(DanhMucSuCo)
+COLS
+| Biết tên và mô tả loại sự cố | |
+| Phân loại chung cho sự cố\nvà bài kinh nghiệm | SuCo, BaiKinhNghiem |
+]
+
+rectangle CtlBao [
+HEAD(«control» ĐiềuPhốiBáoSựCố)
+COLS
+| Nhận yêu cầu báo sự cố, kiểm tra hợp lệ | |
+| Yêu cầu tạo sự cố mới | SuCo |
+| Nhận phản hồi: hỏi sự cố đã hoàn thành chưa\nrồi mới yêu cầu tạo phản hồi | SuCo, PhanHoi |
+| Nhận tin trao đổi của người báo | TraoDoi |
+]
+
+rectangle CtlXuLy [
+HEAD(«control» ĐiềuPhốiXửLýSựCố)
+COLS
+| Nhận cập nhật xử lý, kiểm tra trạng thái hợp lệ | |
+| Quyết định khi nào tạo bài kinh nghiệm mới | BaiKinhNghiem |
+| Yêu cầu cập nhật sự cố | SuCo |
+| Nhận tin trao đổi của cán bộ CNTT | TraoDoi |
+]
+
+SuCo -[hidden]right- NguoiDung
+NguoiDung -[hidden]right- BaiKN
+SuCo -[hidden]down- LanXuLy
+LanXuLy -[hidden]right- PhanHoi
+PhanHoi -[hidden]right- TraoDoi
+LanXuLy -[hidden]down- ThietBi
+ThietBi -[hidden]right- Phong
+Phong -[hidden]right- DanhMuc
+ThietBi -[hidden]down- CtlBao
+CtlBao -[hidden]right- CtlXuLy
+@enduml

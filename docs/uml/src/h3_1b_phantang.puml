@@ -1,0 +1,32 @@
+@startuml h3_1b_phantang
+!include _style.iuml
+!pragma layout smetana
+skinparam packageStyle rectangle
+top to bottom direction
+
+package "Presentation — «boundary»" {
+  [templates/*.html\nstatic/js/app.js] as P
+}
+package "Cắt ngang (cross-cutting)" {
+  [config: AuthInterceptor, WebConfig\ncontroller: XuLyLoiChung] as X
+}
+package "Application — «control»" {
+  [vn.utc.suco.controller\nSuCoController, AdminController, ...] as A
+}
+package "Domain — «entity»" {
+  [vn.utc.suco.repository\nSuCoRepo, KinhNghiemRepo, ...] as R
+  [vn.utc.suco.model\nSuCo, NguoiDung, enum CoNhan, ...] as M
+}
+package "Infrastructure" {
+  database "Oracle\n(9 bảng, trigger, view)" as DB
+  [vn.utc.suco.util\nBoLuuTru, ExcelSuCo, MatKhau, ...] as U
+}
+
+P ..> A : gửi form / AJAX
+X ..> A : chặn trước / bắt lỗi sau
+A ..> R
+A ..> M
+A ..> U
+R ..> M : tạo đối tượng
+R ..> DB : JDBC
+@enduml

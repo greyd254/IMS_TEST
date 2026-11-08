@@ -1,0 +1,54 @@
+@startuml h1_5_usecase
+!include _style.iuml
+!pragma layout smetana
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Người dùng\nhệ thống" as ND
+actor "Người báo sự cố\n(USER)" as NB
+actor "Cán bộ CNTT\n(ADMIN)" as AD
+
+ND <|-- NB
+ND <|-- AD
+
+rectangle "Hệ thống Quản lý sự cố CNTT" {
+  usecase "UC1. Đăng nhập / Đăng xuất" as UC1
+  usecase "UC4. Trao đổi về sự cố" as UC4
+  usecase "UC8. Tra cứu kho kinh nghiệm" as UC8
+
+  usecase "UC2. Báo sự cố" as UC2
+  usecase "UC3. Theo dõi sự cố của tôi" as UC3
+  usecase "UC5. Gửi phản hồi\nsau hoàn thành" as UC5
+
+  usecase "UC6. Tiếp nhận và\nxử lý sự cố" as UC6
+  usecase "UC7. Lưu kinh nghiệm\nxử lý" as UC7
+  usecase "UC16. Xuất Excel\ndanh sách sự cố" as UC16
+  usecase "UC9. Quản lý kho kinh nghiệm" as UC9
+  usecase "UC10. Quản lý danh mục sự cố" as UC10
+  usecase "UC11. Quản lý phòng" as UC11
+  usecase "UC12. Quản lý thiết bị" as UC12
+  usecase "UC13. Nhập thiết bị\ntừ Excel" as UC13
+  usecase "UC14. Quản lý người dùng" as UC14
+  usecase "UC15. Xem thống kê" as UC15
+}
+
+ND -- UC1
+ND -- UC4
+ND -- UC8
+
+NB -- UC2
+NB -- UC3
+NB -- UC5
+
+AD -- UC6
+AD -- UC9
+AD -- UC10
+AD -- UC11
+AD -- UC12
+AD -- UC14
+AD -- UC15
+
+UC6 <.. UC7 : <<extend>>
+UC6 <.. UC16 : <<extend>>
+UC12 <.. UC13 : <<extend>>
+@enduml

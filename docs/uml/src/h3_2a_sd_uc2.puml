@@ -1,0 +1,46 @@
+@startuml h3_2a_sd_uc2
+!include _style.iuml
+hide footbox
+autonumber
+actor "Người báo sự cố" as U
+boundary ":TrangBaoSuCo\n(user.html)" as B
+control ":SuCoController" as C
+participant "anh:LuuAnhSuCo" as L
+entity ":SuCoRepo" as R
+database "Oracle" as DB
+
+U -> B : nhậpThôngTin(tieuDe, moTa, maTb, maDm, mucUuTien, anh)
+activate B
+B -> C : baoSuCo(tieuDe, moTa, maTb, maDm, mucUuTien, anh)
+activate C
+note right of B
+  Ảnh > 5MB bị Spring chặn trước khi tới
+  Controller; XuLyLoiChung.fileQuaLon()
+  trả về lỗi "File quá lớn".
+end note
+alt tieuDe rỗng hoặc mucUuTien không thuộc {THAP, TRUNG_BINH, CAO}
+  C --> B : redirect /user (lỗi)
+else hợp lệ
+  C -> L : luu(anh)
+  activate L
+  alt loại file không thuộc {JPG, PNG, GIF, WEBP}
+    L --> C : FileKhongHopLeException
+    C --> B : redirect /user (lỗi)
+  else hợp lệ (hoặc không đính kèm)
+    L --> C : duongDanAnh (null nếu không có ảnh)
+    deactivate L
+    C -> R : taoMoi(tieuDe, moTa, maNguoiBao, maTb, maDm, mucUuTien, duongDanAnh)
+    activate R
+    R -> DB : thêm bản ghi SU_CO (TRANG_THAI = MOI)
+    activate DB
+    DB --> R
+    deactivate DB
+    R --> C
+    deactivate R
+    C --> B : redirect /user ("Đã gửi báo cáo sự cố")
+  end
+end
+deactivate C
+B --> U : hiển thị thông báo
+deactivate B
+@enduml

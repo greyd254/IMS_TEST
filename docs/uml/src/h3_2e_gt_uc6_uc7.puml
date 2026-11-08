@@ -1,0 +1,31 @@
+@startuml h3_2e_gt_uc6_uc7
+!include _style.iuml
+!pragma layout smetana
+skinparam rectangle {
+  BackgroundColor #FEFECE
+  BorderColor #A80036
+  RoundCorner 0
+}
+
+actor "Cán bộ CNTT" as A
+rectangle "<u>:TrangXuLySuCo</u>" as B
+rectangle "<u>:AdminController</u>" as C
+rectangle "<u>:SuCoRepo</u>" as SR
+rectangle "<u>sc:SuCo</u>" as SC
+rectangle "<u>:KinhNghiemRepo</u>" as KR
+database "Oracle" as DB
+
+A -right- B : 1: capNhat(...) →
+B -right- C : 2: capNhat(maSc, trangThai, ...) →
+C -down- SR : 2.1*: timTheoMa(maSc) →\n2.4: capNhat(..., maBaiGan) →
+SR -right- SC : 2.1.1*: «create» →
+C -down- SC : 2.2*: getTieuDe(), getMoTa() →
+C -down- KR : 2.3*: maBaiGan := taoMoi(...) →
+SR -down- DB : 2.4.1: cập nhật SU_CO →
+KR -down- DB : 2.3.1*: thêm BAI_KINH_NGHIEM →
+
+legend bottom
+  (*) chỉ xảy ra khi [luuKho = true và chưa chọn bài có sẵn] — nhánh UC7.
+  2.4.1 kéo theo trigger gán/xóa ngày hoàn thành và ghi LICH_SU_XU_LY.
+endlegend
+@enduml

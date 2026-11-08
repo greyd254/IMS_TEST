@@ -1,0 +1,30 @@
+@startuml h2_4b_bce_canbo
+!include _style.iuml
+!pragma layout smetana
+top to bottom direction
+
+actor "Cán bộ CNTT" as AD
+
+boundary "TrangDanhSachSuCo\n(admin.html)" as B1
+boundary "TrangXuLySuCo\n(admin-chi-tiet.html)" as B2
+
+control "AdminController" as C1
+
+entity "SuCo" as E1
+entity "BaiKinhNghiem" as E2
+entity "DanhMucSuCo" as E3
+entity "LanXuLy" as E4
+entity "PhanHoi" as E5
+entity "TraoDoi" as E6
+
+AD --> B1 : UC6, UC16
+AD --> B2 : UC6, UC7, UC4
+B1 --> C1 : danhSach()\nxuatExcel()
+B2 --> C1 : capNhat()\nguiBinhLuan()
+C1 --> E1
+C1 --> E2
+C1 --> E3
+C1 --> E4
+C1 --> E5
+C1 --> E6
+@enduml

@@ -1,0 +1,13 @@
+@startuml h3_4b_trangthai_nguoidung
+!include _style.iuml
+!pragma layout smetana
+hide empty description
+
+state "HOAT_DONG" as HD : đăng nhập được
+state "KHONG_HOAT_DONG" as KHD : không đăng nhập được;\nlịch sử sự cố vẫn được giữ
+
+[*] --> HD : ADMIN tạo tài khoản\n/ ghi người tạo
+HD --> KHD : vô hiệu hóa\n[không phải tài khoản đang đăng nhập]\n/ ghi ngày xóa, người xóa
+KHD --> HD : kích hoạt lại\n/ xóa ngày xóa, người xóa
+HD --> HD : sửa thông tin,\nđổi vai trò, đặt lại mật khẩu
+@enduml

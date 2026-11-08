@@ -1,0 +1,64 @@
+@startuml h3_2b_sd_uc6_uc7
+!include _style.iuml
+hide footbox
+autonumber
+actor "Cán bộ CNTT" as A
+boundary ":TrangXuLySuCo\n(admin-chi-tiet.html)" as B
+control ":AdminController" as C
+entity ":SuCoRepo" as SR
+entity "sc:SuCo" as SC
+entity ":KinhNghiemRepo" as KR
+database "Oracle" as DB
+
+A -> B : chọnTrạngThái, nhậpNguyênNhân/CáchKhắcPhục,\nchọn bài có sẵn hoặc tick "lưu kho"
+activate B
+B -> C : capNhat(maSc, trangThai, nguyenNhan, cachKhacPhuc,\n              maBaiKn, luuKho, maDmKho, ghiChu)
+activate C
+alt trangThai không thuộc {MOI, DANG_XU_LY, HOAN_THANH}
+  C --> B : redirect /admin/{maSc} ("Trạng thái không hợp lệ")
+else luuKho và maBaiKn = null và thiếu nguyenNhan / cachKhacPhuc / maDmKho
+  C --> B : redirect /admin/{maSc} (lỗi thiếu thông tin)
+else hợp lệ
+  opt luuKho và maBaiKn = null  (UC7 – Lưu kinh nghiệm xử lý)
+    C -> SR : timTheoMa(maSc)
+    activate SR
+    SR -> DB : đọc V_SU_CO_CHI_TIET
+    create SC
+    SR -> SC : «create»
+    SR --> C : sc
+    deactivate SR
+    C -> SC : getTieuDe(), getMoTa()
+    activate SC
+    SC --> C : tieuDe, moTa
+    deactivate SC
+    C -> KR : taoMoi(tieuDe, maDmKho, moTa, nguyenNhan, cachKhacPhuc, maAdmin)
+    activate KR
+    KR -> DB : thêm BAI_KINH_NGHIEM
+    KR --> C : maBaiGan
+    deactivate KR
+  end
+  C -> SR : capNhat(maSc, trangThai, nguyenNhan, cachKhacPhuc, maBaiGan, maAdmin, ghiChu)
+  activate SR
+  SR -> DB : khóa dòng SU_CO (FOR UPDATE), đọc trạng thái cũ
+  SR -> DB : cập nhật SU_CO
+  activate DB
+  alt trạng thái thay đổi
+    DB -> DB : TRG_SU_CO_HOAN_THANH\n(gán / xóa NGAY_HOAN_THANH)
+    DB -> DB : TRG_SU_CO_LICH_SU\n(thêm LICH_SU_XU_LY)
+    DB --> SR
+    opt có ghi chú hoặc nội dung mới
+      SR -> DB : bổ sung GHI_CHU vào dòng lịch sử vừa tạo
+    end
+  else giữ nguyên trạng thái, nội dung thay đổi
+    DB --> SR
+    SR -> DB : thêm LICH_SU_XU_LY (trạng thái cũ = mới)
+  end
+  deactivate DB
+  SR --> C : true
+  deactivate SR
+  C --> B : redirect /admin/{maSc} ("Đã lưu cập nhật sự cố")
+end
+deactivate C
+B --> A : hiển thị kết quả
+deactivate B
+@enduml

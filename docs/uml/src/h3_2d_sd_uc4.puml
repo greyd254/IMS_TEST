@@ -1,0 +1,52 @@
+@startuml h3_2d_sd_uc4
+!include _style.iuml
+hide footbox
+autonumber
+actor "Người báo sự cố" as U
+boundary ":TrangChiTietCuaToi\n(user-chi-tiet.html + app.js)" as B
+control ":SuCoController" as C
+entity ":SuCoRepo" as SR
+participant "tep:LuuTepTraoDoi" as L
+entity ":BinhLuanRepo" as BR
+
+U -> B : nhậpNộiDung, chọnTệp
+activate B
+B -> C : guiBinhLuan(maSc, noiDung, tep)
+activate C
+C -> SR : timTheoMa(maSc)
+SR --> C : sc (chỉ nhận nếu là sự cố của mình)
+alt nội dung rỗng và không có tệp
+  C --> B : redirect (lỗi "Nhập nội dung hoặc chọn file để gửi")
+else có nội dung hoặc tệp
+  C -> L : luu(tep)
+  activate L
+  alt loại tệp không thuộc {ảnh, PDF, Word, TXT, ZIP}
+    L --> C : FileKhongHopLeException
+    C --> B : redirect (lỗi)
+  else hợp lệ
+    L --> C : duongDanTep
+    deactivate L
+    C -> BR : taoMoi(maSc, maNguoiGui, noiDung, duongDanTep)
+    activate BR
+    BR --> C
+    deactivate BR
+    C --> B : redirect /user/{maSc}
+  end
+end
+deactivate C
+B --> U : hiển thị tin vừa gửi
+deactivate B
+
+== Trang tự kiểm tra tin trả lời mới (trang của cán bộ CNTT làm tương tự qua AdminController) ==
+loop mỗi 4 giây, khi tab đang hiển thị
+  B -> C : binhLuanMoi(maSc, sauMa)
+  activate C
+  C -> BR : timMoiHon(maSc, sauMa)
+  activate BR
+  BR --> C : dsTinMới
+  deactivate BR
+  C --> B : JSON dsTinMới
+  deactivate C
+  B -> B : nối tin mới vào danh sách
+end
+@enduml
