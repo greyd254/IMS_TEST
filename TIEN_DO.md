@@ -114,3 +114,14 @@ Còn lại duy nhất: **báo cáo Word `docs/BaoCao_Oracle_QuanLySuCo.docx`** v
 - File quá 5MB: quay lại trang trước kèm thông báo (`XuLyLoiChung` ở `web-java`, `XuLyFileQuaLon` ở `web-oracle`). Thông báo này dùng biến `loi` nên ở các trang có form thu gọn sẽ làm form đó mở ra.
 - **Không đổi CSDL.** Thêm dependency `poi-ooxml` 5.5.1. Đã chạy thật 88 kiểm tra trên cả 2 bản (dữ liệu tạm tên `ZZTEST`, đã xóa), mở file bằng Excel thật và xem ảnh chụp desktop/điện thoại.
 - **Oracle tự tắt lúc 09:55 ngày 02/11/2026 vì FRA đầy** (ORA-19809 → ORA-16038). Đã tăng `DB_RECOVERY_FILE_DEST_SIZE` lên 7G (dùng 6496/7168MB, ổ C còn khoảng 6,5GB), chưa xóa archive log nên sẽ đầy lại nếu không dọn.
+
+## Cập nhật 08/11/2026 (báo cáo OOAD, chỉ nằm trên nhánh `web-java`)
+
+- **Vị trí**: `BAO_CAO_OOAD.md` và `docs/uml/` chỉ có trên nhánh `web-java` (worktree `C:\Users\GreyD\IdeaProjects\IMS-web-java`), **không có trên `main`**. Báo cáo dùng lại bài toán của bản `web-java` cho môn OOAD. `main` chỉ có thêm file Word `docs/BaoCao_Java_QuanLySuCo.docx`.
+- **Đã vẽ lại toàn bộ sơ đồ bằng PlantUML** theo cách vẽ trong bài giảng (`Desktop\tài liệu\Bai-01…Bai-11 M.pdf`): actor người que, biểu tượng boundary/control/entity, thanh kích hoạt, thông điệp đánh số, khung alt/opt/loop. Có 26 hình, từ Hình 1.1 đến 3.15. Báo cáo không còn khối mermaid nào.
+  - Nguồn ở `docs/uml/src/*.puml` (kiểu dáng chung ở `_style.iuml`), ảnh PNG ở `docs/uml/`. Tên file khớp số hình, ví dụ `h3_2b_sd_uc6_uc7` là Hình 3.4.
+  - Xuất lại ảnh bằng `sh docs/uml/render.sh <đường dẫn plantuml.jar>`. Cần Java, không cần Graphviz (dùng `!pragma layout smetana`). Bản đã dùng: PlantUML 1.2024.7. Font Arial không có ký hiệu toán (∉, ∧) nên phải viết bằng chữ.
+- **Nội dung bổ sung**: §1.8 sơ đồ hoạt động (yêu cầu phi chức năng chuyển xuống §1.9). Chương 2 viết lại: 2.1 phân tích danh từ, 2.2 mô hình khái niệm, 2.3 CRC, 2.4 BCE, 2.5 SSD, 2.6 điểm mơ hồ. §3.1 thêm phân hoạch/phân tầng, §3.2 thêm sơ đồ giao tiếp UC6/UC7, §3.3 DCD tách theo nhóm, §3.4 thêm trạng thái NguoiDung và bảng đối chiếu sự kiện với mã nguồn, §3.6 ERD dùng ký hiệu chân chim. 4 bảng đặc tả UC ở §1.7 có thêm dòng "Tổng quan" và "Yêu cầu tham khảo" cho đủ 9 mục như Bài 4. Phụ lục có mục "Mã nguồn các sơ đồ UML".
+- **Các thay đổi nội dung cần nhóm đọc lại**: UC16 là «extend» của UC6. Actor được tổng quát hóa: Người báo và Cán bộ CNTT kế thừa "Người dùng hệ thống", nên UC4 và UC8 thuộc về actor cha. Mọi sơ đồ đều đối chiếu với code thật, ví dụ UC5 kiểm tra chủ sở hữu rồi mới gọi `sc.daHoanThanh()`; ảnh quá 5MB bị `XuLyLoiChung` chặn trước khi vào Controller.
+- Đã commit `d34b044` (web-java) và `a103083` (main), đã push.
+- **Còn lại (nhóm tự làm)**: điền bảng thông tin đầu báo cáo (nhóm, lớp, thành viên, GVHD, ngày nộp) và bảng phân công ở Phụ lục. Tự quyết phần giả định ở §2.6. Xin giảng viên xác nhận đề tài, vì đề tài không nằm trong danh sách gợi ý. Đọc lại toàn bộ báo cáo trước khi nộp.
