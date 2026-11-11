@@ -122,10 +122,14 @@
               <div class="mb-3">
                 <label class="form-label" for="trangThai">Trạng thái</label>
                 <select class="form-select" id="trangThai" name="trangThai">
-                  <option value="MOI" th:selected="${suCo.trangThai == 'MOI'}">Mới</option>
+                  <option value="MOI" th:selected="${suCo.trangThai == 'MOI'}"
+                          th:unless="${suCo.trangThai == 'HOAN_THANH'}">Mới</option>
                   <option value="DANG_XU_LY" th:selected="${suCo.trangThai == 'DANG_XU_LY'}">Đang xử lý</option>
                   <option value="HOAN_THANH" th:selected="${suCo.trangThai == 'HOAN_THANH'}">Hoàn thành</option>
                 </select>
+                <div class="form-text" th:if="${suCo.trangThai == 'HOAN_THANH'}">
+                  Sự cố đã hoàn thành chỉ có thể mở lại về <b>Đang xử lý</b>.
+                </div>
               </div>
               <div class="mb-3">
                 <label class="form-label" for="nguyenNhan">Nguyên nhân</label>
@@ -151,7 +155,17 @@
                 </div>
               </div>
 
-              <div class="goi-y mb-3">
+              <!-- Sự cố đã gắn bài kinh nghiệm: hiện bài đã gắn thay cho ô "Lưu vào kho" (ô đó chỉ là lệnh tạo bài một lần,
+                   không phải trạng thái được lưu). Nếu bỏ chọn bài ở ô trên thì khung lưu kho hiện lại. -->
+              <th:block th:if="${suCo.maBaiKn != null}">
+                <div class="alert alert-success py-2 mb-3" id="daGanKho"
+                     th:each="b : ${dsBaiKn}" th:if="${b.maBai == suCo.maBaiKn}">
+                  <i class="bi bi-check-circle-fill"></i> Đã lưu/gắn bài kinh nghiệm:
+                  <a th:href="@{/kinh-nghiem/{id}(id=${b.maBai})}" class="alert-link" target="_blank"
+                     th:text="${b.tieuDe}"></a>
+                </div>
+              </th:block>
+              <div class="goi-y mb-3" id="khungLuuKho" th:style="${suCo.maBaiKn != null} ? 'display:none'">
                 <div class="form-check mb-2">
                   <input class="form-check-input" type="checkbox" id="luuKho" name="luuKho" value="true">
                   <label class="form-check-label fw-semibold" for="luuKho">
@@ -166,6 +180,16 @@
                 Chỉ áp dụng khi chưa chọn bài có sẵn ở trên. Bài mới lấy tiêu đề, mô tả của sự cố cùng
                 nguyên nhân và cách khắc phục vừa nhập.
               </div>
+              <script th:if="${suCo.maBaiKn != null}">
+                (function () {
+                  var chon = document.getElementById('maBaiKn'), goc = chon.value;
+                  chon.addEventListener('change', function () {
+                    document.getElementById('khungLuuKho').style.display = chon.value === '' ? '' : 'none';
+                    var daGan = document.getElementById('daGanKho');
+                    if (daGan) daGan.style.display = chon.value === goc ? '' : 'none';
+                  });
+                })();
+              </script>
 
               <button class="btn btn-primary w-100" type="submit"><i class="bi bi-check2"></i> Lưu cập nhật</button>
             </form>
