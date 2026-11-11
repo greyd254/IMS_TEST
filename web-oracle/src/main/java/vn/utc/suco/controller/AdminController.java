@@ -183,6 +183,16 @@ public class AdminController {
             ra.addFlashAttribute("loi", "Trạng thái không hợp lệ");
             return "redirect:/admin/" + maSc;
         }
+        SuCo suCo = suCoRepo.timTheoMa(maSc).orElse(null);
+        if (suCo == null) {
+            return "redirect:/admin";
+        }
+        // Sự cố đã hoàn thành chỉ được mở lại về DANG_XU_LY (không quay về MOI vì đã có người xử lý).
+        // Trigger TRG_SU_CO_HOAN_THANH tự xóa NGAY_HOAN_THANH khi mở lại.
+        if ("HOAN_THANH".equals(suCo.trangThai()) && "MOI".equals(trangThai)) {
+            ra.addFlashAttribute("loi", "Sự cố đã hoàn thành chỉ có thể mở lại về trạng thái Đang xử lý");
+            return "redirect:/admin/" + maSc;
+        }
         NguoiDung admin = (NguoiDung) session.getAttribute("nguoiDung");
         Long maBaiGan = maBaiKn;
         if (Boolean.TRUE.equals(luuKho) && maBaiKn == null) {
@@ -190,10 +200,6 @@ public class AdminController {
                     || maDmKho == null) {
                 ra.addFlashAttribute("loi", "Để lưu vào kho kinh nghiệm, cần nhập nguyên nhân, cách khắc phục và chọn lĩnh vực");
                 return "redirect:/admin/" + maSc;
-            }
-            SuCo suCo = suCoRepo.timTheoMa(maSc).orElse(null);
-            if (suCo == null) {
-                return "redirect:/admin";
             }
             maBaiGan = kinhNghiemRepo.taoMoi(suCo.tieuDe(), maDmKho, suCo.moTa(), nguyenNhan.trim(),
                     cachKhacPhuc.trim(), admin.maNd());
