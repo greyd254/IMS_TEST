@@ -168,7 +168,8 @@ public class AdminController {
 
     /**
      * Lưu cập nhật. Trigger Oracle sẽ tự ghi lịch sử và ngày hoàn thành.
-     * Nếu tick "luuKho" và không chọn bài có sẵn, nguyên nhân + cách khắc phục được tạo thành bài mới trong kho
+     * Nếu tick "luuKho", trạng thái mới là HOAN_THANH và không chọn bài có sẵn,
+     * nguyên nhân + cách khắc phục được tạo thành bài mới trong kho
      * kinh nghiệm (thuộc danh mục maDmKho) và gắn vào sự cố.
      */
     @PostMapping("/admin/{maSc}")
@@ -196,6 +197,13 @@ public class AdminController {
         NguoiDung admin = (NguoiDung) session.getAttribute("nguoiDung");
         Long maBaiGan = maBaiKn;
         if (Boolean.TRUE.equals(luuKho) && maBaiKn == null) {
+            // Chỉ rút kinh nghiệm khi sự cố đã giải quyết xong: xét trạng thái GỬI LÊN (không phải trạng thái cũ)
+            // để vừa chuyển sang Hoàn thành vừa lưu kho trong cùng một lần lưu. Giao diện đã khóa ô tick,
+            // nhưng vẫn phải chặn ở đây vì request có thể gửi không qua form (F12, curl).
+            if (!"HOAN_THANH".equals(trangThai)) {
+                ra.addFlashAttribute("loi", "Chỉ lưu vào kho kinh nghiệm khi sự cố chuyển sang trạng thái Hoàn thành");
+                return "redirect:/admin/" + maSc;
+            }
             if (nguyenNhan == null || nguyenNhan.isBlank() || cachKhacPhuc == null || cachKhacPhuc.isBlank()
                     || maDmKho == null) {
                 ra.addFlashAttribute("loi", "Để lưu vào kho kinh nghiệm, cần nhập nguyên nhân, cách khắc phục và chọn lĩnh vực");
