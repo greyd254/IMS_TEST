@@ -177,9 +177,28 @@
                   <option th:each="dm : ${dsDanhMuc}" th:value="${dm.maDm}" th:text="${dm.tenDm}"
                           th:selected="${dm.maDm == suCo.maDm}"></option>
                 </select>
-                Chỉ áp dụng khi chưa chọn bài có sẵn ở trên. Bài mới lấy tiêu đề, mô tả của sự cố cùng
-                nguyên nhân và cách khắc phục vừa nhập.
+                Chỉ áp dụng khi chưa chọn bài có sẵn ở trên và trạng thái là <b>Hoàn thành</b>. Bài mới lấy
+                tiêu đề, mô tả của sự cố cùng nguyên nhân và cách khắc phục vừa nhập.
+                <div class="text-danger small mt-1" id="nhacLuuKho">
+                  <i class="bi bi-lock"></i> Chọn trạng thái "Hoàn thành" để lưu vào kho kinh nghiệm.
+                </div>
               </div>
+              <script>
+                // Chỉ cho tick "Lưu vào kho" khi trạng thái chọn là Hoàn thành (controller cũng chặn lại lần nữa)
+                (function () {
+                  var trangThai = document.getElementById('trangThai');
+                  var luuKho = document.getElementById('luuKho');
+                  var nhac = document.getElementById('nhacLuuKho');
+                  function capNhatO() {
+                    var duoc = trangThai.value === 'HOAN_THANH';
+                    luuKho.disabled = !duoc;
+                    if (!duoc) luuKho.checked = false;
+                    nhac.style.display = duoc ? 'none' : '';
+                  }
+                  trangThai.addEventListener('change', capNhatO);
+                  capNhatO();
+                })();
+              </script>
               <script th:if="${suCo.maBaiKn != null}">
                 (function () {
                   var chon = document.getElementById('maBaiKn'), goc = chon.value;
