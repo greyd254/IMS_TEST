@@ -1,0 +1,12 @@
+# Chi can pom.xml + src/ de build image
+.git
+.idea
+.vscode
+target
+uploads
+docs
+sql
+web
+web-oracle
+web-java/db-init
+*.md
