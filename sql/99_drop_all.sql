@@ -6,7 +6,7 @@
 -- CẢNH BÁO : mất toàn bộ dữ liệu. Ngắt các phiên đang dùng SUCO_APP (tắt web) trước khi chạy.
 -- =====================================================================
 SET DEFINE ON
-ACCEPT sys_pw CHAR PROMPT 'Nhập mật khẩu SYSTEM: ' HIDE
+ACCEPT sys_pw CHAR PROMPT 'PASS SYSTEM: ' HIDE
 CONNECT system/&sys_pw@localhost:1521/FREEPDB1
 
 -- Nếu một lệnh báo "does not exist" thì bỏ qua, chạy tiếp các lệnh sau

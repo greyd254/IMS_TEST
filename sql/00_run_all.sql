@@ -7,7 +7,7 @@
 -- =====================================================================
 SET DEFINE ON
 SET ECHO ON
-ACCEPT sys_pw CHAR PROMPT 'Nhập mật khẩu SYSTEM: ' HIDE
+ACCEPT sys_pw CHAR PROMPT 'PASS SYSTEM: ' HIDE
 
 -- Bước 1: tablespace + user + role (SYSTEM trên PDB)
 CONNECT system/&sys_pw@localhost:1521/FREEPDB1
