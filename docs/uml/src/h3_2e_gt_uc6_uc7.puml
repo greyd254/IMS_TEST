@@ -17,15 +17,16 @@ database "Oracle" as DB
 
 A -right- B : 1: capNhat(...) →
 B -right- C : 2: capNhat(maSc, trangThai, ...) →
-C -down- SR : 2.1*: timTheoMa(maSc) →\n2.4: capNhat(..., maBaiGan) →
-SR -right- SC : 2.1.1*: «create» →
-C -down- SC : 2.2*: getTieuDe(), getMoTa() →
-C -down- KR : 2.3*: maBaiGan := taoMoi(...) →
-SR -down- DB : 2.4.1: cập nhật SU_CO →
-KR -down- DB : 2.3.1*: thêm BAI_KINH_NGHIEM →
+C -down- SR : 2.1: sc := timTheoMa(maSc) →\n2.5: capNhat(..., maBaiGan) →
+SR -right- SC : 2.1.1: «create» →
+C -down- SC : 2.2: daXong := daHoanThanh() →\n2.3*: getTieuDe(), getMoTa() →
+C -down- KR : 2.4*: maBaiGan := taoMoi(...) →
+SR -down- DB : 2.5.1: cập nhật SU_CO →
+KR -down- DB : 2.4.1*: thêm BAI_KINH_NGHIEM →
 
 legend bottom
-  (*) chỉ xảy ra khi [luuKho = true và chưa chọn bài có sẵn] — nhánh UC7.
-  2.4.1 kéo theo trigger gán/xóa ngày hoàn thành và ghi LICH_SU_XU_LY.
+  (*) chỉ xảy ra khi [luuKho = true, chưa chọn bài có sẵn và trangThai = HOAN_THANH] — nhánh UC7.
+  2.2: sự cố đã hoàn thành thì chỉ cho mở lại về DANG_XU_LY kèm ghi chú, nếu không thì dừng tại đây.
+  2.5.1 kéo theo trigger gán/xóa ngày hoàn thành và ghi LICH_SU_XU_LY.
 endlegend
 @enduml

@@ -12,6 +12,12 @@ S --> A : chiTiếtSựCố, lịchSửXửLý, dsTraoĐổi, phảnHồi
 A -> S : capNhatXuLy(maSc, trangThai, nguyenNhan, cachKhacPhuc,\n                     maBaiKn?, luuKho?, maDmKho?, ghiChu?)
 alt trạng thái không hợp lệ
   S --> A : lỗi("Trạng thái không hợp lệ")
+else sự cố đang HOAN_THANH, trangThai = MOI
+  S --> A : lỗi("Chỉ có thể mở lại về trạng thái Đang xử lý")
+else sự cố đang HOAN_THANH, mở lại mà ghiChu trống
+  S --> A : lỗi("Cần nhập lý do ở ô Ghi chú")
+else luuKho = true, chưa chọn bài, trangThai khác HOAN_THANH
+  S --> A : lỗi("Chỉ lưu vào kho khi chuyển sang Hoàn thành")
 else luuKho = true, chưa chọn bài, thiếu nguyên nhân / cách khắc phục / danh mục
   S --> A : lỗi("Cần nhập nguyên nhân, cách khắc phục và chọn lĩnh vực")
 else hợp lệ

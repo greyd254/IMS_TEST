@@ -15,8 +15,7 @@ state HOAN_THANH : entry / gán ngàyHoànThành
 state HOAN_THANH : exit / xóa ngàyHoànThành
 
 ChuaHoanThanh --> HOAN_THANH : hoàn thành / ghi LanXuLy
-HOAN_THANH --> DANG_XU_LY : mở lại / ghi LanXuLy
-HOAN_THANH --> MOI : đặt lại / ghi LanXuLy
+HOAN_THANH --> DANG_XU_LY : mở lại [có lý do ở ghi chú]\n/ ghi LanXuLy
 
 ChuaHoanThanh --> ChuaHoanThanh : cập nhật nội dung\n[trạng thái giữ nguyên] / ghi LanXuLy
 HOAN_THANH --> HOAN_THANH : guiPhanHoi\n[chưa có phản hồi] / tạo PhanHoi

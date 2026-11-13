@@ -16,17 +16,28 @@ B -> C : capNhat(maSc, trangThai, nguyenNhan, cachKhacPhuc,\n              maBai
 activate C
 alt trangThai không thuộc {MOI, DANG_XU_LY, HOAN_THANH}
   C --> B : redirect /admin/{maSc} ("Trạng thái không hợp lệ")
+end
+C -> SR : timTheoMa(maSc)
+activate SR
+SR -> DB : đọc V_SU_CO_CHI_TIET
+create SC
+SR -> SC : «create»
+SR --> C : sc
+deactivate SR
+C -> SC : daHoanThanh()
+activate SC
+SC --> C : daXong
+deactivate SC
+alt daXong và trangThai = MOI
+  C --> B : redirect /admin/{maSc} ("Chỉ có thể mở lại về Đang xử lý")
+else daXong và trangThai = DANG_XU_LY và ghiChu trống
+  C --> B : redirect /admin/{maSc} ("Cần nhập lý do mở lại")
+else luuKho và maBaiKn = null và trangThai ≠ HOAN_THANH
+  C --> B : redirect /admin/{maSc} ("Chỉ lưu vào kho khi chuyển sang Hoàn thành")
 else luuKho và maBaiKn = null và thiếu nguyenNhan / cachKhacPhuc / maDmKho
   C --> B : redirect /admin/{maSc} (lỗi thiếu thông tin)
 else hợp lệ
-  opt luuKho và maBaiKn = null  (UC7 – Lưu kinh nghiệm xử lý)
-    C -> SR : timTheoMa(maSc)
-    activate SR
-    SR -> DB : đọc V_SU_CO_CHI_TIET
-    create SC
-    SR -> SC : «create»
-    SR --> C : sc
-    deactivate SR
+  opt luuKho và maBaiKn = null và trangThai = HOAN_THANH  (UC7 – Lưu kinh nghiệm xử lý)
     C -> SC : getTieuDe(), getMoTa()
     activate SC
     SC --> C : tieuDe, moTa

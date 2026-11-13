@@ -11,8 +11,30 @@ if (Trạng thái thuộc {MỚI, ĐANG_XỬ_LÝ, HOÀN_THÀNH}?) then (không)
 else (có)
 endif
 
+if (Sự cố đang HOÀN_THÀNH và
+trạng thái mới khác HOÀN_THÀNH?) then (có, mở lại)
+  if (Trạng thái mới là MỚI?) then (có)
+    :Báo "Chỉ có thể mở lại
+    về Đang xử lý";
+    stop
+  else (không)
+  endif
+  if (Ghi chú lần cập nhật trống?) then (có)
+    :Báo "Cần nhập lý do mở lại";
+    stop
+  else (không)
+  endif
+else (không)
+endif
+
 partition "UC7. Lưu kinh nghiệm xử lý (extend)" {
   if (Tick "lưu kho" và chưa chọn bài có sẵn?) then (có)
+    if (Trạng thái mới là HOÀN_THÀNH?) then (không)
+      :Báo "Chỉ lưu vào kho khi sự cố
+      chuyển sang Hoàn thành";
+      stop
+    else (có)
+    endif
     if (Đủ nguyên nhân, cách khắc phục, danh mục kho?) then (không)
       :Báo lỗi thiếu thông tin,
       không lưu gì;

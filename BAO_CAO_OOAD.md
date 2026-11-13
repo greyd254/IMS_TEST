@@ -96,8 +96,9 @@ gặp trước đó.
 ### 1.3. Quy tắc nghiệp vụ quan trọng
 
 - **R1 — Vòng đời xử lý:** một sự cố có 3 trạng thái `MỚI`, `ĐANG_XỬ_LÝ`, `HOÀN_THÀNH`; theo quy ước nghiệp
-  vụ thì xử lý đi theo thứ tự `MỚI → ĐANG_XỬ_LÝ → HOÀN_THÀNH` (xem thảo luận ở §3.4 và §2.6 — hệ thống hiện
-  tại không ép buộc thứ tự này ở tầng ứng dụng).
+  vụ thì xử lý đi theo thứ tự `MỚI → ĐANG_XỬ_LÝ → HOÀN_THÀNH` (xem thảo luận ở §3.4 và §2.6 — hệ thống không
+  ép buộc đi tuần tự, chỉ chặn một chiều quay lui: sự cố đã `HOÀN_THÀNH` chỉ được mở lại về `ĐANG_XỬ_LÝ`,
+  không quay về `MỚI`, và phải ghi lý do mở lại).
 - **R2 — Tự động hóa khi đổi trạng thái:** mỗi lần trạng thái thực sự thay đổi, hệ thống tự ghi lại 1 dòng
   lịch sử xử lý; khi chuyển **sang** `HOÀN_THÀNH` thì tự gán ngày hoàn thành, khi chuyển **khỏi**
   `HOÀN_THÀNH` thì tự xóa ngày hoàn thành (để số liệu thống kê thời gian xử lý không bị sai).
@@ -107,7 +108,8 @@ gặp trước đó.
   bất kỳ trạng thái nào (không cần chờ hoàn thành), mỗi tin có thể kèm 1 file.
 - **R5 — Tận dụng kinh nghiệm cũ:** khi xử lý xong, cán bộ CNTT có thể gắn sự cố với 1 bài kinh nghiệm có
   sẵn, **hoặc** tự động tạo một bài kinh nghiệm mới ngay từ nguyên nhân/cách khắc phục vừa nhập (không phải
-  mở màn hình soạn bài riêng).
+  mở màn hình soạn bài riêng). Bài mới chỉ được tạo trong lần lưu chuyển sự cố sang `HOÀN_THÀNH`, vì chỉ
+  khi đã giải quyết xong thì nguyên nhân/cách khắc phục mới đáng tin để người khác tra cứu lại.
 - **R6 — Chống trùng tên:** tên phòng (trong cùng tòa nhà, cùng tầng) và tên thiết bị (trong cùng phòng,
   cùng loại) không được trùng nhau, không phân biệt hoa/thường.
 - **R7 — Ràng buộc xóa:** không xóa được phòng còn thiết bị, danh mục còn sự cố/bài kinh nghiệm tham chiếu,
@@ -141,7 +143,7 @@ tam giác rỗng trỏ về cha) nên đương nhiên được dùng 3 UC đó m
 
 | Use case mở rộng | Use case gốc | Điều kiện mở rộng |
 |---|---|---|
-| UC7. Lưu kinh nghiệm xử lý | UC6. Tiếp nhận và xử lý sự cố | `luuKho = true` và chưa chọn bài kinh nghiệm có sẵn |
+| UC7. Lưu kinh nghiệm xử lý | UC6. Tiếp nhận và xử lý sự cố | `luuKho = true`, trạng thái mới là `HOAN_THANH` và chưa chọn bài kinh nghiệm có sẵn |
 | UC16. Xuất Excel danh sách sự cố | UC6. Tiếp nhận và xử lý sự cố | Cán bộ CNTT bấm "Xuất Excel" trên danh sách sự cố đang lọc (`AdminController.xuatExcel`) |
 | UC13. Nhập thiết bị từ Excel | UC12. Quản lý thiết bị | Nhập hàng loạt từ file `.xlsx` thay vì thêm từng dòng |
 
@@ -195,8 +197,8 @@ Mục 4.1 của hướng dẫn BTL).
 | Yêu cầu tham khảo | R1, R2, R5; G2; Hình 1.3 (hoạt động), Hình 2.6 (SSD), Hình 3.4 và 3.7 (SD, giao tiếp), Hình 3.13 (trạng thái). |
 | Tiền điều kiện | Đã đăng nhập với vai trò ADMIN; sự cố tồn tại. |
 | Luồng chính | 1. Cán bộ CNTT mở chi tiết một sự cố. 2. Chọn trạng thái mới, nhập nguyên nhân/cách khắc phục, có thể chọn 1 bài kinh nghiệm có sẵn để gắn vào. 3. Hệ thống lưu cập nhật; nếu trạng thái thực sự đổi thì tự ghi 1 dòng lịch sử; nếu chuyển sang `HOÀN_THÀNH` thì tự gán ngày hoàn thành. |
-| Luồng thay thế/ngoại lệ (UC7, extend) | 2a. Nếu tick "lưu vào kho kinh nghiệm" mà **không** chọn bài có sẵn: phải nhập đủ nguyên nhân, cách khắc phục và chọn danh mục kho; hệ thống tạo một bài kinh nghiệm mới (dùng chính tiêu đề/mô tả của sự cố) rồi tự gắn bài đó vào sự cố đang xử lý. 2b. Thiếu nguyên nhân/cách khắc phục/danh mục khi đã tick "lưu vào kho" → báo lỗi, không lưu cập nhật. |
-| Luồng thay thế/ngoại lệ (khác) | 1a. Trạng thái gửi lên không nằm trong {MỚI, ĐANG_XỬ_LÝ, HOÀN_THÀNH} → báo lỗi "Trạng thái không hợp lệ". |
+| Luồng thay thế/ngoại lệ (UC7, extend) | 2a. Nếu chọn trạng thái `HOÀN_THÀNH`, tick "lưu vào kho kinh nghiệm" mà **không** chọn bài có sẵn: phải nhập đủ nguyên nhân, cách khắc phục và chọn danh mục kho; hệ thống tạo một bài kinh nghiệm mới (dùng chính tiêu đề/mô tả của sự cố) rồi tự gắn bài đó vào sự cố đang xử lý. 2b. Thiếu nguyên nhân/cách khắc phục/danh mục khi đã tick "lưu vào kho" → báo lỗi, không lưu cập nhật. 2c. Tick "lưu vào kho" mà trạng thái mới không phải `HOÀN_THÀNH` → báo lỗi "Chỉ lưu vào kho kinh nghiệm khi sự cố chuyển sang trạng thái Hoàn thành", không lưu cập nhật (giao diện đã khóa ô tick, nhưng Controller vẫn kiểm tra lại). |
+| Luồng thay thế/ngoại lệ (khác) | 1a. Trạng thái gửi lên không nằm trong {MỚI, ĐANG_XỬ_LÝ, HOÀN_THÀNH} → báo lỗi "Trạng thái không hợp lệ". 2d. Sự cố đang `HOÀN_THÀNH` mà chọn `MỚI` → báo lỗi "Sự cố đã hoàn thành chỉ có thể mở lại về trạng thái Đang xử lý" (giao diện ẩn lựa chọn `MỚI`). 2e. Mở lại sự cố đang `HOÀN_THÀNH` về `ĐANG_XỬ_LÝ` mà bỏ trống ô "Ghi chú lần cập nhật này" → báo lỗi yêu cầu nhập lý do mở lại, không lưu. |
 | Hậu điều kiện | Sự cố có trạng thái/nguyên nhân/cách khắc phục mới; có thêm 1 dòng lịch sử xử lý; (nếu UC7 xảy ra) kho kinh nghiệm có thêm 1 bài mới. |
 
 #### UC5 — Gửi phản hồi sau hoàn thành
@@ -240,7 +242,8 @@ Các điểm cần đọc trên hình:
 
 - Vòng lặp ở đầu: dữ liệu không hợp lệ thì người dùng sửa và gửi lại (luồng ngoại lệ 2a, 3a, 3b của UC2).
 - Thanh fork/join thứ nhất: trong lúc cán bộ CNTT xử lý, hai bên vẫn trao đổi song song (quy tắc R4).
-- Rẽ nhánh lồng nhau "Lưu vào kho kinh nghiệm?" / "Đã có bài phù hợp?" chính là UC7 (quy tắc R5).
+- Rẽ nhánh lồng nhau "Lưu vào kho kinh nghiệm?" / "Đã có bài phù hợp?" chính là UC7 (quy tắc R5); nhánh này
+  nằm ngay trước bước cập nhật `HOÀN_THÀNH` vì bài mới chỉ được tạo trong lần lưu chuyển sự cố sang hoàn thành.
 - Thanh fork/join thứ hai: gán ngày hoàn thành và ghi lịch sử là hai việc độc lập, cùng xảy ra khi đổi
   trạng thái (quy tắc R2, do 2 trigger đảm nhận).
 - Phản hồi chỉ có sau khi hoàn thành và là tùy chọn (quy tắc R3).
@@ -255,6 +258,8 @@ thành một vùng riêng theo cách "phân hoạch sơ đồ" của Bài 5.
 Hình này cho thấy một chi tiết mà đặc tả bằng chữ ở §1.7 chưa nói: **khi giữ nguyên trạng thái nhưng sửa
 nguyên nhân, cách khắc phục hoặc ghi chú**, hệ thống vẫn ghi một dòng lịch sử (trạng thái cũ = mới) để không
 mất dấu vết lần sửa trước. Trigger chỉ chạy khi trạng thái đổi, nên trường hợp này do `SuCoRepo.capNhat` tự làm.
+Hình cũng cho thấy hai lớp kiểm tra đứng trước UC7: sự cố đã hoàn thành chỉ được mở lại về `ĐANG_XỬ_LÝ` kèm lý do,
+và ô "lưu kho" chỉ có hiệu lực khi trạng thái mới là `HOÀN_THÀNH`.
 
 ### 1.9. Yêu cầu phi chức năng (NFR)
 
@@ -389,16 +394,19 @@ SSD chỉ thể hiện tương tác **Actor ↔ Hệ thống** như một hộp 
 
 ### 2.6. Điểm mơ hồ và cách nhóm quyết định xử lý
 
-- **Thứ tự trạng thái không bị ép buộc:** đề bài gốc không nói rõ việc đổi trạng thái có phải đi tuần tự
+- **Thứ tự trạng thái chỉ bị ép buộc một phần:** đề bài gốc không nói rõ việc đổi trạng thái có phải đi tuần tự
   `MỚI → ĐANG_XỬ_LÝ → HOÀN_THÀNH` hay không. Nhóm **giả định** quy trình thực tế là tuần tự (R1), nhưng
-  **quyết định không ép buộc ở tầng ứng dụng** để cán bộ CNTT có thể xử lý nhanh một sự cố đơn giản (đổi
-  thẳng từ `MỚI` sang `HOÀN_THÀNH`) mà không phải thao tác 2 bước. Đây là đánh đổi linh hoạt-vs-chặt chẽ cần
-  nêu rõ khi bảo vệ (xem thêm State Machine ở §3.4).
+  **quyết định không ép đi tuần tự** để cán bộ CNTT có thể xử lý nhanh một sự cố đơn giản (đổi thẳng từ `MỚI`
+  sang `HOÀN_THÀNH`) mà không phải thao tác 2 bước. Riêng chiều quay lui từ `HOÀN_THÀNH` thì có chặn: chỉ được
+  mở lại về `ĐANG_XỬ_LÝ` (không về `MỚI`, vì sự cố đã có người xử lý) và phải ghi lý do để lịch sử xử lý rõ ràng.
+  Đây là đánh đổi linh hoạt-vs-chặt chẽ cần nêu rõ khi bảo vệ (xem thêm State Machine ở §3.4).
 - **Một thiết bị có thể liên quan nhiều sự cố cùng lúc:** đề bài không giới hạn; nhóm giả định một thiết bị
   "đang hỏng" vẫn có thể bị báo thêm sự cố mới (không khóa báo cáo trùng), vì nhiều người có thể phát hiện
   cùng một vấn đề độc lập với nhau.
 - **"Lưu vào kho kinh nghiệm" là tùy chọn, không bắt buộc:** nhóm quyết định không ép mọi sự cố `HOÀN_THÀNH`
-  đều phải sinh ra bài kinh nghiệm, vì nhiều sự cố (ví dụ quên mật khẩu) không có giá trị tra cứu lại.
+  đều phải sinh ra bài kinh nghiệm, vì nhiều sự cố (ví dụ quên mật khẩu) không có giá trị tra cứu lại. Ngược
+  lại, sự cố chưa hoàn thành thì **không được** lưu vào kho, vì nguyên nhân/cách khắc phục khi đó chưa được
+  kiểm chứng.
 
 ---
 
@@ -460,6 +468,8 @@ Kiểm tra bề mặt (tiêu đề, mức ưu tiên) do Controller làm; kiểm 
 
 Khung `opt` chính là quan hệ `«extend»` UC7 → UC6 trên sơ đồ Use Case. Hai trigger là thông điệp tự gọi trên
 lifeline Oracle, cho thấy trách nhiệm ghi lịch sử và gán ngày hoàn thành được đẩy xuống tầng dữ liệu (xem §3.6).
+Trước khi kiểm tra các điều kiện, Controller đọc `sc:SuCo` và hỏi `daHoanThanh()` (thông điệp 8) để chặn việc mở
+lại sự cố đã hoàn thành về `MOI` hoặc mở lại mà không ghi lý do — cùng cách dùng Information Expert như ở UC5.
 
 ![Hình 3.5 — Sơ đồ tuần tự UC5 Gửi phản hồi](docs/uml/h3_2c_sd_uc5.png)
 
@@ -545,6 +555,8 @@ Nhãn trên mũi tên theo dạng `sự kiện [điều kiện] / hành động`
   đúng ngữ nghĩa trigger `TRG_SU_CO_HOAN_THANH`. Nhờ dùng entry/exit nên không phải lặp lại hành động này trên
   từng mũi tên.
 - Mọi chuyển giữa hai trạng thái khác nhau đều kèm hành động `ghi LanXuLy` (trigger `TRG_SU_CO_LICH_SU`).
+- Từ `HOAN_THANH` chỉ có một đường quay lui là "mở lại" về `DANG_XU_LY`, với điều kiện `[có lý do ở ghi chú]`;
+  không có mũi tên `HOAN_THANH → MOI`.
 - Hai **tự chuyển (self-transition)**: sửa nội dung mà giữ nguyên trạng thái vẫn ghi `LanXuLy` (do
   `SuCoRepo.capNhat` tự làm); ở `HOAN_THANH`, người báo gửi phản hồi được đúng 1 lần (điều kiện `[chưa có phản hồi]`).
 - Trạng thái kết thúc: cán bộ CNTT xóa sự cố (`AdminController.xoa`) ở bất kỳ trạng thái nào.
@@ -554,17 +566,19 @@ Nhãn trên mũi tên theo dạng `sự kiện [điều kiện] / hành động`
 | `baoSuCo()` | bắt đầu → `MOI` | `SuCoController.baoSuCo` → `SuCoRepo.taoMoi` |
 | tiếp nhận | `MOI` → `DANG_XU_LY` | `AdminController.capNhat` |
 | hoàn thành | `MOI` / `DANG_XU_LY` → `HOAN_THANH` | `AdminController.capNhat` |
-| mở lại | `HOAN_THANH` → `DANG_XU_LY` | `AdminController.capNhat` |
-| đặt lại | `DANG_XU_LY` / `HOAN_THANH` → `MOI` | `AdminController.capNhat` |
+| mở lại [có lý do] | `HOAN_THANH` → `DANG_XU_LY` | `AdminController.capNhat` (kiểm tra `suCo.daHoanThanh()` và ghi chú) |
+| đặt lại | `DANG_XU_LY` → `MOI` | `AdminController.capNhat` |
 | cập nhật nội dung | giữ nguyên trạng thái | `SuCoRepo.capNhat` (tự thêm 1 dòng `LICH_SU_XU_LY`) |
 | `guiPhanHoi` | `HOAN_THANH` (giữ nguyên) | `SuCoController.guiPhanHoi` |
 | xóa sự cố | bất kỳ → kết thúc | `AdminController.xoa` |
 
-Sơ đồ phản ánh **đúng những gì mã nguồn hiện cho phép** (`AdminController.capNhat` chỉ kiểm tra trạng thái gửi
-lên có nằm trong 3 giá trị hợp lệ, không kiểm tra trạng thái hiện tại), chứ không chỉ vẽ quy trình lý tưởng
-tuyến tính; đây chính là điểm mơ hồ đã nêu ở §2.6. Nếu nhóm muốn siết lại (chỉ cho đi đúng thứ tự
-`MỚI → ĐANG_XỬ_LÝ → HOÀN_THÀNH`), cách làm hợp lý là thêm điều kiện kiểm tra trạng thái hiện tại ngay trong
-`SuCoRepo.capNhat` hoặc trong một lớp kiểm tra chuyển trạng thái riêng, và nêu đây là hướng cải tiến ở §4.4.
+Sơ đồ phản ánh **đúng những gì mã nguồn hiện cho phép**, chứ không chỉ vẽ quy trình lý tưởng tuyến tính:
+`AdminController.capNhat` kiểm tra trạng thái gửi lên có nằm trong 3 giá trị hợp lệ, và khi sự cố đang
+`HOAN_THANH` thì chỉ chấp nhận `DANG_XU_LY` kèm ghi chú (giao diện cũng ẩn lựa chọn `MOI`). Các chuyển còn lại
+giữa `MOI`, `DANG_XU_LY` và `HOAN_THANH` đều được phép; đây chính là điểm mơ hồ đã nêu ở §2.6. Nếu nhóm muốn
+siết hẳn (chỉ cho đi đúng thứ tự `MỚI → ĐANG_XỬ_LÝ → HOÀN_THÀNH`), cách làm hợp lý là gom các điều kiện này
+vào một lớp kiểm tra chuyển trạng thái riêng (hoặc vào chính `SuCo`) thay vì để rải trong Controller, và nêu
+đây là hướng cải tiến ở §4.4.
 
 ![Hình 3.14 — Sơ đồ trạng thái của tài khoản NguoiDung](docs/uml/h3_4b_trangthai_nguoidung.png)
 
@@ -578,8 +592,8 @@ cán bộ CNTT sửa tay, không có sự kiện hay quy tắc tự động nào
 
 | Nguyên tắc | Áp dụng ở đâu | Giải thích |
 |---|---|---|
-| **Information Expert** | `SuCo.daHoanThanh()`; `SuCoRepo` là nơi duy nhất viết SQL cho bảng `SU_CO`. | `SuCo` tự biết trạng thái của chính nó nên tự trả lời được câu hỏi "đã xong chưa" thay vì Controller phải so sánh chuỗi `"HOAN_THANH"` rải rác nhiều nơi; `SuCoRepo` nắm cấu trúc bảng/view nên là nơi hợp lý nhất để đọc/ghi dữ liệu sự cố. |
-| **Creator** | `AdminController.capNhat` quyết định **thời điểm** cần tạo `BaiKinhNghiem` mới (khi `luuKho=true`), nhưng giao việc tạo thật sự cho `KinhNghiemRepo.taoMoi`. | Controller biết ngữ cảnh nghiệp vụ (đang xử lý sự cố nào, admin nào) nên hợp lý để quyết định *khi nào* tạo, còn `KinhNghiemRepo` nắm cấu trúc bảng `BAI_KINH_NGHIEM` nên là nơi hợp lý để *thực hiện* việc tạo. |
+| **Information Expert** | `SuCo.daHoanThanh()` (dùng ở UC5 và khi chặn mở lại sự cố ở UC6); `SuCoRepo` là nơi duy nhất viết SQL cho bảng `SU_CO`. | `SuCo` tự biết trạng thái của chính nó nên tự trả lời được câu hỏi "đã xong chưa" thay vì Controller phải so sánh chuỗi `"HOAN_THANH"` rải rác nhiều nơi; `SuCoRepo` nắm cấu trúc bảng/view nên là nơi hợp lý nhất để đọc/ghi dữ liệu sự cố. |
+| **Creator** | `AdminController.capNhat` quyết định **thời điểm** cần tạo `BaiKinhNghiem` mới (khi `luuKho=true` và trạng thái mới là `HOAN_THANH`), nhưng giao việc tạo thật sự cho `KinhNghiemRepo.taoMoi`. | Controller biết ngữ cảnh nghiệp vụ (đang xử lý sự cố nào, admin nào) nên hợp lý để quyết định *khi nào* tạo, còn `KinhNghiemRepo` nắm cấu trúc bảng `BAI_KINH_NGHIEM` nên là nơi hợp lý để *thực hiện* việc tạo. |
 | **Controller (GRASP)** | `SuCoController`, `AdminController`, `AuthController`. | Mỗi controller tiếp nhận request của đúng một nhóm UC liên quan (báo/theo dõi sự cố, xử lý sự cố của admin, đăng nhập) thay vì dùng 1 controller khổng lồ xử lý mọi request — tương ứng nguyên tắc chọn Controller theo "use-case controller". |
 | **Polymorphism + OCP** | `BoLuuTru` (abstract, Template Method `luu()`) với 2 lớp con `LuuAnhSuCo`/`LuuTepTraoDoi`. | Phần lưu file xuống đĩa và sinh tên file là *chung*, chỉ khác ở danh sách loại file được phép và thông báo lỗi. Muốn thêm một loại lưu trữ mới (ví dụ file đính kèm cho bài kinh nghiệm) chỉ cần thêm 1 lớp con mới kế thừa `BoLuuTru`, **không sửa** `luu()` đã có — đúng tinh thần Open/Closed. |
 | **Polymorphism + ISP** | Interface `CoNhan` (`getNhan()`, `getLopBadge()`) do 5 enum (`VaiTro`, `TrangThaiNguoiDung`, `TrangThaiSuCo`, `MucUuTien`, `TinhTrangThietBi`) cùng implement. | Giao diện Thymeleaf chỉ cần gọi `t.nhan`/`t.lopBadge` để hiển thị badge mà không cần biết đang cầm enum cụ thể nào — interface chỉ có đúng 2 phương thức cần dùng, không ép các enum phải cài thêm hành vi không liên quan. |
@@ -671,11 +685,15 @@ yêu cầu "không chỉ chụp giao diện; cần chứng minh quy tắc nghi�
 | T8 | UC5 | Gửi phản hồi lần 2 cho cùng 1 sự cố đã `HOÀN_THÀNH` | Luồng ngoại lệ 2a | Báo lỗi "Sự cố này đã được phản hồi rồi", không tạo bản ghi trùng | *(điền khi test)* |
 | T9 | UC11 | Thêm phòng trùng tên (cùng tòa, cùng tầng) | Quy tắc R6 | Báo lỗi trùng, không thêm | *(điền khi test)* |
 | T10 | UC14 | Admin tự vô hiệu hóa chính tài khoản mình | Ràng buộc tự bảo vệ | Hệ thống từ chối thao tác | *(điền khi test)* |
+| T11 | UC6 | Sự cố đang `HOÀN_THÀNH`, gửi trạng thái `MỚI` (sửa form bằng F12) | Luồng ngoại lệ 2d | Báo lỗi "chỉ có thể mở lại về Đang xử lý", trạng thái không đổi | *(điền khi test)* |
+| T12 | UC6 | Mở lại sự cố `HOÀN_THÀNH` về `ĐANG_XỬ_LÝ`, bỏ trống ghi chú | Luồng ngoại lệ 2e | Báo lỗi yêu cầu nhập lý do; nhập lý do rồi lưu thì `NGAY_HOAN_THANH` bị xóa, có 1 dòng lịch sử ghi lý do | *(điền khi test)* |
+| T13 | UC6/UC7 | Giữ trạng thái `ĐANG_XỬ_LÝ`, tick "lưu vào kho" (bỏ khóa ô tick bằng F12) | Luồng ngoại lệ 2c | Báo lỗi "Chỉ lưu vào kho kinh nghiệm khi sự cố chuyển sang trạng thái Hoàn thành", không tạo bài | *(điền khi test)* |
 
 ### 4.4. Giới hạn sản phẩm
 
-- Vòng đời trạng thái sự cố chưa bị ép buộc đi đúng thứ tự ở tầng ứng dụng (xem §2.6, §3.4) — có thể bổ
-  sung guard nếu muốn chặt chẽ hơn.
+- Vòng đời trạng thái sự cố mới chỉ bị ép buộc một phần (chặn mở lại `HOÀN_THÀNH` về `MỚI`, bắt ghi lý do mở
+  lại), chưa bắt đi đúng thứ tự (xem §2.6, §3.4); các điều kiện này còn nằm trong Controller, có thể gom vào
+  một lớp kiểm tra chuyển trạng thái riêng nếu muốn chặt chẽ hơn.
 - Chưa có thông báo chủ động (email/SMS) khi sự cố đổi trạng thái — người dùng phải tự vào xem.
 - Một sự cố chỉ gắn được tối đa 1 thiết bị; chưa hỗ trợ sự cố liên quan nhiều thiết bị cùng lúc.
 - Controller phụ thuộc trực tiếp lớp `Repo` cụ thể, không qua interface (xem đánh đổi DIP ở §3.5).
