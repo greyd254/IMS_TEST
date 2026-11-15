@@ -10,7 +10,7 @@
 |---|---|
 | Nhóm | *(điền tên nhóm)* |
 | Lớp | *(điền lớp)* |
-| Thành viên | *(điền họ tên — MSV — nhiệm vụ, xem bảng phân công ở Phụ lục)* |
+| Thành viên | *(điền họ tên — MSSV — nhiệm vụ, xem bảng phân công ở Phụ lục)* |
 | Giảng viên hướng dẫn | *(điền tên GVHD)* |
 | Ngày | *(điền ngày nộp)* |
 
@@ -20,8 +20,7 @@
 
 Đề tài "Quản lý sự cố CNTT trường đại học" không nằm trong 10 đề tài gợi ý ở Mục 8 của hướng dẫn BTL, nhóm chọn theo diện
 "đề xuất đề tài khác có độ phức tạp tương đương" (Mục 2 hướng dẫn). Đây **chính là bài toán nhóm đã phân
-tích, thiết kế và cài đặt cho đồ án Java** (xem [README.md](README.md), [SO_DO_QUAN_HE.md](SO_DO_QUAN_HE.md)
-và mã nguồn trong `src/`) — báo cáo này dùng lại đúng bài toán đó để trình bày quy trình OOAD: từ yêu cầu
+tích, thiết kế và cài đặt cho đồ án Java** (xem [README.md](README.md) và mã nguồn trong `src/`) — báo cáo này dùng lại đúng bài toán đó để trình bày quy trình OOAD: từ yêu cầu
 nghiệp vụ → mô hình phân tích → mô hình thiết kế, đối chiếu lại với ứng dụng đã chạy được. Nhóm **cần xin
 xác nhận của giảng viên** trước khi nộp chính thức.
 
@@ -29,8 +28,8 @@ xác nhận của giảng viên** trước khi nộp chính thức.
 
 - **Công cụ:** Claude (Anthropic).
 - **Mục đích sử dụng:** dựng khung chương mục; chuyển các sơ đồ sang mã PlantUML (`docs/uml/src/`); đối chiếu
-  mô tả trong báo cáo với mã nguồn (`src/main/java/...`), script `sql/` và `SO_DO_QUAN_HE.md` để phát hiện
-  chỗ không khớp; soạn và chạy kịch bản kiểm thử ở §4.3.
+  mô tả trong báo cáo với mã nguồn (`src/main/java/...`) và script `sql/` để phát hiện chỗ không
+  khớp; soạn và chạy kịch bản kiểm thử ở §4.3.
 - **Phần nhóm tự quyết định và kiểm tra:** phạm vi, giả định, quy tắc nghiệp vụ và các điểm mơ hồ (§2.6); đọc
   lại từng sơ đồ, so với ứng dụng đang chạy; sửa theo góp ý của các thành viên (ví dụ tách rõ UC4 Trao đổi
   với UC5 Đánh giá). Nhóm chịu trách nhiệm và giải thích được toàn bộ nội dung khi bảo vệ.
@@ -404,7 +403,7 @@ SSD chỉ thể hiện tương tác **Actor ↔ Hệ thống** như một hộp 
   **quyết định không ép đi tuần tự** để cán bộ CNTT có thể xử lý nhanh một sự cố đơn giản (đổi thẳng từ `MỚI`
   sang `HOÀN_THÀNH`) mà không phải thao tác 2 bước. Riêng chiều quay lui từ `HOÀN_THÀNH` thì có chặn: chỉ được
   mở lại về `ĐANG_XỬ_LÝ` (không về `MỚI`, vì sự cố đã có người xử lý) và phải ghi lý do để lịch sử xử lý rõ ràng.
-  Đây là đánh đổi linh hoạt-vs-chặt chẽ cần nêu rõ khi bảo vệ (xem thêm State Machine ở §3.4).
+  Đây là đánh đổi giữa tính linh hoạt và tính chặt chẽ (xem thêm State Machine ở §3.4).
 - **Một thiết bị có thể liên quan nhiều sự cố cùng lúc:** đề bài không giới hạn; nhóm giả định một thiết bị
   "đang hỏng" vẫn có thể bị báo thêm sự cố mới (không khóa báo cáo trùng), vì nhiều người có thể phát hiện
   cùng một vấn đề độc lập với nhau.
@@ -590,8 +589,8 @@ Sơ đồ phản ánh **đúng những gì mã nguồn hiện cho phép**, chứ
 `HOAN_THANH` thì chỉ chấp nhận `DANG_XU_LY` kèm ghi chú (giao diện cũng ẩn lựa chọn `MOI`). Các chuyển còn lại
 giữa `MOI`, `DANG_XU_LY` và `HOAN_THANH` đều được phép; đây chính là điểm mơ hồ đã nêu ở §2.6. Nếu nhóm muốn
 siết hẳn (chỉ cho đi đúng thứ tự `MỚI → ĐANG_XỬ_LÝ → HOÀN_THÀNH`), cách làm hợp lý là gom các điều kiện này
-vào một lớp kiểm tra chuyển trạng thái riêng (hoặc vào chính `SuCo`) thay vì để rải trong Controller, và nêu
-đây là hướng cải tiến ở §4.4.
+vào một lớp kiểm tra chuyển trạng thái riêng (hoặc vào chính `SuCo`) thay vì để rải trong Controller; đây là
+hướng cải tiến đã nêu ở §4.4.
 
 ![Hình 3.14 — Sơ đồ trạng thái của tài khoản NguoiDung](docs/uml/h3_4b_trangthai_nguoidung.png)
 
@@ -613,12 +612,11 @@ cán bộ CNTT sửa tay, không có sự kiện hay quy tắc tự động nào
 | **LSP** | `LuuAnhSuCo`/`LuuTepTraoDoi` dùng thay cho nhau tại chỗ gọi `BoLuuTru.luu(file)`. | Cả hai đều tuân thủ đúng hợp đồng của lớp cha: trả về URL hợp lệ hoặc ném `FileKhongHopLeException`/`IOException`, không có hành vi bất ngờ nào phá vỡ kỳ vọng của nơi gọi. |
 | **Pure Fabrication + SRP** | `AuthInterceptor` (xác thực/phân quyền), `XuLyLoiChung` (`@ControllerAdvice` xử lý lỗi tập trung). | Hai mối quan tâm "ai được vào trang nào" và "lỗi dữ liệu/lỗi upload hiển thị thế nào" không gắn liền với một khái niệm nghiệp vụ cụ thể nào (không phải trách nhiệm tự nhiên của `SuCo` hay `NguoiDung`) — tách thành 2 lớp phụ trợ riêng để mọi Controller dùng chung, tránh lặp lại try-catch ở từng nơi. |
 | **High Cohesion / Low Coupling** | Mỗi `*Repo` chỉ thao tác đúng 1 bảng/nhóm bảng liên quan trực tiếp của nó; `SuCoRepo` đọc từ `V_SU_CO_CHI_TIET` (view đã JOIN sẵn) thay vì tự JOIN 5 bảng ở tầng Java. | Gom việc JOIN xuống CSDL (nơi làm việc đó hiệu quả nhất) giữ cho `SuCoRepo` tập trung vào đúng một việc (đọc/ghi sự cố), giảm phụ thuộc chéo giữa các Repo. |
-| **DIP — giới hạn đã biết** | Controller phụ thuộc trực tiếp vào lớp `*Repo` cụ thể (không qua interface). | Đây là đánh đổi có chủ đích cho quy mô đồ án (không cần 2 cách triển khai lưu trữ khác nhau nên interface sẽ thừa — tránh "nhiều interface cũng không tự động làm thiết kế tốt hơn" như hướng dẫn BTL đã lưu ý), nhưng nhóm cần nêu rõ đây là giới hạn khi bảo vệ, không che giấu. |
+| **DIP — giới hạn đã biết** | Controller phụ thuộc trực tiếp vào lớp `*Repo` cụ thể (không qua interface). | Đây là đánh đổi có chủ đích cho quy mô đồ án (không cần 2 cách triển khai lưu trữ khác nhau nên interface sẽ thừa — tránh "nhiều interface cũng không tự động làm thiết kế tốt hơn" như hướng dẫn BTL đã lưu ý), đồng thời là một giới hạn của thiết kế hiện tại (xem §4.4). |
 
 ### 3.6. Thiết kế dữ liệu (ERD)
 
-Sơ đồ ER đầy đủ 9 bảng ở Hình 3.15; bảng mô tả khóa chính/khóa ngoại và các ràng buộc chi tiết xem
-[SO_DO_QUAN_HE.md](SO_DO_QUAN_HE.md). Ký hiệu chân chim: `||` đúng một, `|o` không hoặc một, `o{` không hoặc
+Sơ đồ ER đầy đủ 9 bảng ở Hình 3.15. Ký hiệu chân chim: `||` đúng một, `|o` không hoặc một, `o{` không hoặc
 nhiều; dấu chấm trước tên cột là cột `NOT NULL`.
 
 ![Hình 3.15 — Sơ đồ thực thể – liên kết (ERD) của CSDL Oracle](docs/uml/h3_6_erd.png)
@@ -737,7 +735,7 @@ xuống CSDL qua trigger). Giới hạn còn lại (nêu ở §4.4) là các hư
 không ảnh hưởng tới luồng nghiệp vụ chính.
 
 Về kiểm thử, cả 13 test case ở §4.3 đều đạt, kể cả các trường hợp cố tình vượt qua giao diện. Điều đó cho
-thấy các quy tắc đã kiểm thử (R1, R3, R5, R6 và ràng buộc tự bảo vệ tài khoản) được chặn ở Controller và CSDL,
+thấy các quy tắc đã kiểm thử (R1, R2, R3, R5, R6, R8 và ràng buộc tự bảo vệ tài khoản) được chặn ở Controller và CSDL,
 không chỉ dựa vào giao diện.
 
 Qua bài tập lớn, nhóm rút ra ba điều:
