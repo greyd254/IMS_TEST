@@ -68,9 +68,9 @@
           </div>
         </div>
 
-        <!-- Phản hồi của người báo (chỉ đọc; người dùng tự gửi ở trang /user khi sự cố đã HOAN_THANH) -->
+        <!-- Đánh giá của người báo (bảng PHAN_HOI, chỉ đọc; người dùng tự gửi ở trang /user khi sự cố đã HOAN_THANH) -->
         <div class="card mb-3 mb-xl-4" th:if="${phanHoi != null}">
-          <div class="card-header"><i class="bi bi-star"></i>Phản hồi của người báo</div>
+          <div class="card-header"><i class="bi bi-star"></i>Đánh giá của người báo</div>
           <div class="card-body">
             <dl class="ds-thong-tin">
               <div>
@@ -224,7 +224,7 @@
           <!-- Xóa sự cố (kèm lịch sử xử lý, phản hồi và trao đổi) -->
           <div class="card-footer bg-transparent text-end">
             <form th:action="@{/admin/{id}/xoa(id=${suCo.maSc})}" method="post"
-                  onsubmit="return confirm('Xóa sự cố này cùng lịch sử xử lý, phản hồi và trao đổi?');">
+                  onsubmit="return confirm('Xóa sự cố này cùng lịch sử xử lý, đánh giá và trao đổi?');">
               <button class="btn btn-outline-danger btn-sm" type="submit"><i class="bi bi-trash"></i> Xóa sự cố</button>
             </form>
           </div>

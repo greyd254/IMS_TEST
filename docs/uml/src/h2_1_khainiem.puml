@@ -58,7 +58,7 @@ class LanXuLy {
 class PhanHoi {
   mức hài lòng [1..5]
   nội dung
-  ngày phản hồi
+  ngày đánh giá
 }
 class TraoDoi {
   nội dung
@@ -75,7 +75,7 @@ NguoiDung "1" -- "0..*" SuCo : báo >
 NguoiDung "0..1" -- "0..*" SuCo : xử lý >
 NguoiDung "1" -- "0..*" BaiKinhNghiem : viết >
 SuCo "1" *-- "0..*" LanXuLy : có lịch sử >
-SuCo "1" *-- "0..1" PhanHoi : được phản hồi >
+SuCo "1" *-- "0..1" PhanHoi : được đánh giá >
 SuCo "1" *-- "0..*" TraoDoi : có trao đổi >
 NguoiDung "0..1" -- "0..*" LanXuLy : thực hiện >
 NguoiDung "1" -- "0..*" PhanHoi : gửi >

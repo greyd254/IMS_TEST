@@ -25,12 +25,13 @@ xác nhận của giảng viên** trước khi nộp chính thức.
 
 ### Ghi chú sử dụng công cụ AI (theo Mục 6 của hướng dẫn)
 
-Bộ khung báo cáo này (cấu trúc chương, các sơ đồ UML vẽ bằng PlantUML trong `docs/uml/`, thẻ CRC, bảng test
-case) được soạn với sự hỗ trợ của Claude (Anthropic), dựa trên việc đọc trực tiếp mã nguồn ứng dụng đã có (`src/main/java/...`) và
-tài liệu `sql/`, `SO_DO_QUAN_HE.md` của chính dự án. **Đây là bản nháp có căn cứ, không phải bản hoàn
-chỉnh**: nhóm bắt buộc phải tự đọc lại toàn bộ, chạy thử ứng dụng để kiểm chứng các sơ đồ tương tác, điều
-chỉnh những chỗ chưa đúng ý đồ thiết kế ban đầu của nhóm, tự điền phần giả định/quyết định mang tính chủ
-quan (ví dụ phần "điểm mơ hồ" ở Chương 2), và phải giải thích được mọi nội dung khi bảo vệ.
+- **Công cụ:** Claude (Anthropic).
+- **Mục đích sử dụng:** dựng khung chương mục; chuyển các sơ đồ sang mã PlantUML (`docs/uml/src/`); đối chiếu
+  mô tả trong báo cáo với mã nguồn (`src/main/java/...`), script `sql/` và `SO_DO_QUAN_HE.md` để phát hiện
+  chỗ không khớp; soạn và chạy kịch bản kiểm thử ở §4.3.
+- **Phần nhóm tự quyết định và kiểm tra:** phạm vi, giả định, quy tắc nghiệp vụ và các điểm mơ hồ (§2.6); đọc
+  lại từng sơ đồ, so với ứng dụng đang chạy; sửa theo góp ý của các thành viên (ví dụ tách rõ UC4 Trao đổi
+  với UC5 Đánh giá). Nhóm chịu trách nhiệm và giải thích được toàn bộ nội dung khi bảo vệ.
 
 ---
 
@@ -68,7 +69,7 @@ gặp trước đó.
 
 **Phạm vi trong hệ thống:**
 
-- Quy trình báo cáo → tiếp nhận → xử lý → phản hồi → lưu kinh nghiệm của một sự cố CNTT.
+- Quy trình báo cáo → tiếp nhận → xử lý → đánh giá → lưu kinh nghiệm của một sự cố CNTT.
 - Trao đổi qua lại (nhắn tin kèm file) giữa người báo và cán bộ CNTT trên một sự cố.
 - Quản trị danh mục phục vụ trực tiếp quy trình trên: phòng, thiết bị, danh mục sự cố, tài khoản người
   dùng, kho kinh nghiệm.
@@ -102,8 +103,10 @@ gặp trước đó.
 - **R2 — Tự động hóa khi đổi trạng thái:** mỗi lần trạng thái thực sự thay đổi, hệ thống tự ghi lại 1 dòng
   lịch sử xử lý; khi chuyển **sang** `HOÀN_THÀNH` thì tự gán ngày hoàn thành, khi chuyển **khỏi**
   `HOÀN_THÀNH` thì tự xóa ngày hoàn thành (để số liệu thống kê thời gian xử lý không bị sai).
-- **R3 — Phản hồi 1 lần:** người báo chỉ gửi được đánh giá mức hài lòng (1–5 sao) sau khi sự cố đã
-  `HOÀN_THÀNH`, và mỗi sự cố chỉ nhận đúng 1 phản hồi.
+- **R3 — Đánh giá 1 lần:** người báo chỉ gửi được đánh giá mức hài lòng (1–5 sao) sau khi sự cố đã
+  `HOÀN_THÀNH`, và mỗi sự cố chỉ nhận đúng 1 đánh giá. Cần phân biệt với trao đổi (R4): nhắn tin/phản hồi qua
+  lại thì lúc nào cũng được, chỉ riêng việc **chấm điểm** mới phải chờ xử lý xong, vì chưa xong thì chưa có gì để
+  đánh giá. Trong mô hình, một đánh giá là một đối tượng `PhanHoi` (bảng `PHAN_HOI`).
 - **R4 — Trao đổi không giới hạn:** người báo và cán bộ CNTT có thể nhắn qua lại nhiều lần trên một sự cố ở
   bất kỳ trạng thái nào (không cần chờ hoàn thành), mỗi tin có thể kèm 1 file.
 - **R5 — Tận dụng kinh nghiệm cũ:** khi xử lý xong, cán bộ CNTT có thể gắn sự cố với 1 bài kinh nghiệm có
@@ -159,7 +162,7 @@ Mục 4.1 của hướng dẫn BTL).
 | UC2 | Báo sự cố | Người báo | Gửi báo cáo sự cố mới, có thể kèm 1 ảnh. |
 | UC3 | Theo dõi sự cố của tôi | Người báo | Xem danh sách và chi tiết các sự cố mình đã báo, cùng lịch sử xử lý. |
 | UC4 | Trao đổi về sự cố | Người dùng hệ thống (cả hai actor con) | Nhắn qua lại không giới hạn số lần trên một sự cố, có thể kèm file. |
-| UC5 | Gửi phản hồi sau hoàn thành | Người báo | Đánh giá mức hài lòng 1–5 sao sau khi sự cố `HOÀN_THÀNH`. |
+| UC5 | Đánh giá sau hoàn thành | Người báo | Chấm mức hài lòng 1–5 sao (kèm nhận xét) sau khi sự cố `HOÀN_THÀNH`; khác UC4 là nhắn tin lúc nào cũng được. |
 | UC6 | Tiếp nhận và xử lý sự cố | Cán bộ CNTT | Xem danh sách, đổi trạng thái, ghi nguyên nhân/cách khắc phục. |
 | UC7 | Lưu kinh nghiệm xử lý | Cán bộ CNTT | Tạo bài kinh nghiệm mới ngay từ nội dung xử lý vừa nhập (extend của UC6). |
 | UC8 | Tra cứu kho kinh nghiệm | Người dùng hệ thống (cả hai actor con) | Tìm và xem bài kinh nghiệm theo danh mục/từ khóa. |
@@ -201,7 +204,7 @@ Mục 4.1 của hướng dẫn BTL).
 | Luồng thay thế/ngoại lệ (khác) | 1a. Trạng thái gửi lên không nằm trong {MỚI, ĐANG_XỬ_LÝ, HOÀN_THÀNH} → báo lỗi "Trạng thái không hợp lệ". 2d. Sự cố đang `HOÀN_THÀNH` mà chọn `MỚI` → báo lỗi "Sự cố đã hoàn thành chỉ có thể mở lại về trạng thái Đang xử lý" (giao diện ẩn lựa chọn `MỚI`). 2e. Mở lại sự cố đang `HOÀN_THÀNH` về `ĐANG_XỬ_LÝ` mà bỏ trống ô "Ghi chú lần cập nhật này" → báo lỗi yêu cầu nhập lý do mở lại, không lưu. |
 | Hậu điều kiện | Sự cố có trạng thái/nguyên nhân/cách khắc phục mới; có thêm 1 dòng lịch sử xử lý; (nếu UC7 xảy ra) kho kinh nghiệm có thêm 1 bài mới. |
 
-#### UC5 — Gửi phản hồi sau hoàn thành
+#### UC5 — Đánh giá sau hoàn thành
 
 | Mục | Nội dung |
 |---|---|
@@ -210,9 +213,9 @@ Mục 4.1 của hướng dẫn BTL).
 | Tổng quan | Sau khi sự cố hoàn thành, người báo chấm 1–5 sao và có thể để lại nhận xét. |
 | Yêu cầu tham khảo | R3; Hình 2.7 (SSD), Hình 3.5 (SD), Hình 3.13 (tự chuyển ở HOAN_THANH). |
 | Tiền điều kiện | Sự cố thuộc về người dùng hiện tại và đã ở trạng thái `HOÀN_THÀNH`. |
-| Luồng chính | 1. Người dùng chọn mức hài lòng (1–5), có thể nhập nhận xét. 2. Hệ thống lưu phản hồi, gắn với sự cố. |
-| Luồng thay thế/ngoại lệ | 1a. Sự cố chưa `HOÀN_THÀNH` → báo lỗi, không cho gửi. 1b. Mức hài lòng ngoài khoảng 1–5 → báo lỗi. 2a. Sự cố đã có phản hồi trước đó (ràng buộc duy nhất ở CSDL) → hệ thống bắt lỗi và báo "Sự cố này đã được phản hồi rồi" thay vì để lộ lỗi SQL. |
-| Hậu điều kiện | Sự cố có đúng 1 bản ghi phản hồi. |
+| Luồng chính | 1. Người dùng chọn mức hài lòng (1–5), có thể nhập nhận xét. 2. Hệ thống lưu đánh giá (một bản ghi `PhanHoi`), gắn với sự cố. |
+| Luồng thay thế/ngoại lệ | 1a. Sự cố chưa `HOÀN_THÀNH` → báo lỗi, không cho gửi. 1b. Mức hài lòng ngoài khoảng 1–5 → báo lỗi. 2a. Sự cố đã được đánh giá trước đó (ràng buộc duy nhất ở CSDL) → hệ thống bắt lỗi và báo "Sự cố này đã được đánh giá rồi" thay vì để lộ lỗi SQL. |
+| Hậu điều kiện | Sự cố có đúng 1 bản ghi đánh giá. |
 
 #### UC4 — Trao đổi về sự cố
 
@@ -234,9 +237,9 @@ và việc song song mà văn bản dạng "bước 1, 2, 3" dễ bỏ sót.
 
 **Quy trình nghiệp vụ tổng thể của một sự cố.** Mỗi làn (swimlane) cho biết ai chịu trách nhiệm hoạt động đó.
 
-![Hình 1.2 — Quy trình xử lý một sự cố, từ lúc báo đến khi phản hồi (có swimlane)](docs/uml/h1_8a_hoatdong_quytrinh.png)
+![Hình 1.2 — Quy trình xử lý một sự cố, từ lúc báo đến khi đánh giá (có swimlane)](docs/uml/h1_8a_hoatdong_quytrinh.png)
 
-*Hình 1.2. Quy trình xử lý một sự cố, từ lúc báo đến khi phản hồi (có swimlane).*
+*Hình 1.2. Quy trình xử lý một sự cố, từ lúc báo đến khi đánh giá (có swimlane).*
 
 Các điểm cần đọc trên hình:
 
@@ -246,14 +249,14 @@ Các điểm cần đọc trên hình:
   nằm ngay trước bước cập nhật `HOÀN_THÀNH` vì bài mới chỉ được tạo trong lần lưu chuyển sự cố sang hoàn thành.
 - Thanh fork/join thứ hai: gán ngày hoàn thành và ghi lịch sử là hai việc độc lập, cùng xảy ra khi đổi
   trạng thái (quy tắc R2, do 2 trigger đảm nhận).
-- Phản hồi chỉ có sau khi hoàn thành và là tùy chọn (quy tắc R3).
+- Đánh giá chỉ có sau khi hoàn thành và là tùy chọn (quy tắc R3).
 
-**Chi tiết logic của UC6 + UC7** (`AdminController.capNhat` và `SuCoRepo.capNhat`). Phần UC7 được đóng gói
+**Sơ đồ hoạt động của UC6 Xử lý sự cố, kèm UC7** (`AdminController.capNhat` và `SuCoRepo.capNhat`). Phần UC7 được đóng gói
 thành một vùng riêng theo cách "phân hoạch sơ đồ" của Bài 5.
 
-![Hình 1.3 — Logic cập nhật xử lý sự cố, kèm nhánh lưu kinh nghiệm](docs/uml/h1_8b_hoatdong_xuly.png)
+![Hình 1.3 — Sơ đồ hoạt động UC6 Xử lý sự cố, kèm nhánh UC7 lưu kinh nghiệm](docs/uml/h1_8b_hoatdong_xuly.png)
 
-*Hình 1.3. Logic cập nhật xử lý sự cố, kèm nhánh lưu kinh nghiệm.*
+*Hình 1.3. Sơ đồ hoạt động UC6 Xử lý sự cố, kèm nhánh UC7 lưu kinh nghiệm.*
 
 Hình này cho thấy một chi tiết mà đặc tả bằng chữ ở §1.7 chưa nói: **khi giữ nguyên trạng thái nhưng sửa
 nguyên nhân, cách khắc phục hoặc ghi chú**, hệ thống vẫn ghi một dòng lịch sử (trạng thái cũ = mới) để không
@@ -267,7 +270,7 @@ và ô "lưu kho" chỉ có hiệu lực khi trạng thái mới là `HOÀN_THÀ
 |---|---|---|
 | Bảo mật mật khẩu | Không lưu mật khẩu dạng rõ. | Băm PBKDF2-HMAC-SHA256 + salt ngẫu nhiên (`util/MatKhau.java`) trước khi lưu. |
 | Phân quyền theo vai trò | Người dùng thường không được vào khu vực quản trị. | `AuthInterceptor` chặn truy cập `/admin/**` nếu không phải ADMIN, và chặn mọi route nếu chưa đăng nhập. |
-| Khả năng dùng trên di động | Giao viên/sinh viên có thể báo sự cố ngay từ điện thoại. | Giao diện Bootstrap 5 responsive, bảng tự xếp thành thẻ dưới 768px. |
+| Khả năng dùng trên di động | Giảng viên/sinh viên có thể báo sự cố ngay từ điện thoại. | Giao diện Bootstrap 5 responsive, bảng tự xếp thành thẻ dưới 768px. |
 | Toàn vẹn dữ liệu tối thiểu | Email, tên phòng, tên thiết bị không được trùng; không phá vỡ khóa ngoại khi xóa. | Ràng buộc UNIQUE/CHECK/FK ở CSDL, kiểm tra trước ở tầng ứng dụng để báo lỗi dễ hiểu hơn mã lỗi Oracle. |
 | Giới hạn tài nguyên tải lên | Tránh chiếm quá nhiều dung lượng đĩa. | Giới hạn loại file và dung lượng tối đa 5MB/file (`XuLyLoiChung`, `BoLuuTru`). |
 
@@ -316,7 +319,7 @@ chiều đọc (ví dụ "Phong *chứa >* ThietBi").
 
 - Dùng đủ các kiểu liên kết của Bài 6:
   - **Gộp (composition, hình thoi đặc)** giữa `SuCo` và `LanXuLy`, `PhanHoi`, `TraoDoi`: các đối tượng này không
-    tồn tại độc lập nếu không có sự cố; xóa sự cố thì `SuCoRepo.xoa` xóa luôn lịch sử, phản hồi và trao đổi của nó.
+    tồn tại độc lập nếu không có sự cố; xóa sự cố thì `SuCoRepo.xoa` xóa luôn lịch sử, đánh giá và trao đổi của nó.
   - **Kết tập (aggregation, hình thoi rỗng)** giữa `Phong` và `ThietBi`: thiết bị là một phần của phòng nhưng vẫn
     tồn tại độc lập (chuyển được sang phòng khác), và không xóa được phòng khi còn thiết bị (R7).
   - Các quan hệ còn lại là **kết hợp (association)** thông thường.
@@ -383,9 +386,9 @@ SSD chỉ thể hiện tương tác **Actor ↔ Hệ thống** như một hộp 
 
 *Hình 2.6. SSD của UC6 Tiếp nhận và xử lý sự cố (kèm UC7, UC16).*
 
-![Hình 2.7 — SSD của UC5 Gửi phản hồi](docs/uml/h2_5c_ssd_uc5.png)
+![Hình 2.7 — SSD của UC5 Đánh giá sau hoàn thành](docs/uml/h2_5c_ssd_uc5.png)
 
-*Hình 2.7. SSD của UC5 Gửi phản hồi.*
+*Hình 2.7. SSD của UC5 Đánh giá sau hoàn thành.*
 
 ![Hình 2.8 — SSD của UC4 Trao đổi về sự cố](docs/uml/h2_5d_ssd_uc4.png)
 
@@ -403,6 +406,14 @@ SSD chỉ thể hiện tương tác **Actor ↔ Hệ thống** như một hộp 
 - **Một thiết bị có thể liên quan nhiều sự cố cùng lúc:** đề bài không giới hạn; nhóm giả định một thiết bị
   "đang hỏng" vẫn có thể bị báo thêm sự cố mới (không khóa báo cáo trùng), vì nhiều người có thể phát hiện
   cùng một vấn đề độc lập với nhau.
+- **"Phản hồi" nghĩa là nhắn tin hay chấm điểm?** Trong thực tế, chữ "phản hồi" dùng cho cả hai việc: nhắn
+  lại cho bộ phận CNTT (lúc nào cũng làm được) và đánh giá chất lượng xử lý (chỉ có ý nghĩa khi đã xử lý
+  xong). Nhóm tách thành 2 use case riêng: **UC4 Trao đổi về sự cố** (nhắn qua lại không giới hạn, mọi trạng
+  thái, R4) và **UC5 Đánh giá sau hoàn thành** (1–5 sao, đúng 1 lần, chỉ khi `HOÀN_THÀNH`, R3). Bản đầu tiên
+  của báo cáo đặt tên UC5 là "Gửi phản hồi sau hoàn thành", dễ bị hiểu là "chỉ nhắn tin được sau khi hoàn
+  thành". Thành viên nhóm phát hiện điểm này khi rà soát nên nhóm đổi tên UC5 và đổi luôn chữ trên giao diện
+  (nút "Gửi đánh giá", khung "Kết quả xử lý từ IT"). Lớp/bảng vẫn tên `PhanHoi`/`PHAN_HOI` vì đã có dữ liệu
+  thật; một đối tượng `PhanHoi` chính là một lượt đánh giá.
 - **"Lưu vào kho kinh nghiệm" là tùy chọn, không bắt buộc:** nhóm quyết định không ép mọi sự cố `HOÀN_THÀNH`
   đều phải sinh ra bài kinh nghiệm, vì nhiều sự cố (ví dụ quên mật khẩu) không có giá trị tra cứu lại. Ngược
   lại, sự cố chưa hoàn thành thì **không được** lưu vào kho, vì nguyên nhân/cách khắc phục khi đó chưa được
@@ -471,12 +482,12 @@ lifeline Oracle, cho thấy trách nhiệm ghi lịch sử và gán ngày hoàn 
 Trước khi kiểm tra các điều kiện, Controller đọc `sc:SuCo` và hỏi `daHoanThanh()` (thông điệp 8) để chặn việc mở
 lại sự cố đã hoàn thành về `MOI` hoặc mở lại mà không ghi lý do — cùng cách dùng Information Expert như ở UC5.
 
-![Hình 3.5 — Sơ đồ tuần tự UC5 Gửi phản hồi](docs/uml/h3_2c_sd_uc5.png)
+![Hình 3.5 — Sơ đồ tuần tự UC5 Đánh giá sau hoàn thành](docs/uml/h3_2c_sd_uc5.png)
 
-*Hình 3.5. Sơ đồ tuần tự UC5 Gửi phản hồi.*
+*Hình 3.5. Sơ đồ tuần tự UC5 Đánh giá sau hoàn thành.*
 
 Controller không tự so sánh chuỗi `"HOAN_THANH"` mà **hỏi chính đối tượng** `sc:SuCo` qua `daHoanThanh()` (thông
-điệp 8): `SuCo` là Information Expert vì nó giữ `trangThai`. Quy tắc "mỗi sự cố chỉ 1 phản hồi" được bảo đảm lần
+điệp 8): `SuCo` là Information Expert vì nó giữ `trangThai`. Quy tắc "mỗi sự cố chỉ 1 đánh giá" được bảo đảm lần
 cuối bởi ràng buộc `UQ_PHAN_HOI_SU_CO`; Controller bắt `DuplicateKeyException` để hiện thông báo dễ hiểu thay vì
 để lộ mã lỗi ORA-00001.
 
@@ -558,7 +569,7 @@ Nhãn trên mũi tên theo dạng `sự kiện [điều kiện] / hành động`
 - Từ `HOAN_THANH` chỉ có một đường quay lui là "mở lại" về `DANG_XU_LY`, với điều kiện `[có lý do ở ghi chú]`;
   không có mũi tên `HOAN_THANH → MOI`.
 - Hai **tự chuyển (self-transition)**: sửa nội dung mà giữ nguyên trạng thái vẫn ghi `LanXuLy` (do
-  `SuCoRepo.capNhat` tự làm); ở `HOAN_THANH`, người báo gửi phản hồi được đúng 1 lần (điều kiện `[chưa có phản hồi]`).
+  `SuCoRepo.capNhat` tự làm); ở `HOAN_THANH`, người báo gửi đánh giá được đúng 1 lần (điều kiện `[chưa có đánh giá]`).
 - Trạng thái kết thúc: cán bộ CNTT xóa sự cố (`AdminController.xoa`) ở bất kỳ trạng thái nào.
 
 | Sự kiện | Chuyển trạng thái | Nơi xảy ra trong mã nguồn |
@@ -654,7 +665,7 @@ Xem chi tiết đầy đủ ở [README.md](README.md) (môi trường, cách d�
 | UC2 Báo sự cố | `POST /user/bao-cao` | `SuCoController.baoSuCo` | `user.html` |
 | UC3 Theo dõi sự cố của tôi | `GET /user`, `GET /user/{maSc}` | `SuCoController` | `user.html`, `user-chi-tiet.html` |
 | UC4 Trao đổi về sự cố | `POST /user/{maSc}/binh-luan`, `POST /admin/{maSc}/binh-luan` | `SuCoController`, `AdminController` | `user-chi-tiet.html`, `admin-chi-tiet.html` |
-| UC5 Gửi phản hồi | `POST /user/{maSc}/phan-hoi` | `SuCoController.guiPhanHoi` | `user-chi-tiet.html` |
+| UC5 Đánh giá sau hoàn thành | `POST /user/{maSc}/phan-hoi` | `SuCoController.guiPhanHoi` | `user-chi-tiet.html` |
 | UC6 Xử lý sự cố | `GET /admin`, `POST /admin/{maSc}` | `AdminController` | `admin.html`, `admin-chi-tiet.html` |
 | UC7 Lưu kinh nghiệm xử lý | `POST /admin/{maSc}` (tham số `luuKho`) | `AdminController.capNhat` → `KinhNghiemRepo` | `admin-chi-tiet.html` |
 | UC8 Tra cứu kho kinh nghiệm | `GET /kinh-nghiem`, `GET /kinh-nghiem/{maBai}` | `KinhNghiemController` | `kinh-nghiem.html`, `kinh-nghiem-chi-tiet.html` |
@@ -669,25 +680,39 @@ Xem chi tiết đầy đủ ở [README.md](README.md) (môi trường, cách d�
 
 ### 4.3. Kế hoạch test case
 
-Bảng dưới là **kế hoạch** test case theo luồng chính và ngoại lệ đã đặc tả ở §1.7 — nhóm cần tự chạy ứng
-dụng (theo README.md), điền cột "Kết quả thực tế" và ảnh chụp minh họa, không được để trống khi nộp (đúng
-yêu cầu "không chỉ chụp giao diện; cần chứng minh quy tắc nghiệp vụ quan trọng hoạt động đúng").
+Các test case dưới đây bám theo luồng chính và luồng ngoại lệ đã đặc tả ở §1.7. Nhóm chạy thử ngày
+15/11/2026 trên bản `web-java` nối với CSDL Oracle thật (dữ liệu mẫu của `sql/04_data.sql`), tài khoản người báo
+`anh.pd@st.utc.edu.vn` và cán bộ CNTT `hung.nv@utc.edu.vn`. Để kiểm tra đúng yêu cầu "không chỉ chụp giao diện;
+cần chứng minh quy tắc nghiệp vụ quan trọng hoạt động đúng", mỗi test được làm như sau:
+
+- Gửi thẳng request HTTP tới server (bằng `curl`), **không đi qua form**. Nhờ vậy các test T1, T11, T13 kiểm tra
+  được việc Controller vẫn chặn khi người dùng gỡ ràng buộc trên giao diện bằng F12 (ô bắt buộc, lựa chọn bị ẩn,
+  ô tick bị khóa).
+- Sau mỗi request, truy vấn lại CSDL (`SU_CO`, `LICH_SU_XU_LY`, `BAI_KINH_NGHIEM`, `PHAN_HOI`, `PHONG`,
+  `NGUOI_DUNG`) để đối chiếu số dòng và giá trị cột trước/sau, thay vì chỉ tin thông báo trên màn hình.
+- Ảnh chụp trang kết quả của từng test nằm ở Phụ lục (Hình PL.1 – PL.13).
+
+Sự cố dùng cho T3–T8 và T11–T13 là sự cố #221 do chính T3 tạo ra.
 
 | # | UC | Input | Điều kiện | Kết quả mong đợi | Kết quả thực tế |
 |---|---|---|---|---|---|
-| T1 | UC2 | Báo sự cố, bỏ trống tiêu đề | Luồng ngoại lệ 2a | Báo lỗi, không tạo sự cố mới | *(điền khi test)* |
-| T2 | UC2 | Báo sự cố, đính kèm file `.pdf` làm ảnh | Luồng ngoại lệ 3a | Báo lỗi "Chỉ nhận ảnh JPG, PNG, GIF hoặc WEBP" | *(điền khi test)* |
-| T3 | UC2 | Báo sự cố hợp lệ, đủ trường | Luồng chính | Sự cố mới xuất hiện ở `/admin` với trạng thái `MỚI` | *(điền khi test)* |
-| T4 | UC6 | Đổi trạng thái `MỚI → ĐANG_XỬ_LÝ` | Luồng chính | Có thêm 1 dòng lịch sử; `NGAY_HOAN_THANH` vẫn `NULL` | *(điền khi test)* |
-| T5 | UC6/UC7 | Đổi trạng thái sang `HOÀN_THÀNH`, tick "lưu vào kho" nhưng bỏ trống nguyên nhân | Luồng ngoại lệ 2b | Báo lỗi, không lưu cập nhật, không tạo bài kinh nghiệm | *(điền khi test)* |
-| T6 | UC6/UC7 | Đổi trạng thái sang `HOÀN_THÀNH`, tick "lưu vào kho", điền đủ nguyên nhân/cách khắc phục/danh mục | Luồng thay thế 2a | `NGAY_HOAN_THANH` được gán tự động; có bài kinh nghiệm mới trong `/kinh-nghiem`; sự cố gắn với bài đó | *(điền khi test)* |
-| T7 | UC5 | Gửi phản hồi khi sự cố còn `ĐANG_XỬ_LÝ` | Luồng ngoại lệ 1a | Báo lỗi "Chỉ gửi phản hồi được khi sự cố đã hoàn thành" | *(điền khi test)* |
-| T8 | UC5 | Gửi phản hồi lần 2 cho cùng 1 sự cố đã `HOÀN_THÀNH` | Luồng ngoại lệ 2a | Báo lỗi "Sự cố này đã được phản hồi rồi", không tạo bản ghi trùng | *(điền khi test)* |
-| T9 | UC11 | Thêm phòng trùng tên (cùng tòa, cùng tầng) | Quy tắc R6 | Báo lỗi trùng, không thêm | *(điền khi test)* |
-| T10 | UC14 | Admin tự vô hiệu hóa chính tài khoản mình | Ràng buộc tự bảo vệ | Hệ thống từ chối thao tác | *(điền khi test)* |
-| T11 | UC6 | Sự cố đang `HOÀN_THÀNH`, gửi trạng thái `MỚI` (sửa form bằng F12) | Luồng ngoại lệ 2d | Báo lỗi "chỉ có thể mở lại về Đang xử lý", trạng thái không đổi | *(điền khi test)* |
-| T12 | UC6 | Mở lại sự cố `HOÀN_THÀNH` về `ĐANG_XỬ_LÝ`, bỏ trống ghi chú | Luồng ngoại lệ 2e | Báo lỗi yêu cầu nhập lý do; nhập lý do rồi lưu thì `NGAY_HOAN_THANH` bị xóa, có 1 dòng lịch sử ghi lý do | *(điền khi test)* |
-| T13 | UC6/UC7 | Giữ trạng thái `ĐANG_XỬ_LÝ`, tick "lưu vào kho" (bỏ khóa ô tick bằng F12) | Luồng ngoại lệ 2c | Báo lỗi "Chỉ lưu vào kho kinh nghiệm khi sự cố chuyển sang trạng thái Hoàn thành", không tạo bài | *(điền khi test)* |
+| T1 | UC2 | Báo sự cố, bỏ trống tiêu đề | Luồng ngoại lệ 2a | Báo lỗi, không tạo sự cố mới | Đạt. Báo "Vui lòng nhập tiêu đề và chọn mức ưu tiên hợp lệ"; số dòng `SU_CO` giữ nguyên 35 (Hình PL.1). |
+| T2 | UC2 | Báo sự cố, đính kèm file `.pdf` làm ảnh | Luồng ngoại lệ 3a | Báo lỗi "Chỉ nhận ảnh JPG, PNG, GIF hoặc WEBP" | Đạt. Báo "Chỉ nhận ảnh JPG, PNG, GIF hoặc WEBP"; không tạo sự cố, không lưu file (Hình PL.2). |
+| T3 | UC2 | Báo sự cố hợp lệ, đủ trường | Luồng chính | Sự cố mới xuất hiện ở `/admin` với trạng thái `MỚI` | Đạt. Báo "Đã gửi báo cáo sự cố"; sự cố #221 trạng thái `MOI`, đứng đầu danh sách lọc "Mới" ở `/admin` (Hình PL.3). |
+| T4 | UC6 | Đổi trạng thái `MỚI → ĐANG_XỬ_LÝ` | Luồng chính | Có thêm 1 dòng lịch sử; `NGAY_HOAN_THANH` vẫn `NULL` | Đạt. `LICH_SU_XU_LY` của #221 tăng 0 → 1 dòng (`MOI → DANG_XU_LY`); `NGAY_HOAN_THANH` = `NULL` (Hình PL.4). |
+| T5 | UC6/UC7 | Đổi trạng thái sang `HOÀN_THÀNH`, tick "lưu vào kho" nhưng bỏ trống nguyên nhân | Luồng ngoại lệ 2b | Báo lỗi, không lưu cập nhật, không tạo bài kinh nghiệm | Đạt. Báo "Để lưu vào kho kinh nghiệm, cần nhập nguyên nhân, cách khắc phục và chọn lĩnh vực"; vẫn `DANG_XU_LY`, `BAI_KINH_NGHIEM` giữ 12 bài (Hình PL.5). |
+| T6 | UC6/UC7 | Đổi trạng thái sang `HOÀN_THÀNH`, tick "lưu vào kho", điền đủ nguyên nhân/cách khắc phục/danh mục | Luồng thay thế 2a | `NGAY_HOAN_THANH` được gán tự động; có bài kinh nghiệm mới trong `/kinh-nghiem`; sự cố gắn với bài đó | Đạt. `HOAN_THANH`, `NGAY_HOAN_THANH` = 15/11/2026; `BAI_KINH_NGHIEM` 12 → 13 (bài mới #21); `SU_CO.MA_BAI_KN` = 21 (Hình PL.6). |
+| T7 | UC5 | Gửi đánh giá khi sự cố còn `ĐANG_XỬ_LÝ` | Luồng ngoại lệ 1a | Báo lỗi "Chỉ gửi đánh giá được khi sự cố đã hoàn thành" | Đạt. Báo "Chỉ gửi đánh giá được khi sự cố đã hoàn thành"; `PHAN_HOI` của #221 = 0 dòng (Hình PL.7). |
+| T8 | UC5 | Gửi đánh giá lần 2 cho cùng 1 sự cố đã `HOÀN_THÀNH` | Luồng ngoại lệ 2a | Báo lỗi "Sự cố này đã được đánh giá rồi", không tạo bản ghi trùng | Đạt. Lần 1 báo "Đã gửi đánh giá, cảm ơn bạn" (5 sao); lần 2 báo "Sự cố này đã được đánh giá rồi"; `PHAN_HOI` vẫn 1 dòng, mức 5 (Hình PL.8). |
+| T9 | UC11 | Thêm phòng trùng tên (cùng tòa, cùng tầng) | Quy tắc R6 | Báo lỗi trùng, không thêm | Đạt. Gửi "phòng máy 1 (a2-101)" (khác hoa/thường với phòng có sẵn) → báo "Đã có phòng cùng tên ở cùng tòa nhà, cùng tầng"; `PHONG` giữ 25 dòng (Hình PL.9). |
+| T10 | UC14 | Admin tự vô hiệu hóa chính tài khoản mình (gửi thẳng request vô hiệu hóa) | Ràng buộc tự bảo vệ | Hệ thống từ chối thao tác | Đạt. Báo "Bạn không thể tự vô hiệu hóa tài khoản đang đăng nhập"; tài khoản vẫn `HOAT_DONG` (Hình PL.10). |
+| T11 | UC6 | Sự cố đang `HOÀN_THÀNH`, gửi trạng thái `MỚI` (sửa form bằng F12) | Luồng ngoại lệ 2d | Báo lỗi "chỉ có thể mở lại về Đang xử lý", trạng thái không đổi | Đạt. Báo "Sự cố đã hoàn thành chỉ có thể mở lại về trạng thái Đang xử lý"; vẫn `HOAN_THANH` (Hình PL.11). |
+| T12 | UC6 | Mở lại sự cố `HOÀN_THÀNH` về `ĐANG_XỬ_LÝ`, bỏ trống ghi chú | Luồng ngoại lệ 2e | Báo lỗi yêu cầu nhập lý do; nhập lý do rồi lưu thì `NGAY_HOAN_THANH` bị xóa, có 1 dòng lịch sử ghi lý do | Đạt. Lần 1 (bỏ trống ghi chú) báo lỗi yêu cầu nhập lý do, vẫn `HOAN_THANH`; lần 2 có lý do → `DANG_XU_LY`, `NGAY_HOAN_THANH` = `NULL`, thêm dòng lịch sử `HOAN_THANH → DANG_XU_LY` kèm lý do (Hình PL.12). |
+| T13 | UC6/UC7 | Giữ trạng thái `ĐANG_XỬ_LÝ`, tick "lưu vào kho" (bỏ khóa ô tick bằng F12) | Luồng ngoại lệ 2c | Báo lỗi "Chỉ lưu vào kho kinh nghiệm khi sự cố chuyển sang trạng thái Hoàn thành", không tạo bài | Đạt. Báo "Chỉ lưu vào kho kinh nghiệm khi sự cố chuyển sang trạng thái Hoàn thành"; `BAI_KINH_NGHIEM` giữ 12 bài (Hình PL.13). |
+
+**Tổng kết:** 13/13 test case đạt, mỗi test đều có số liệu CSDL trước/sau đi kèm. Sau khi chạy xong, sự
+cố #221 được đưa về `HOAN_THANH`, gắn với bài kinh nghiệm #21, và giữ lại trong CSDL làm ví dụ minh họa
+trọn vòng đời (báo → xử lý → lưu kho → đánh giá → mở lại → hoàn thành lại).
 
 ### 4.4. Giới hạn sản phẩm
 
@@ -702,14 +727,28 @@ yêu cầu "không chỉ chụp giao diện; cần chứng minh quy tắc nghi�
 
 ## KẾT LUẬN
 
-Hệ thống đáp ứng được mục tiêu đặt ra ở §1.1: hỗ trợ đầy đủ quy trình báo cáo → xử lý → phản hồi → tích lũy
+Hệ thống đáp ứng được mục tiêu đặt ra ở §1.1: hỗ trợ đầy đủ quy trình báo cáo → xử lý → đánh giá → tích lũy
 kinh nghiệm cho sự cố CNTT, có đủ các quy tắc nghiệp vụ và trường hợp ngoại lệ để phân tích sâu (không chỉ
 là CRUD đơn thuần) — thể hiện qua các quyết định thiết kế đã giải thích ở Chương 3 (đặc biệt là Information
 Expert ở `SuCoRepo`/`SuCo`, Polymorphism+OCP ở `BoLuuTru`, và việc đẩy một phần trách nhiệm toàn vẹn dữ liệu
 xuống CSDL qua trigger). Giới hạn còn lại (nêu ở §4.4) là các hướng cải tiến khả thi cho các phiên bản sau,
 không ảnh hưởng tới luồng nghiệp vụ chính.
 
-*(Nhóm bổ sung thêm nhận xét riêng của nhóm về mức độ đáp ứng và những gì đã học được qua bài tập lớn này.)*
+Về kiểm thử, cả 13 test case ở §4.3 đều đạt, kể cả các trường hợp cố tình vượt qua giao diện. Điều đó cho
+thấy các quy tắc đã kiểm thử (R1, R3, R5, R6 và ràng buộc tự bảo vệ tài khoản) được chặn ở Controller và CSDL,
+không chỉ dựa vào giao diện.
+
+Qua bài tập lớn, nhóm rút ra ba điều:
+
+- **Tên gọi trong mô hình phải khớp cách người dùng hiểu.** Use case "Gửi phản hồi sau hoàn thành" đúng về
+  logic nhưng dễ bị đọc nhầm thành "chỉ nhắn tin được sau khi xong"; đổi thành "Đánh giá sau hoàn thành" làm
+  sơ đồ, đặc tả và giao diện nói cùng một ý (§2.6).
+- **Sơ đồ hoạt động và sơ đồ tuần tự làm lộ các nhánh dễ sót.** Hình 1.3 và 3.4 vẽ đủ các điều kiện chặn
+  trước khi ghi (mở lại sự cố đã hoàn thành, tick "lưu kho" khi chưa hoàn thành). Nhờ có hình, nhóm viết được
+  test cho từng nhánh (T11–T13), điều mà đặc tả dạng "bước 1, 2, 3" dễ bỏ qua.
+- **Mỗi quy tắc nghiệp vụ nên có một chỗ chịu trách nhiệm rõ ràng.** Ví dụ `SuCo.daHoanThanh()` trả lời câu
+  hỏi "đã xong chưa", ràng buộc `UNIQUE` giữ quy tắc "đánh giá 1 lần", trigger lo ngày hoàn thành và lịch
+  sử. Nhờ vậy, khi sửa một quy tắc không phải dò khắp các màn hình.
 
 ## TÀI LIỆU THAM KHẢO
 
@@ -728,6 +767,62 @@ không ảnh hưởng tới luồng nghiệp vụ chính.
 | *(điền)* | *(điền)* | *(điền — ví dụ: Chương 3 + Sequence/DCD/State Machine)* | *(điền)* |
 | *(điền)* | *(điền)* | *(điền — ví dụ: Chương 4 + kiểm thử)* | *(điền)* |
 
+### Ảnh minh chứng kiểm thử
+
+Ảnh chụp trang mà ứng dụng trả về sau từng request ở §4.3 (ngày 15/11/2026). Thông báo xanh/đỏ ở đầu trang là kết
+quả của request; số liệu CSDL trước/sau ghi ở cột "Kết quả thực tế" của bảng test case.
+
+![Hình PL.1 — T1 — Báo sự cố bỏ trống tiêu đề bị từ chối](docs/kiemthu/t1.png)
+
+*Hình PL.1. T1 — Báo sự cố bỏ trống tiêu đề bị từ chối.*
+
+![Hình PL.2 — T2 — File PDF gửi làm ảnh bị từ chối](docs/kiemthu/t2.png)
+
+*Hình PL.2. T2 — File PDF gửi làm ảnh bị từ chối.*
+
+![Hình PL.3 — T3 — Sự cố #221 vừa báo xuất hiện ở danh sách "Mới" của cán bộ CNTT](docs/kiemthu/t3.png)
+
+*Hình PL.3. T3 — Sự cố #221 vừa báo xuất hiện ở danh sách "Mới" của cán bộ CNTT.*
+
+![Hình PL.4 — T4 — Chuyển MỚI → ĐANG_XỬ_LÝ, có dòng lịch sử, chưa có ngày hoàn thành](docs/kiemthu/t4.png)
+
+*Hình PL.4. T4 — Chuyển MỚI → ĐANG_XỬ_LÝ, có dòng lịch sử, chưa có ngày hoàn thành.*
+
+![Hình PL.5 — T5 — Tick "lưu vào kho" nhưng thiếu nguyên nhân bị từ chối](docs/kiemthu/t5.png)
+
+*Hình PL.5. T5 — Tick "lưu vào kho" nhưng thiếu nguyên nhân bị từ chối.*
+
+![Hình PL.6 — T6 — Hoàn thành kèm lưu kho: tự gán ngày hoàn thành, tạo và gắn bài kinh nghiệm mới](docs/kiemthu/t6.png)
+
+*Hình PL.6. T6 — Hoàn thành kèm lưu kho: tự gán ngày hoàn thành, tạo và gắn bài kinh nghiệm mới.*
+
+![Hình PL.7 — T7 — Đánh giá khi sự cố chưa hoàn thành bị từ chối](docs/kiemthu/t7.png)
+
+*Hình PL.7. T7 — Đánh giá khi sự cố chưa hoàn thành bị từ chối.*
+
+![Hình PL.8 — T8 — Đánh giá lần 2 bị từ chối, đánh giá đầu tiên được giữ nguyên](docs/kiemthu/t8.png)
+
+*Hình PL.8. T8 — Đánh giá lần 2 bị từ chối, đánh giá đầu tiên được giữ nguyên.*
+
+![Hình PL.9 — T9 — Thêm phòng trùng tên (khác hoa/thường) bị từ chối](docs/kiemthu/t9.png)
+
+*Hình PL.9. T9 — Thêm phòng trùng tên (khác hoa/thường) bị từ chối.*
+
+![Hình PL.10 — T10 — Cán bộ CNTT không tự vô hiệu hóa được tài khoản của mình](docs/kiemthu/t10.png)
+
+*Hình PL.10. T10 — Cán bộ CNTT không tự vô hiệu hóa được tài khoản của mình.*
+
+![Hình PL.11 — T11 — Sự cố đã hoàn thành không quay về MỚI được](docs/kiemthu/t11.png)
+
+*Hình PL.11. T11 — Sự cố đã hoàn thành không quay về MỚI được.*
+
+![Hình PL.12 — T12 — Mở lại về ĐANG_XỬ_LÝ kèm lý do: ngày hoàn thành bị xóa, lịch sử ghi lý do](docs/kiemthu/t12.png)
+
+*Hình PL.12. T12 — Mở lại về ĐANG_XỬ_LÝ kèm lý do: ngày hoàn thành bị xóa, lịch sử ghi lý do.*
+
+![Hình PL.13 — T13 — Tick "lưu vào kho" khi chưa hoàn thành bị từ chối](docs/kiemthu/t13.png)
+
+*Hình PL.13. T13 — Tick "lưu vào kho" khi chưa hoàn thành bị từ chối.*
 ### Mã nguồn các sơ đồ UML
 
 Toàn bộ 26 hình trong báo cáo được vẽ bằng PlantUML. Mã nguồn nằm ở `docs/uml/src/*.puml` (kiểu dáng dùng chung ở `docs/uml/src/_style.iuml`), ảnh PNG đã xuất nằm ở `docs/uml/`. Tên file khớp với số hình, ví dụ `h3_2b_sd_uc6_uc7.puml` là Hình 3.4.

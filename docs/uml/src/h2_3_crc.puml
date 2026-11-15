@@ -12,12 +12,12 @@ rectangle SuCo [
 HEAD(SuCo)
 COLS
 | Biết tiêu đề, mô tả, mức ưu tiên, trạng thái,\nnguyên nhân, cách khắc phục | |
-| Biết mình đã hoàn thành hay chưa\n(điều kiện để cho phép phản hồi) | |
+| Biết mình đã hoàn thành hay chưa\n(điều kiện để cho phép đánh giá) | |
 | Biết ai báo, ai đang xử lý | NguoiDung |
 | Biết thiết bị, danh mục liên quan | ThietBi, DanhMucSuCo |
 | Biết bài kinh nghiệm được tham chiếu | BaiKinhNghiem |
 | Lưu lịch sử mỗi lần cập nhật | LanXuLy |
-| Giữ phản hồi (tối đa 1) và các trao đổi | PhanHoi, TraoDoi |
+| Giữ đánh giá (tối đa 1) và các trao đổi | PhanHoi, TraoDoi |
 ]
 
 rectangle NguoiDung [
@@ -28,7 +28,7 @@ COLS
 | Biết đang hoạt động hay đã bị vô hiệu hóa | |
 | Báo sự cố, xử lý sự cố | SuCo |
 | Viết bài kinh nghiệm | BaiKinhNghiem |
-| Gửi phản hồi, gửi trao đổi | PhanHoi, TraoDoi |
+| Gửi đánh giá, gửi trao đổi | PhanHoi, TraoDoi |
 ]
 
 rectangle BaiKN [
@@ -91,7 +91,7 @@ HEAD(«control» ĐiềuPhốiBáoSựCố)
 COLS
 | Nhận yêu cầu báo sự cố, kiểm tra hợp lệ | |
 | Yêu cầu tạo sự cố mới | SuCo |
-| Nhận phản hồi: hỏi sự cố đã hoàn thành chưa\nrồi mới yêu cầu tạo phản hồi | SuCo, PhanHoi |
+| Nhận đánh giá: hỏi sự cố đã hoàn thành chưa\nrồi mới yêu cầu tạo PhanHoi | SuCo, PhanHoi |
 | Nhận tin trao đổi của người báo | TraoDoi |
 ]
 

@@ -82,8 +82,8 @@ Mật khẩu được băm PBKDF2-HMAC-SHA256 + salt ngẫu nhiên (`util/MatKha
 
 1. **Đăng nhập** (`/login`): kiểm tra email + mật khẩu trong `NGUOI_DUNG`, lưu vào `HttpSession`. USER -> `/user`, ADMIN -> `/admin`, `/logout` để thoát. Tài khoản `KHONG_HOAT_DONG` không đăng nhập được.
 2. **/user**: form báo sự cố (thiết bị, danh mục lấy từ CSDL, ảnh đính kèm tùy chọn), số đếm sự cố của mình theo trạng thái, khối **"sự cố hay gặp"** (đọc view `V_SU_CO_THUONG_GAP`) và bảng sự cố của chính mình.
-   - **/user/{id}**: xem chi tiết sự cố của mình, nguyên nhân/cách khắc phục do IT ghi, lịch sử xử lý; khi sự cố đã `HOAN_THANH` thì **gửi phản hồi** (mức hài lòng 1-5 + nhận xét, mỗi sự cố chỉ 1 lần) và khối **trao đổi** để nhắn qua lại với IT bất kỳ lúc nào (không giới hạn số lần, có thể đính kèm file).
-3. **/admin**: (chỉ ADMIN) bảng mọi sự cố, 4 ô số liệu bấm vào để lọc theo trạng thái; trang chi tiết đổi trạng thái, ghi nguyên nhân, cách khắc phục, chọn hoặc **tạo luôn bài kinh nghiệm** từ nội dung vừa nhập, xem phản hồi của người báo, **trao đổi** qua lại với người báo, **xóa sự cố** (kèm lịch sử).
+   - **/user/{id}**: xem chi tiết sự cố của mình, nguyên nhân/cách khắc phục do IT ghi, lịch sử xử lý; khi sự cố đã `HOAN_THANH` thì **gửi đánh giá** (mức hài lòng 1-5 + nhận xét, mỗi sự cố chỉ 1 lần) và khối **trao đổi** để nhắn qua lại với IT bất kỳ lúc nào (không giới hạn số lần, có thể đính kèm file).
+3. **/admin**: (chỉ ADMIN) bảng mọi sự cố, 4 ô số liệu bấm vào để lọc theo trạng thái; trang chi tiết đổi trạng thái, ghi nguyên nhân, cách khắc phục, chọn hoặc **tạo luôn bài kinh nghiệm** từ nội dung vừa nhập, xem đánh giá của người báo, **trao đổi** qua lại với người báo, **xóa sự cố** (kèm lịch sử).
    - **/admin/thiet-bi**: danh sách, thêm/sửa/xóa thiết bị (nhà cung cấp, ngày lắp đặt, hướng dẫn sử dụng), **nhập từ Excel**. Thiết bị đã có sự cố thì Oracle chặn xóa (khóa ngoại).
    - **/admin/phong**: danh sách, thêm/sửa/xóa phòng. Phòng còn thiết bị thì không xóa được.
    - **/admin/danh-muc**: danh sách, thêm/sửa/xóa danh mục sự cố. Tên không được trùng; danh mục còn sự cố hoặc bài kinh nghiệm thì không xóa được.

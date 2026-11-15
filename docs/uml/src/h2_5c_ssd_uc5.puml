@@ -6,15 +6,15 @@ actor "Người báo sự cố" as U
 participant ":HệThốngQuảnLýSựCố" as S
 
 U -> S : xemChiTietSuCoCuaToi(maSc)
-S --> U : chiTiếtSựCố, lịchSửXửLý, phảnHồi (nếu đã có)
+S --> U : chiTiếtSựCố, lịchSửXửLý, đánhGiá (nếu đã có)
 U -> S : guiPhanHoi(maSc, mucHaiLong, noiDung)
 alt sự cố chưa HOÀN_THÀNH
-  S --> U : lỗi("Chỉ gửi phản hồi được khi sự cố đã hoàn thành")
+  S --> U : lỗi("Chỉ gửi đánh giá được khi sự cố đã hoàn thành")
 else mức hài lòng ngoài 1..5
   S --> U : lỗi("Mức hài lòng phải từ 1 đến 5")
-else sự cố đã có phản hồi
-  S --> U : lỗi("Sự cố này đã được phản hồi rồi")
+else sự cố đã được đánh giá
+  S --> U : lỗi("Sự cố này đã được đánh giá rồi")
 else hợp lệ
-  S --> U : xácNhận("Đã gửi phản hồi, cảm ơn bạn")
+  S --> U : xácNhận("Đã gửi đánh giá, cảm ơn bạn")
 end
 @enduml

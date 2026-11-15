@@ -91,12 +91,12 @@
       </div>
 
       <div class="col-xl-5">
-        <!-- Phản hồi của admin sau khi xử lý -->
+        <!-- Kết quả xử lý do IT ghi (nguyên nhân/cách khắc phục) -->
         <div class="card mb-3 mb-xl-4">
-          <div class="card-header"><i class="bi bi-chat-dots"></i>Phản hồi từ IT</div>
+          <div class="card-header"><i class="bi bi-chat-dots"></i>Kết quả xử lý từ IT</div>
           <div class="card-body">
             <p th:if="${suCo.nguyenNhan == null and suCo.cachKhacPhuc == null}" class="text-muted mb-0">
-              Chưa có phản hồi. Bộ phận IT sẽ cập nhật khi xử lý xong.
+              Chưa có kết quả xử lý. Bộ phận IT sẽ cập nhật khi xử lý xong.
             </p>
             <dl class="ds-thong-tin" th:unless="${suCo.nguyenNhan == null and suCo.cachKhacPhuc == null}">
               <div>
@@ -119,7 +119,7 @@
           </div>
         </div>
 
-        <!-- Phản hồi của người báo, chỉ cho gửi khi sự cố đã HOAN_THANH và chưa phản hồi lần nào -->
+        <!-- Đánh giá của người báo (bảng PHAN_HOI), chỉ cho gửi khi sự cố đã HOAN_THANH và chưa đánh giá lần nào -->
         <div class="card" th:if="${suCo.daHoanThanh()}">
           <div class="card-header"><i class="bi bi-star"></i>Đánh giá của bạn</div>
           <div class="card-body" th:if="${phanHoi == null}">
@@ -138,7 +138,7 @@
                 <label class="form-label" for="noiDung">Nhận xét (không bắt buộc)</label>
                 <textarea class="form-control" id="noiDung" name="noiDung" rows="3" maxlength="1000"></textarea>
               </div>
-              <button class="btn btn-primary w-100" type="submit"><i class="bi bi-send"></i> Gửi phản hồi</button>
+              <button class="btn btn-primary w-100" type="submit"><i class="bi bi-send"></i> Gửi đánh giá</button>
             </form>
           </div>
           <div class="card-body" th:unless="${phanHoi == null}">

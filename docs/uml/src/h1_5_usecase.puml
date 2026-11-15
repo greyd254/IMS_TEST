@@ -18,7 +18,7 @@ rectangle "Hệ thống Quản lý sự cố CNTT" {
 
   usecase "UC2. Báo sự cố" as UC2
   usecase "UC3. Theo dõi sự cố của tôi" as UC3
-  usecase "UC5. Gửi phản hồi\nsau hoàn thành" as UC5
+  usecase "UC5. Đánh giá\nsau hoàn thành" as UC5
 
   usecase "UC6. Tiếp nhận và\nxử lý sự cố" as UC6
   usecase "UC7. Lưu kinh nghiệm\nxử lý" as UC7

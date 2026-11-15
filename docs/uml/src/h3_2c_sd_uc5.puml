@@ -29,21 +29,21 @@ else là sự cố của mình
   SC --> C : daXong
   deactivate SC
   alt daXong = false
-    C --> B : lỗi "Chỉ gửi phản hồi được khi sự cố đã hoàn thành"
+    C --> B : lỗi "Chỉ gửi đánh giá được khi sự cố đã hoàn thành"
   else mucHaiLong không thuộc [1, 5]
     C --> B : lỗi "Mức hài lòng phải từ 1 đến 5"
   else hợp lệ
     C -> PR : taoMoi(maSc, maNguoiPhanHoi, mucHaiLong, noiDung)
     activate PR
     PR -> DB : thêm PHAN_HOI
-    alt vi phạm UQ_PHAN_HOI_SU_CO (đã có phản hồi)
+    alt vi phạm UQ_PHAN_HOI_SU_CO (đã có đánh giá)
       DB --> PR : ORA-00001
       PR --> C : DuplicateKeyException
-      C --> B : lỗi "Sự cố này đã được phản hồi rồi"
-    else chưa có phản hồi
+      C --> B : lỗi "Sự cố này đã được đánh giá rồi"
+    else chưa có đánh giá
       DB --> PR : OK
       PR --> C
-      C --> B : "Đã gửi phản hồi, cảm ơn bạn"
+      C --> B : "Đã gửi đánh giá, cảm ơn bạn"
     end
     deactivate PR
   end
