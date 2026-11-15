@@ -53,7 +53,7 @@ public class ThietBiRepo {
         String where = dieuKienLoc(q, thamSo);
         thamSo.add(Trang.viTriDau(so));
         thamSo.add(Trang.KICH_THUOC);
-        return jdbc.query(SELECT + where + "ORDER BY p.TOA_NHA, p.TEN_PHONG, tb.TEN_TB, tb.MA_TB "
+        return jdbc.query(SELECT + where + "ORDER BY tb.MA_TB DESC "
                 + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY", MAPPER, thamSo.toArray());
     }
 

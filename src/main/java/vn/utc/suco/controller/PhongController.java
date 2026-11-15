@@ -8,11 +8,13 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
+import vn.utc.suco.model.PhongForm;
 import vn.utc.suco.model.Trang;
 import vn.utc.suco.repository.PhongRepo;
 import vn.utc.suco.util.TimKiem;
@@ -54,16 +56,14 @@ public class PhongController {
     }
 
     @PostMapping("/admin/phong")
-    public String them(@RequestParam String tenPhong, @RequestParam String toaNha,
-                       @RequestParam(required = false) Integer tang,
-                       @RequestParam String loaiPhong, RedirectAttributes ra) {
-        String loi = kiemTra(null, tenPhong, toaNha, tang, loaiPhong);
+    public String them(@ModelAttribute PhongForm form, RedirectAttributes ra) {
+        String loi = kiemTra(null, form);
         if (loi != null) {
             ra.addFlashAttribute("loi", loi);
             return "redirect:/admin/phong";
         }
         try {
-            phongRepo.taoMoi(tenPhong.trim(), toaNha.trim(), tang, loaiPhong);
+            phongRepo.taoMoi(form.getTenPhong().trim(), form.getToaNha().trim(), form.getTang(), form.getLoaiPhong());
         } catch (DuplicateKeyException e) {
             // Chỉ xảy ra khi 2 người thêm trùng cùng lúc (UQ_PHONG_TEN ở 02_tables.sql bảo vệ ở tầng CSDL)
             ra.addFlashAttribute("loi", TRUNG);
@@ -85,16 +85,15 @@ public class PhongController {
     }
 
     @PostMapping("/admin/phong/{maPhong}")
-    public String capNhat(@PathVariable Long maPhong, @RequestParam String tenPhong, @RequestParam String toaNha,
-                          @RequestParam(required = false) Integer tang, @RequestParam String loaiPhong,
-                          RedirectAttributes ra) {
-        String loi = kiemTra(maPhong, tenPhong, toaNha, tang, loaiPhong);
+    public String capNhat(@PathVariable Long maPhong, @ModelAttribute PhongForm form, RedirectAttributes ra) {
+        String loi = kiemTra(maPhong, form);
         if (loi != null) {
             ra.addFlashAttribute("loi", loi);
             return "redirect:/admin/phong/" + maPhong + "/sua";
         }
         try {
-            phongRepo.capNhat(maPhong, tenPhong.trim(), toaNha.trim(), tang, loaiPhong);
+            phongRepo.capNhat(maPhong, form.getTenPhong().trim(), form.getToaNha().trim(), form.getTang(),
+                    form.getLoaiPhong());
         } catch (DuplicateKeyException e) {
             ra.addFlashAttribute("loi", TRUNG);
             return "redirect:/admin/phong/" + maPhong + "/sua";
@@ -112,19 +111,21 @@ public class PhongController {
             // Khóa ngoại FK_THIET_BI_PHONG: phòng này còn thiết bị
             ra.addFlashAttribute("loi", "Không thể xóa: phòng này còn thiết bị. Hãy chuyển hoặc xóa thiết bị trước.");
         }
-        return "redirect:/admin/phong";
+        return "redirect:/admsửin/phong";
     }
 
     /** Kiểm tra dữ liệu form thêm/sửa; trả về câu báo lỗi, hoặc null nếu hợp lệ. maPhong = null khi thêm mới. */
-    private String kiemTra(Long maPhong, String tenPhong, String toaNha, Integer tang, String loaiPhong) {
+    private String kiemTra(Long maPhong, PhongForm form) {
+        String tenPhong = form.getTenPhong();
+        String toaNha = form.getToaNha();
         if (tenPhong == null || tenPhong.isBlank() || toaNha == null || toaNha.isBlank()
-                || !LOAI.containsKey(loaiPhong)) {
+                || !LOAI.containsKey(form.getLoaiPhong())) {
             return "Vui lòng nhập tên phòng, tòa nhà và chọn loại phòng hợp lệ";
         }
-        if (tang != null && (tang < 0 || tang > 99)) {
+        if (form.getTang() != null && (form.getTang() < 0 || form.getTang() > 99)) {
             return "Tầng phải trong khoảng 0 đến 99";   // khớp ô nhập; cột TANG là NUMBER(2)
         }
-        if (phongRepo.tonTaiTrung(tenPhong.trim(), toaNha.trim(), tang, maPhong)) {
+        if (phongRepo.tonTaiTrung(tenPhong.trim(), toaNha.trim(), form.getTang(), maPhong)) {
             return TRUNG;
         }
         return null;

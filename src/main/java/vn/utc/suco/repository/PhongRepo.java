@@ -31,7 +31,7 @@ public class PhongRepo {
         String where = dieuKienLoc(q, thamSo);
         thamSo.add(Trang.viTriDau(so));
         thamSo.add(Trang.KICH_THUOC);
-        return jdbc.query(SELECT + where + "ORDER BY TOA_NHA, TANG, TEN_PHONG, MA_PHONG OFFSET ? ROWS FETCH NEXT ? ROWS ONLY",
+        return jdbc.query(SELECT + where + "ORDER BY MA_PHONG DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY",
                 MAPPER, thamSo.toArray());
     }
 

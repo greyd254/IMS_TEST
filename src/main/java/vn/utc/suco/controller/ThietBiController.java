@@ -16,12 +16,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
+import vn.utc.suco.model.ThietBiForm;
 import vn.utc.suco.model.Trang;
 import vn.utc.suco.repository.ThietBiRepo;
 import vn.utc.suco.util.ExcelThietBi;
@@ -80,17 +82,15 @@ public class ThietBiController {
     }
 
     @PostMapping("/admin/thiet-bi")
-    public String them(@RequestParam String tenTb, @RequestParam String loaiTb, @RequestParam Long maPhong,
-                       @RequestParam String tinhTrang, @RequestParam(required = false) String nhaCungCap,
-                       @RequestParam(required = false) String ngayLapDat, @RequestParam(required = false) String hdsd,
-                       RedirectAttributes ra) {
-        String loi = kiemTra(null, tenTb, loaiTb, maPhong, tinhTrang, ngayLapDat);
+    public String them(@ModelAttribute ThietBiForm form, RedirectAttributes ra) {
+        String loi = kiemTra(null, form);
         if (loi != null) {
             ra.addFlashAttribute("loi", loi);
             return "redirect:/admin/thiet-bi";
         }
         try {
-            thietBiRepo.taoMoi(tenTb.trim(), loaiTb, maPhong, tinhTrang, nhaCungCap, docNgay(ngayLapDat), hdsd);
+            thietBiRepo.taoMoi(form.getTenTb().trim(), form.getLoaiTb(), form.getMaPhong(), form.getTinhTrang(),
+                    form.getNhaCungCap(), docNgay(form.getNgayLapDat()), form.getHdsd());
         } catch (DuplicateKeyException e) {
             // Chỉ xảy ra khi 2 người thêm trùng cùng lúc (UQ_THIET_BI_TEN ở 02_tables.sql bảo vệ ở tầng CSDL)
             ra.addFlashAttribute("loi", TRUNG);
@@ -152,18 +152,15 @@ public class ThietBiController {
     }
 
     @PostMapping("/admin/thiet-bi/{maTb}")
-    public String capNhat(@PathVariable Long maTb, @RequestParam String tenTb, @RequestParam String loaiTb,
-                          @RequestParam Long maPhong, @RequestParam String tinhTrang,
-                          @RequestParam(required = false) String nhaCungCap,
-                          @RequestParam(required = false) String ngayLapDat,
-                          @RequestParam(required = false) String hdsd, RedirectAttributes ra) {
-        String loi = kiemTra(maTb, tenTb, loaiTb, maPhong, tinhTrang, ngayLapDat);
+    public String capNhat(@PathVariable Long maTb, @ModelAttribute ThietBiForm form, RedirectAttributes ra) {
+        String loi = kiemTra(maTb, form);
         if (loi != null) {
             ra.addFlashAttribute("loi", loi);
             return "redirect:/admin/thiet-bi/" + maTb + "/sua";
         }
         try {
-            thietBiRepo.capNhat(maTb, tenTb.trim(), loaiTb, maPhong, tinhTrang, nhaCungCap, docNgay(ngayLapDat), hdsd);
+            thietBiRepo.capNhat(maTb, form.getTenTb().trim(), form.getLoaiTb(), form.getMaPhong(),
+                    form.getTinhTrang(), form.getNhaCungCap(), docNgay(form.getNgayLapDat()), form.getHdsd());
         } catch (DuplicateKeyException e) {
             ra.addFlashAttribute("loi", TRUNG);
             return "redirect:/admin/thiet-bi/" + maTb + "/sua";
@@ -185,20 +182,22 @@ public class ThietBiController {
     }
 
     /** Kiểm tra dữ liệu form thêm/sửa; trả về câu báo lỗi, hoặc null nếu hợp lệ. maTb = null khi thêm mới. */
-    private String kiemTra(Long maTb, String tenTb, String loaiTb, Long maPhong, String tinhTrang, String ngayLapDat) {
-        if (tenTb.isBlank() || !LOAI.containsKey(loaiTb) || !TINH_TRANG.containsKey(tinhTrang)) {
+    private String kiemTra(Long maTb, ThietBiForm form) {
+        String tenTb = form.getTenTb();
+        if (tenTb == null || tenTb.isBlank() || !LOAI.containsKey(form.getLoaiTb())
+                || !TINH_TRANG.containsKey(form.getTinhTrang())) {
             return "Vui lòng nhập tên thiết bị và chọn loại, tình trạng hợp lệ";
         }
         LocalDate ngay;
         try {
-            ngay = docNgay(ngayLapDat);
+            ngay = docNgay(form.getNgayLapDat());
         } catch (DateTimeParseException e) {
             return "Ngày lắp đặt không hợp lệ";
         }
         if (ngay != null && (ngay.isBefore(NGAY_NHO_NHAT) || ngay.isAfter(LocalDate.now()))) {
             return "Ngày lắp đặt phải trong khoảng từ " + NGAY_NHO_NHAT.getYear() + " đến hôm nay";
         }
-        if (thietBiRepo.tonTaiTrung(tenTb.trim(), loaiTb, maPhong, maTb)) {
+        if (thietBiRepo.tonTaiTrung(tenTb.trim(), form.getLoaiTb(), form.getMaPhong(), maTb)) {
             return TRUNG;
         }
         return null;
