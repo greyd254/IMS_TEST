@@ -756,7 +756,6 @@ Qua bài tập lớn, nhóm rút ra ba điều:
 
 1. Tài liệu "Hướng dẫn thực hiện Bài tập lớn — Học phần Phân tích và thiết kế hướng đối tượng (OOAD)".
 2. Larman, C. — *Applying UML and Patterns* (nguồn gốc các nguyên tắc GRASP).
-3. Mã nguồn và tài liệu nội bộ của chính dự án: [README.md](README.md), [SO_DO_QUAN_HE.md](SO_DO_QUAN_HE.md), `sql/`.
 
 ## PHỤ LỤC
 
@@ -825,12 +824,3 @@ quả của request; số liệu CSDL trước/sau ghi ở cột "Kết quả th
 ![Hình PL.13 — T13 — Tick "lưu vào kho" khi chưa hoàn thành bị từ chối](docs/kiemthu/t13.png)
 
 *Hình PL.13. T13 — Tick "lưu vào kho" khi chưa hoàn thành bị từ chối.*
-### Mã nguồn các sơ đồ UML
-
-Toàn bộ 26 hình trong báo cáo được vẽ bằng PlantUML. Mã nguồn nằm ở `docs/uml/src/*.puml` (kiểu dáng dùng chung ở `docs/uml/src/_style.iuml`), ảnh PNG đã xuất nằm ở `docs/uml/`. Tên file khớp với số hình, ví dụ `h3_2b_sd_uc6_uc7.puml` là Hình 3.4.
-
-Khi sửa một sơ đồ, xuất lại ảnh bằng lệnh sau (cần Java và `plantuml.jar` tải từ https://plantuml.com/download, không cần Graphviz):
-
-```sh
-sh docs/uml/render.sh /duong/dan/plantuml.jar
-```
