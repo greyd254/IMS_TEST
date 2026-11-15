@@ -2,7 +2,9 @@
 
 ## Học phần: Phân tích và thiết kế hướng đối tượng (OOAD)
 
-## Đề tài: Hệ thống Quản lý sự cố CNTT và kho kinh nghiệm xử lý
+## Đề tài: Quản lý sự cố CNTT trường đại học
+
+*Tiếp nhận, xử lý và tích lũy kinh nghiệm xử lý*
 
 | | |
 |---|---|
@@ -16,7 +18,7 @@
 
 ### Ghi chú về đề tài
 
-Đề tài "Quản lý sự cố CNTT" không nằm trong 10 đề tài gợi ý ở Mục 8 của hướng dẫn BTL, nhóm chọn theo diện
+Đề tài "Quản lý sự cố CNTT trường đại học" không nằm trong 10 đề tài gợi ý ở Mục 8 của hướng dẫn BTL, nhóm chọn theo diện
 "đề xuất đề tài khác có độ phức tạp tương đương" (Mục 2 hướng dẫn). Đây **chính là bài toán nhóm đã phân
 tích, thiết kế và cài đặt cho đồ án Java** (xem [README.md](README.md), [SO_DO_QUAN_HE.md](SO_DO_QUAN_HE.md)
 và mã nguồn trong `src/`) — báo cáo này dùng lại đúng bài toán đó để trình bày quy trình OOAD: từ yêu cầu
