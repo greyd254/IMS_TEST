@@ -125,3 +125,12 @@ Còn lại duy nhất: **báo cáo Word `docs/BaoCao_Oracle_QuanLySuCo.docx`** v
 - **Các thay đổi nội dung cần nhóm đọc lại**: UC16 là «extend» của UC6. Actor được tổng quát hóa: Người báo và Cán bộ CNTT kế thừa "Người dùng hệ thống", nên UC4 và UC8 thuộc về actor cha. Mọi sơ đồ đều đối chiếu với code thật, ví dụ UC5 kiểm tra chủ sở hữu rồi mới gọi `sc.daHoanThanh()`; ảnh quá 5MB bị `XuLyLoiChung` chặn trước khi vào Controller.
 - Đã commit `d34b044` (web-java) và `a103083` (main), đã push.
 - **Còn lại (nhóm tự làm)**: điền bảng thông tin đầu báo cáo (nhóm, lớp, thành viên, GVHD, ngày nộp) và bảng phân công ở Phụ lục. Tự quyết phần giả định ở §2.6. Xin giảng viên xác nhận đề tài, vì đề tài không nằm trong danh sách gợi ý. Đọc lại toàn bộ báo cáo trước khi nộp.
+
+## Cập nhật 15/11/2026 (góp ý nhóm về báo cáo OOAD, nhánh `web-java`)
+
+- **UC5 đổi tên** từ "Gửi phản hồi sau hoàn thành" thành **"Đánh giá sau hoàn thành"**, vì tên cũ dễ bị hiểu là chỉ nhắn tin được sau khi xong (nhắn tin lúc nào cũng được là UC4). Đã sửa `BAO_CAO_OOAD.md`, 7 sơ đồ PlantUML (Hình 1.1, 1.2, 2.1, 2.2, 2.7, 3.5, 3.13), file docx, slide. Thêm một điểm mơ hồ ở §2.6 giải thích việc tách "phản hồi" thành trao đổi và đánh giá. Lớp/bảng vẫn giữ tên `PhanHoi`/`PHAN_HOI`.
+- **Giao diện `web-java`** (cả `main/web-java` và nhánh `web-java`): nút "Gửi đánh giá", khung "Kết quả xử lý từ IT" (trước là "Phản hồi từ IT"), "Đánh giá của người báo", các thông báo "Chỉ gửi đánh giá được…", "Sự cố này đã được đánh giá rồi". `web-oracle` chưa đổi.
+- **Góp ý "thiếu activity/sequence cho xử lý sự cố"**: thực ra đã có (Hình 1.3, 2.6, 3.4, 3.7). Hình 1.3 được đổi tên thành "Sơ đồ hoạt động UC6 Xử lý sự cố…" cho dễ nhận ra.
+- **Đã chạy 13 test case** T1–T13 (§4.3) bằng curl trên cổng 8081, đối chiếu CSDL trước/sau; 13/13 đạt. Cột "Kết quả thực tế" đã điền, 13 ảnh minh chứng ở `docs/kiemthu/t1..t13.png` và Phụ lục báo cáo (Hình PL.1–PL.13). Dữ liệu thật để lại sau test: sự cố #221 "[TEST] Máy chiếu phòng A2-201 không lên hình" (của Phạm Đức Anh, đã HOAN_THANH), bài kinh nghiệm #21 và 1 đánh giá 5 sao.
+- Rà soát thêm: viết lại "Ghi chú sử dụng AI" (công cụ, mục đích, phần nhóm tự kiểm tra) cho đúng Mục 6 hướng dẫn; thay placeholder ở Kết luận bằng tổng kết kiểm thử + bài học (nhóm nên đọc lại cho đúng ý mình); sửa lỗi "Giao viên". Docx giờ 64 trang.
+- **Còn lại (nhóm tự làm)**: bảng thông tin đầu báo cáo, bảng phân công ở Phụ lục, xin giảng viên xác nhận đề tài.

@@ -120,7 +120,7 @@ public class SuCoController {
     }
 
     /**
-     * Người báo gửi phản hồi sau khi sự cố đã HOAN_THANH. Chỉ cho gửi 1 lần (UQ_PHAN_HOI_SU_CO
+     * Người báo gửi đánh giá (phản hồi 1-5 sao) sau khi sự cố đã HOAN_THANH. Chỉ cho gửi 1 lần (UQ_PHAN_HOI_SU_CO
      * chặn ở tầng CSDL, bắt DuplicateKeyException ở đây để tránh lộ lỗi SQL ra giao diện).
      */
     @PostMapping("/user/{maSc}/phan-hoi")
@@ -133,7 +133,7 @@ public class SuCoController {
             return "redirect:/user";
         }
         if (!suCo.daHoanThanh()) {
-            ra.addFlashAttribute("loi", "Chỉ gửi phản hồi được khi sự cố đã hoàn thành");
+            ra.addFlashAttribute("loi", "Chỉ gửi đánh giá được khi sự cố đã hoàn thành");
             return "redirect:/user/" + maSc;
         }
         if (mucHaiLong < 1 || mucHaiLong > 5) {
@@ -142,9 +142,9 @@ public class SuCoController {
         }
         try {
             phanHoiRepo.taoMoi(maSc, nd.getMaNd(), mucHaiLong, noiDung);
-            ra.addFlashAttribute("thongBao", "Đã gửi phản hồi, cảm ơn bạn");
+            ra.addFlashAttribute("thongBao", "Đã gửi đánh giá, cảm ơn bạn");
         } catch (DuplicateKeyException e) {
-            ra.addFlashAttribute("loi", "Sự cố này đã được phản hồi rồi");
+            ra.addFlashAttribute("loi", "Sự cố này đã được đánh giá rồi");
         }
         return "redirect:/user/" + maSc;
     }
